@@ -22,10 +22,3 @@ app.debug = True
 @app.route('/', methods=['POST','GET'])
 def index():
 	return render_template('index.html')
-
-# 
-# resource = WSGIResource(reactor, reactor.getThreadPool(), app)
-# site = Site(resource)
-# app.listeningPort = reactor.listenTCP(PORT, site)
-# 
-# reactor.run()

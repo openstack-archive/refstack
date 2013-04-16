@@ -18,3 +18,4 @@ def deploy():
     with cd('/var/www/refstack'):
         run('git checkout master')
         run('git pull')
+        run('uwsgi --reload /tmp/project-master_refstack.pid')
