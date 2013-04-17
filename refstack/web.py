@@ -11,6 +11,7 @@ from flask import Flask, request, render_template, g, jsonify
 from contextlib import closing
 
 # TODO(JMC): Make me a config var
+# TODO(JMC): Use real schema migrations(!)
 DATABASE = '/var/www/refstack/database.db'
 
 
