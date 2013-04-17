@@ -1,4 +1,3 @@
 requests
 twisted
 flask
-sqlite3
