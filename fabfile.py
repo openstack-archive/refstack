@@ -20,4 +20,5 @@ def deploy():
         run('git pull')
         run('sudo pip install -r requirements.txt')
         run('sudo python -c "from refstack import web; web.db.create_all()"')
+        run('alembic upgrade head')
         run('sudo uwsgi --reload /tmp/project-master_refstack.pid')
