@@ -29,6 +29,27 @@ class Vendor(db.Model):
 	def __repr__(self):
 		return '<Vendor %r>' % self.vendor_name
 
+class Cloud(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	vendor_id = db.Column(db.Integer, db.ForeignKey('vendor.id'))
+	vendor = db.relationship('Vendor',
+		backref=db.backref('clouds', lazy='dynamic'))
+
+	endpoint = db.Column(db.String(120), unique=True)
+	test_user = db.Column(db.String(80), unique=True)
+	test_key = db.Column(db.String(80), unique=True)
+	admin_endpoint = db.Column(db.String(120), unique=True)
+	admin_user = db.Column(db.String(80), unique=True)
+	admin_key = db.Column(db.String(80), unique=True)
+
+	def __init__(self, endpoint, test_user, test_key):
+		self.endpoint = endpoint
+		self.test_user = test_user
+		self.test_key = test_key
+
+	def __repr__(self):
+		return '<Cloud %r>' % self.endpoint
+
 
 @app.route('/', methods=['POST','GET'])
 def index():
