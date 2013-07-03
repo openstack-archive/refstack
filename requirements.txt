@@ -3,6 +3,7 @@ twisted
 flask
 Flask-SQLAlchemy
 flask-admin
+flask-openid
 werkzeug==0.8.3
 flask==0.9
 Flask-Login==0.1.3
