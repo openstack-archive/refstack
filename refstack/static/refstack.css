@@ -21,6 +21,8 @@ p.error {
     background: #EBCACA;
 }
 
+.navigation li { display: inline;}
+
 input {
     font-family: 'Georgia', serif;
     font-size: 16px;

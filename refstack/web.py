@@ -7,7 +7,7 @@ import os
 import random
 import sqlite3
 import sys
-from flask import Flask, flash, request, redirect, url_for, render_template, g, session
+from flask import Flask, abort, flash, request, redirect, url_for, render_template, g, session
 from flask_openid import OpenID
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.admin import Admin, BaseView, expose, AdminIndexView
@@ -123,13 +123,9 @@ def login():
     # if we are already logged in, go back to were we came from
     if g.user is not None:
         return redirect(oid.get_next_url())
-    if request.method == 'POST':
-        openid = request.form.get('openid')
-        if openid:
-            return oid.try_login(openid, ask_for=['email', 'fullname',
-                                                  'nickname'])
-    return render_template('login.html', next=oid.get_next_url(),
-                           error=oid.fetch_error())
+    return oid.try_login("https://login.launchpad.net/", ask_for=['email', 'nickname'])
+    # return render_template('login.html', next=oid.get_next_url(),
+    #                       error=oid.fetch_error())
 
 
 @oid.after_login
