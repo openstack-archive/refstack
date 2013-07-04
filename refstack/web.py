@@ -10,15 +10,15 @@ import sys
 from flask import Flask, flash, request, redirect, url_for, render_template, g, session
 from flask_openid import OpenID
 from flask.ext.sqlalchemy import SQLAlchemy
-from flask.ext.admin import Admin, BaseView, expose
+from flask.ext.admin import Admin, BaseView, expose, AdminIndexView
 from flask.ext.admin.contrib.sqlamodel import ModelView
 from sqlalchemy.exc import IntegrityError
 from flask.ext.security import Security, SQLAlchemyUserDatastore, \
-	UserMixin, RoleMixin, login_required
+    UserMixin, RoleMixin, login_required
 
 from wtforms import Form, BooleanField, TextField, PasswordField, validators
 from flask_mail import Mail
-import requests	   
+import requests    
 
 app = Flask(__name__)
 
@@ -52,34 +52,28 @@ db = SQLAlchemy(app)
 
 
 class Vendor(db.Model):
-	id = db.Column(db.Integer, primary_key=True)
-	vendor_name = db.Column(db.String(80), unique=True)
-	contact_email = db.Column(db.String(120), unique=True)
-
-	def __repr__(self):
-		return '<Vendor %r>' % self.vendor_name
+    id = db.Column(db.Integer, primary_key=True)
+    vendor_name = db.Column(db.String(80), unique=True)
+    contact_email = db.Column(db.String(120), unique=True)
+    
+    def __str__(self):
+        return self.vendor_name
 
 class Cloud(db.Model):
-	id = db.Column(db.Integer, primary_key=True)
-	vendor_id = db.Column(db.Integer, db.ForeignKey('vendor.id'))
-	vendor = db.relationship('Vendor',
-		backref=db.backref('clouds', lazy='dynamic'))
+    id = db.Column(db.Integer, primary_key=True)
+    vendor_id = db.Column(db.Integer, db.ForeignKey('vendor.id'))
+    vendor = db.relationship('Vendor',
+        backref=db.backref('clouds', lazy='dynamic'))
 
-	endpoint = db.Column(db.String(120), unique=True)
-	test_user = db.Column(db.String(80), unique=True)
-	test_key = db.Column(db.String(80), unique=True)
-	admin_endpoint = db.Column(db.String(120), unique=True)
-	admin_user = db.Column(db.String(80), unique=True)
-	admin_key = db.Column(db.String(80), unique=True)
-
-	def __init__(self, endpoint, test_user, test_key):
-		self.endpoint = endpoint
-		self.test_user = test_user
-		self.test_key = test_key
-
-	def __repr__(self):
-		return '<Cloud %r>' % self.endpoint
-
+    endpoint = db.Column(db.String(120), unique=True)
+    test_user = db.Column(db.String(80), unique=True)
+    test_key = db.Column(db.String(80), unique=True)
+    admin_endpoint = db.Column(db.String(120), unique=True)
+    admin_user = db.Column(db.String(80), unique=True)
+    admin_key = db.Column(db.String(80), unique=True)
+    
+    def __str__(self):
+        return self.endpoint
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -91,12 +85,20 @@ class User(db.Model):
         self.name = name
         self.email = email
         self.openid = openid
+    
+    def __str__(self):
+        return self.name
 
+# IndexView = AdminIndexView(url="/")
+admin = Admin(app) #, index_view=IndexView)
 
-admin = Admin(app)
-admin.add_view(ModelView(Vendor, db.session))
-admin.add_view(ModelView(Cloud, db.session))
-admin.add_view(ModelView(User, db.session))
+class SecureView(ModelView):
+    def is_accessible(self):
+        return g.user is not None
+
+admin.add_view(SecureView(Vendor, db.session))
+admin.add_view(SecureView(Cloud, db.session))
+admin.add_view(SecureView(User, db.session))
 
 
 @app.before_request
@@ -108,8 +110,8 @@ def before_request():
 
 @app.route('/', methods=['POST','GET'])
 def index():
-	vendors = Vendor.query.all()
-	return render_template('index.html', vendors = vendors)
+    vendors = Vendor.query.all()
+    return render_template('index.html', vendors = vendors)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -206,7 +208,7 @@ def logout():
 
 
 
-if __name__ == '__main__':	
-	app.logger.setLevel('DEBUG')
-	port = int(os.environ.get('PORT', 5000))
-	app.run(host='0.0.0.0', port=port, debug=True)
+if __name__ == '__main__':  
+    app.logger.setLevel('DEBUG')
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)

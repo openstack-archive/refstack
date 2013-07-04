@@ -35,3 +35,5 @@ nosetests.xml
 .pydevproject
 
 *.db
+*.DS_Store
+manifest.yml
