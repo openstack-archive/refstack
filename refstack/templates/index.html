@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+{% block title %}Welcome{% endblock %}
+{% block body %}
+        <div class="unit span-grid">
+            <h1>What is Refstack?</h1>
+        </div>
+        <div class="unit one-of-three">
+            An existence proof of the certified openstack APIs.
+        </div>
+        <div class="unit one-of-three">
+            A reference OpenStack environment for tools developers.
+        </div>
+        <div class="unit one-of-three">
+            A certification process for OpenStack service and product vendors.
+        </div>
+        <div class="unit span-grid">
+            Current vendors registered with RefStack are:<br/>
+            <ul>
+                {% for vendor in vendors %}
+                <li><a href="mailto:{{ vendor.contact_email }}">{{ vendor.vendor_name }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="unit span-grid">
+            For detailed specification, see <a href="https://etherpad.openstack.org/RefStackBlueprint">https://etherpad.openstack.org/RefStackBlueprint</a>
+        </div>
+{% endblock %}
