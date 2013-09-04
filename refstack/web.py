@@ -4,10 +4,8 @@ Simple Refstack website.
 """
 
 import os
-import random
-import sqlite3
-import sys
-from flask import Flask, abort, flash, request, redirect, url_for, render_template, g, session
+from flask import Flask, abort, flash, request, redirect, url_for, \
+    render_template, g, session
 from flask_openid import OpenID
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.admin import Admin, BaseView, expose, AdminIndexView
@@ -15,34 +13,34 @@ from flask.ext.admin.contrib.sqlamodel import ModelView
 from sqlalchemy.exc import IntegrityError
 from flask.ext.security import Security, SQLAlchemyUserDatastore, \
     UserMixin, RoleMixin, login_required
-
-from wtforms import Form, BooleanField, TextField, PasswordField, validators
+from wtforms import Form, BooleanField, TextField, \
+    PasswordField, validators
 from flask_mail import Mail
-import requests    
+import requests
 
 app = Flask(__name__)
 
-app.config['MAILGUN_KEY'] = 'key-this-is-a-fake-key'
+app.config['MAILGUN_KEY'] = 'key-7o9l9dupikfpsdvqi0ewot-se8g1hz64'
 app.config['MAILGUN_DOMAIN'] = 'hastwoparents.com'
 
 
 app.config['SECRET_KEY'] = 'GIANT_UGLY-SECRET-GOES-H3r3'
-db_path = os.path.abspath(os.path.join(os.path.basename(__file__), "../"))
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///%s/refstack.db' % (db_path))
+db_path = os.path.abspath(
+    os.path.join(os.path.basename(__file__), "../"))
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    'DATABASE_URL', 'sqlite:///%s/refstack.db' % (db_path))
 app.config['DEBUG'] = True
-
 app.config['SECURITY_PASSWORD_HASH'] = 'sha512_crypt'
 app.config['SECURITY_PASSWORD_SALT'] = app.config['SECRET_KEY']
 app.config['SECURITY_POST_LOGIN_VIEW'] = 'dashboard'
 app.config['SECURITY_RECOVERABLE'] = True
 app.config['SECURITY_REGISTERABLE'] = True
 app.config['SECURITY_EMAIL_SENDER'] = "admin@hastwoparents.com"
-
 app.config['MAIL_SERVER'] = 'smtp.mailgun.org'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_USERNAME'] = 'postmaster@hastwoparents.com'
-app.config['MAIL_PASSWORD'] = 'ugly-password'
+app.config['MAIL_PASSWORD'] = '0sx00qlvqbo3'
 
 mail = Mail(app)
 
@@ -55,25 +53,27 @@ class Vendor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     vendor_name = db.Column(db.String(80), unique=True)
     contact_email = db.Column(db.String(120), unique=True)
-    
+
     def __str__(self):
         return self.vendor_name
+
 
 class Cloud(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     vendor_id = db.Column(db.Integer, db.ForeignKey('vendor.id'))
     vendor = db.relationship('Vendor',
-        backref=db.backref('clouds', lazy='dynamic'))
-
+                             backref=db.backref('clouds',
+                                                lazy='dynamic'))
     endpoint = db.Column(db.String(120), unique=True)
     test_user = db.Column(db.String(80), unique=True)
     test_key = db.Column(db.String(80), unique=True)
     admin_endpoint = db.Column(db.String(120), unique=True)
     admin_user = db.Column(db.String(80), unique=True)
     admin_key = db.Column(db.String(80), unique=True)
-    
+
     def __str__(self):
         return self.endpoint
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -85,12 +85,12 @@ class User(db.Model):
         self.name = name
         self.email = email
         self.openid = openid
-    
+
     def __str__(self):
         return self.name
 
-# IndexView = AdminIndexView(url="/")
-admin = Admin(app) #, index_view=IndexView)
+admin = Admin(app)
+
 
 class SecureView(ModelView):
     def is_accessible(self):
@@ -103,15 +103,17 @@ admin.add_view(SecureView(User, db.session))
 
 @app.before_request
 def before_request():
+    """Runs before the request it self"""
     g.user = None
     if 'openid' in session:
         g.user = User.query.filter_by(openid=session['openid']).first()
 
 
-@app.route('/', methods=['POST','GET'])
+@app.route('/', methods=['POST', 'GET'])
 def index():
+    """Index view"""
     vendors = Vendor.query.all()
-    return render_template('index.html', vendors = vendors)
+    return render_template('index.html', vendors=vendors)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -123,7 +125,8 @@ def login():
     # if we are already logged in, go back to were we came from
     if g.user is not None:
         return redirect(oid.get_next_url())
-    return oid.try_login("https://login.launchpad.net/", ask_for=['email', 'nickname'])
+    return oid.try_login(
+        "https://login.launchpad.net/", ask_for=['email', 'nickname'])
     # return render_template('login.html', next=oid.get_next_url(),
     #                       error=oid.fetch_error())
 
@@ -165,7 +168,8 @@ def create_profile():
             db.session.add(User(name, email, session['openid']))
             db.session.commit()
             return redirect(oid.get_next_url())
-    return render_template('create_profile.html', next_url=oid.get_next_url())
+    return render_template(
+        'create_profile.html', next_url=oid.get_next_url())
 
 
 @app.route('/profile', methods=['GET', 'POST'])
@@ -203,8 +207,7 @@ def logout():
     return redirect(oid.get_next_url())
 
 
-
-if __name__ == '__main__':  
+if __name__ == '__main__':
     app.logger.setLevel('DEBUG')
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
