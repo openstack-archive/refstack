@@ -22,7 +22,7 @@ import requests
 
 app = Flask(__name__)
 
-app.config['MAILGUN_KEY'] = 'key-7o9l9dupikfpsdvqi0ewot-se8g1hz64'
+app.config['MAILGUN_KEY'] = 'key-this-is-a-fake-key'
 app.config['MAILGUN_DOMAIN'] = 'hastwoparents.com'
 
 
@@ -42,7 +42,7 @@ app.config['MAIL_SERVER'] = 'smtp.mailgun.org'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_USERNAME'] = 'postmaster@hastwoparents.com'
-app.config['MAIL_PASSWORD'] = '0sx00qlvqbo3'
+app.config['MAIL_PASSWORD'] = 'ugly-password'
 
 mail = Mail(app)
 
