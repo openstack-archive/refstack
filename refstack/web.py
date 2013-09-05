@@ -1,4 +1,19 @@
-# LICENSE HERE
+#!/usr/bin/env python
+#
+# Copyright (c) 2013 Piston Cloud Computing, Inc.
+# All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
 """
 Simple Refstack website.
 """
@@ -7,88 +22,21 @@ import os
 from flask import Flask, abort, flash, request, redirect, url_for, \
     render_template, g, session
 from flask_openid import OpenID
-from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.admin import Admin, BaseView, expose, AdminIndexView
 from flask.ext.admin.contrib.sqlamodel import ModelView
-from sqlalchemy.exc import IntegrityError
 from flask.ext.security import Security, SQLAlchemyUserDatastore, \
     UserMixin, RoleMixin, login_required
 from wtforms import Form, BooleanField, TextField, \
     PasswordField, validators
 from flask_mail import Mail
 import requests
-
-app = Flask(__name__)
-
-app.config['MAILGUN_KEY'] = 'key-7o9l9dupikfpsdvqi0ewot-se8g1hz64'
-app.config['MAILGUN_DOMAIN'] = 'hastwoparents.com'
-
-
-app.config['SECRET_KEY'] = 'GIANT_UGLY-SECRET-GOES-H3r3'
-db_path = os.path.abspath(
-    os.path.join(os.path.basename(__file__), "../"))
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-    'DATABASE_URL', 'sqlite:///%s/refstack.db' % (db_path))
-app.config['DEBUG'] = True
-app.config['SECURITY_PASSWORD_HASH'] = 'sha512_crypt'
-app.config['SECURITY_PASSWORD_SALT'] = app.config['SECRET_KEY']
-app.config['SECURITY_POST_LOGIN_VIEW'] = 'dashboard'
-app.config['SECURITY_RECOVERABLE'] = True
-app.config['SECURITY_REGISTERABLE'] = True
-app.config['SECURITY_EMAIL_SENDER'] = "admin@hastwoparents.com"
-app.config['MAIL_SERVER'] = 'smtp.mailgun.org'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USERNAME'] = 'postmaster@hastwoparents.com'
-app.config['MAIL_PASSWORD'] = '0sx00qlvqbo3'
+from app inport app 
 
 mail = Mail(app)
 
 # setup flask-openid
 oid = OpenID(app)
 db = SQLAlchemy(app)
-
-
-class Vendor(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    vendor_name = db.Column(db.String(80), unique=True)
-    contact_email = db.Column(db.String(120), unique=True)
-
-    def __str__(self):
-        return self.vendor_name
-
-
-class Cloud(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    vendor_id = db.Column(db.Integer, db.ForeignKey('vendor.id'))
-    vendor = db.relationship('Vendor',
-                             backref=db.backref('clouds',
-                                                lazy='dynamic'))
-    endpoint = db.Column(db.String(120), unique=True)
-    test_user = db.Column(db.String(80), unique=True)
-    test_key = db.Column(db.String(80), unique=True)
-    admin_endpoint = db.Column(db.String(120), unique=True)
-    admin_user = db.Column(db.String(80), unique=True)
-    admin_key = db.Column(db.String(80), unique=True)
-
-    def __str__(self):
-        return self.endpoint
-
-
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(60))
-    email = db.Column(db.String(200))
-    openid = db.Column(db.String(200), unique=True)
-
-    def __init__(self, name, email, openid):
-        self.name = name
-        self.email = email
-        self.openid = openid
-
-    def __str__(self):
-        return self.name
-
 admin = Admin(app)
 
 
@@ -202,6 +150,7 @@ def edit_profile():
 
 @app.route('/logout')
 def logout():
+    """"""
     session.pop('openid', None)
     flash(u'You have been signed out')
     return redirect(oid.get_next_url())
