@@ -16,6 +16,9 @@
 #    under the License.
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
+from app import app
+
+db = SQLAlchemy(app)
 
 
 class Vendor(db.Model):

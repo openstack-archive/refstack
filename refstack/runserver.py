@@ -14,7 +14,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
+import os
 from web import app
 
-app.run()
+app.logger.setLevel('DEBUG')
+port = int(os.environ.get('PORT', 5000))
+app.run(host='172.16.200.128', port=port, debug=True)

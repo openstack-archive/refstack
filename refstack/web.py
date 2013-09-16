@@ -14,11 +14,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-"""
-Simple Refstack website.
-"""
-
 import os
+import requests
 from flask import Flask, abort, flash, request, redirect, url_for, \
     render_template, g, session
 from flask_openid import OpenID
@@ -29,19 +26,21 @@ from flask.ext.security import Security, SQLAlchemyUserDatastore, \
 from wtforms import Form, BooleanField, TextField, \
     PasswordField, validators
 from flask_mail import Mail
-import requests
-from app inport app 
+
+from app import app 
+from models import Vendor, Cloud, User, db
 
 mail = Mail(app)
 
 # setup flask-openid
 oid = OpenID(app)
-db = SQLAlchemy(app)
 admin = Admin(app)
 
 
 class SecureView(ModelView):
+    """ """
     def is_accessible(self):
+        """ """
         return g.user is not None
 
 admin.add_view(SecureView(Vendor, db.session))
@@ -150,13 +149,10 @@ def edit_profile():
 
 @app.route('/logout')
 def logout():
-    """"""
+    """logout route"""
     session.pop('openid', None)
     flash(u'You have been signed out')
     return redirect(oid.get_next_url())
 
 
-if __name__ == '__main__':
-    app.logger.setLevel('DEBUG')
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+
