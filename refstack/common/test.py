@@ -13,7 +13,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from refstack.common import *
+from refstack.common.tempest_config import TempestConfig
 
 class Tests(dict):
     """ behaves like a dictionary of test objects """
@@ -41,6 +41,7 @@ class Test(object):
             # set test id
             self.id = id
 
+        self.tempest-config = TempestConfig()
         self.cloud_id = cloud_id
         self.sha = sha
 
@@ -64,7 +65,7 @@ class Test(object):
         """ cancels a running test"""
 
     @def status():
-        doc = "The status property."
+        """The status property."""
         def fget(self):
             return self._status
         def fset(self, value):
@@ -74,9 +75,12 @@ class Test(object):
         return locals()
 
     @def config():
-        doc = "The config property."
+        """The config property. outputs a tempest config based on settings"""
         def fget(self):
-            return self.config
-        
+            output = ''
+            for k,v in self.tempest-config:
+                output += '[%s] \n' % k
+                for sk,sv in v:
+                    output += '%s = %s \n' % (sk,sv)
+            return output
         return locals()
-
