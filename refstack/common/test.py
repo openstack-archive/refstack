@@ -27,25 +27,23 @@ class Tests(dict):
 
 class Test(object):
     """ Test functions"""
-    id = None
+    test_id = None
     sha = None
     cloud_id = None
     _status = None
 
     def __init__(self,cloud_id,test_id=None,sha=None):
         """ init method loads specified id or fails"""
-        if not id:
+        if not test_id:
             #create a new test id
-            self.id = 10
+            self.test_id = 10
         else: 
             # set test id
-            self.id = id
+            self.test_id = id
 
         self.tempest-config = TempestConfig()
         self.cloud_id = cloud_id
         self.sha = sha
-
-        return self.id
 
 
     def run_remote(self):
@@ -64,6 +62,7 @@ class Test(object):
     def cancel(self):
         """ cancels a running test"""
 
+
     @def status():
         """The status property."""
         def fget(self):
@@ -73,6 +72,7 @@ class Test(object):
         def fdel(self):
             del self._status
         return locals()
+
 
     @def config():
         """The config property. outputs a tempest config based on settings"""
