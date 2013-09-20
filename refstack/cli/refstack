@@ -19,7 +19,7 @@ import sys
 import subprocess
 import argparse
 from textwrap import dedent
-from refstack.common import test 
+from refstack.common.test import Test
 
 basedir = os.path.dirname(__file__)
 
@@ -67,6 +67,9 @@ class actions(argparse.Action):
     def run(self):
     	""" run test command"""
     	self._print('run command called',True)
+        tester = Test()
+        self._print(tester.config)
+
 
     def status(self):
     	""" get the status of a running test"""

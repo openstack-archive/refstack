@@ -41,7 +41,7 @@ class Test(object):
             # set test id
             self.test_id = id
 
-        self.tempest-config = TempestConfig()
+        self.tempest_config = TempestConfig()
         self.cloud_id = cloud_id
         self.sha = sha
 
@@ -63,7 +63,8 @@ class Test(object):
         """ cancels a running test"""
 
 
-    @def status():
+    @property
+    def status(self):
         """The status property."""
         def fget(self):
             return self._status
@@ -74,7 +75,8 @@ class Test(object):
         return locals()
 
 
-    @def config():
+    @property
+    def config(self):
         """The config property. outputs a tempest config based on settings"""
         def fget(self):
             output = ''
