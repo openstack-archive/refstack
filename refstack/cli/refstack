@@ -14,3 +14,121 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import os.path
+import sys
+import subprocess
+import argparse
+from textwrap import dedent
+from refstack.common import test 
+
+basedir = os.path.dirname(__file__)
+
+def call(*args, **kwargs):
+    """subprocess.call with error checking."""
+    assert not subprocess.call(*args, **kwargs)
+
+class actions(argparse.Action):
+    """ david please comment this """
+    test_id = None
+    params = {}
+
+    def __call__(self, parser, params, values, option_string=None, **kwargs):
+        """Triggered by -c command line argument """
+        self.params = params
+        setattr(self.params, self.dest, values)
+
+        self._print(self.params, verbose=True)
+
+        # action function mapping
+        actions = { 'run' : self.run,
+                    'status' : self.status,
+                    'cancel' : self.cancel,
+                    'result' : self.result,
+                    'export' : self.export,
+                    'list' : self.list }
+
+        if len(self.params.command) > 1:
+            print "Please only use one command at a time!\n\n"
+            parser.print_help()
+            sys.exit(1)
+
+        for command in self.params.command:
+            if command in actions:
+                actions[command]()
+
+    def _print(self, output, verbose=False):
+        """ print wrapper so -v and -s can be respected """
+        if not self.params.silent:
+            if verbose is False:
+                print(output)
+            elif verbose is True and self.params.verbose > 0:
+                print(output)
+
+    def run(self):
+    	""" run test command"""
+    	self._print('run command called',True)
+
+    def status(self):
+    	""" get the status of a running test"""
+    	self._print('status command called',True)
+
+    def cancel(self):
+    	""" cancels a running test"""
+    	self._print('cancel command called',True)
+
+    def result(self):
+    	""" outputs the results of a test"""
+    	self._print('result command called',True)
+
+    def export(self):
+    	""" export something forgot why I adddedd this"""
+    	self._print('export command called',True)
+
+    def list(self):
+    	""" returns a list of cached test results"""
+    	self._print('list command called',True)
+
+
+def main():
+    """ command line hook """
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=dedent("""\
+                            This is a CLI utility for refstack
+
+                            """),
+        epilog=dedent("""\
+                    Usage:
+
+                    Refstack CLI:
+                       \n\n\n """))
+
+
+    # output options
+    parser.add_argument('--verbose', '-v', action='count')
+    parser.add_argument('--silent', '-s', action='store_true')
+
+    
+    # all paramaters can be overridden
+    parser.add_argument('--test-id', nargs='?', type=int,
+        default=None,
+        help="""id of the test you want to interact with.. if you are starting 
+            a new test you can leave this blank and it will 
+            return a new test_id""")
+
+    parser.add_argument('command',  nargs='+', action=actions,
+          help="Command to execute. ",
+          choices=['run','status','cancel','result','export','list'] )
+
+    args = parser.parse_args()
+    # validate input
+    #option_given = not (args.c == None)
+
+    #if not option_given:
+    #    parser.print_help()
+    #    sys.exit(1)
+
+
+
+if __name__ == '__main__':
+    main()
