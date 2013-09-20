@@ -56,6 +56,7 @@ class actions(argparse.Action):
             if command in actions:
                 actions[command]()
 
+
     def _print(self, output, verbose=False):
         """ print wrapper so -v and -s can be respected """
         if not self.params.silent:
@@ -63,6 +64,7 @@ class actions(argparse.Action):
                 print(output)
             elif verbose is True and self.params.verbose > 0:
                 print(output)
+
 
     def run(self):
     	""" run test command"""
@@ -75,17 +77,21 @@ class actions(argparse.Action):
     	""" get the status of a running test"""
     	self._print('status command called',True)
 
+
     def cancel(self):
     	""" cancels a running test"""
     	self._print('cancel command called',True)
+
 
     def result(self):
     	""" outputs the results of a test"""
     	self._print('result command called',True)
 
+
     def export(self):
     	""" export something forgot why I adddedd this"""
     	self._print('export command called',True)
+
 
     def list(self):
     	""" returns a list of cached test results"""

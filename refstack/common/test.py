@@ -32,7 +32,7 @@ class Test(object):
     cloud_id = None
     _status = None
 
-    def __init__(self,cloud_id,test_id=None,sha=None):
+    def __init__(self,cloud_id=None,test_id=None,sha=None):
         """ init method loads specified id or fails"""
         if not test_id:
             #create a new test id
@@ -77,12 +77,6 @@ class Test(object):
 
     @property
     def config(self):
-        """The config property. outputs a tempest config based on settings"""
-        def fget(self):
-            output = ''
-            for k,v in self.tempest-config:
-                output += '[%s] \n' % k
-                for sk,sv in v:
-                    output += '%s = %s \n' % (sk,sv)
-            return output
-        return locals()
+        """The config property. outputs a tempest config based on settings"""    
+        return self.tempest_config.output()
+    

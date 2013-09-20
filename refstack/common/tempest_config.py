@@ -1,9 +1,37 @@
+#
+# Copyright (c) 2013 Piston Cloud Computing, Inc.
+# All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
 
-class TempestConf(dict):
+class TempestConfig(object):
     """temptest config options. gets converted to a tempest config file"""
+    config = {}
+    
+    def output(self):
+        """outputs config in propper format"""
+        output = ''
+        for k,v in self.config.items():
+            output += '[%s] \n' % k
+            for sk,sv in v.items():
+                output += '%s = %s \n' % (sk,sv)
+            output += '\n'
+        return output
+
+
     def __init__(self):
         """ sets up the default configs"""
-        self['DEFAULT'] = {
+        self.config['DEFAULT'] = {
             'debug':True,
             'use_stderr':False,
             'log_file':'',
@@ -12,7 +40,7 @@ class TempestConf(dict):
                 sqlalchemy=WARN,boto=WARN,suds=INFO,keystone=INFO,
                 eventlet.wsgi.server=WARN"""}
 
-        self['identity'] = {
+        self.config['identity'] = {
             'catalog_type': 'identity',
             'disable_ssl_certificate_validation': False,
             'uri': '',
@@ -30,7 +58,7 @@ class TempestConf(dict):
             'admin_role': ''}
 
 
-        self['compute'] = {
+        self.config['compute'] = {
             'catalog_type': 'compute',
             'allow_tenant_isolation': True,
             'allow_tenant_reuse': True,
@@ -64,26 +92,26 @@ class TempestConf(dict):
             'flavor_extra_enabled': True,
             'volume_device_name': ''}
 
-        self['compute-admin'] = {
+        self.config['compute-admin'] = {
             'username': '',
             'password': '',
             'tenant_name': ''}
 
-        self['image'] = {
+        self.config['image'] = {
             'catalog_type': 'image',
             'api_version': 1,
             'http_image': ''}
 
-        self['network'] = {
+        self.config['network'] = {
             'catalog_type': 'network',
             'api_version': '2.0',
             'tenant_network_cidr': '10.100.0.0/16',
             'tenant_network_mask_bits': 28,
             'tenant_networks_reachable': False,
             'public_network_id': '',
-            'public_router_id': ''}
+            'public_router_id': '' }
 
-        self['volume'] = {
+        self.config['volume'] = {
             'catalog_type': 'volume',
             'disk_format': 'raw',
             'build_interval': 1,
@@ -92,16 +120,16 @@ class TempestConf(dict):
             'backend1_name': 'BACKEND_1',
             'backend2_name': 'BACKEND_2',
             'storage_protocol': 'iSCSI',
-            'vendor_name': 'Open Source'}
+            'vendor_name': 'Open Source' }
         
-        self['object-storage'] = {
+        self.config['object-storage'] = {
             'catalog_type': 'object-store',
             'container_sync_timeout': 120,
             'container_sync_interval': 5,
             'accounts_quotas_available': True,
-            'operator_role': 'Member'}
+            'operator_role': 'Member' }
 
-        self['boto'] = {
+        self.config['boto'] = {
             'ssh_user': 'cirros',
             'ec2_url': 'http://172.16.200.130:8773/services/Cloud',
             's3_url': 'http://172.16.200.130:3333',
@@ -115,9 +143,9 @@ class TempestConf(dict):
             'http_socket_timeout': 30,
             'num_retries': 1,
             'build_timeout': 400,
-            'build_interval': 1}
+            'build_interval': 1 }
 
-        self['orchestration'] = {
+        self.config['orchestration'] = {
             'catalog_type': 'orchestration',
             'build_interval': 1,
             'build_timeout': 300,
@@ -125,33 +153,33 @@ class TempestConf(dict):
             '#image_ref': 'ubuntu-vm-heat-cfntools',
             '#keypair_name': 'heat_key'}
 
-        self['dashboard'] = {
-            'dashboard_url = http://172.16.200.130/',
-            'login_url = http://172.16.200.130/auth/login/',
+        self.config['dashboard'] = {
+            'dashboard_url': 'http://172.16.200.130/',
+            'login_url': 'http://172.16.200.130/auth/login/'}
 
-        self['scenario'] = {
+        self.config['scenario'] = {
             'img_dir': '',
             'ami_img_file': 'cirros-0.3.1-x86_64-blank.img',
             'ari_img_file': 'cirros-0.3.1-x86_64-initrd',
             'aki_img_file': 'cirros-0.3.1-x86_64-vmlinuz',
             'ssh_user': 'cirros',
-            'large_ops_number': '0',
+            'large_ops_number': 0 }
 
-        self['cli'] = {
+        self.config['cli'] = {
             'enabled': True,
             'cli_dir': '/usr/local/bin',
             'timeout': 15 }
 
-        self['service_available'] = {
+        self.config['service_available'] = {
             'cinder': True,
             'neutron': False,
             'glance': True,
             'swift': False,
             'nova': True,
             'heat': False,
-            'horizon': True}
+            'horizon': True }
 
-        self['stress'] = {
+        self.config['stress'] = {
             'max_instances': 32,
             'log_check_interval': 60,
             'default_thread_number_per_action': 4 }
