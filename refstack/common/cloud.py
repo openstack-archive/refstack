@@ -17,6 +17,8 @@ from keystoneclient.v2_0 import client
 from refstack.common import *
 import refstack.models
 
+class Clouds
+
 class Cloud(object):
     """ Cloud functions"""
     cloud_id = None
