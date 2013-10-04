@@ -24,13 +24,13 @@ sys.path.append("./")
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
-from refstack.web import app
+from refstack import app
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 cur_db_uri = config.get_section_option('alembic', 'sqlalchemy.url')
-my_db_uri = app.config.get('SQLALCHEMY_DATABASE_URI', cur_db_uri)
+my_db_uri = 'sqlite:////tmp/refstack.db' # app.config.get('SQLALCHEMY_DATABASE_URI', cur_db_uri)
 config.set_section_option('alembic', 'sqlalchemy.url', my_db_uri)
 
 # Interpret the config file for Python logging.
@@ -42,8 +42,8 @@ fileConfig(config.config_file_name)
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
-from refstack.models import db
-target_metadata = db.metadata
+from refstack.models import *
+target_metadata = Base.metadata
 
 
 def run_migrations_offline():

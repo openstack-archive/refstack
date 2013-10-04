@@ -19,11 +19,11 @@
 import argparse
 from textwrap import dedent
 from sqlalchemy.exc import IntegrityError
-from refstack.localmodels import *
+from refstack.models import *
 
 
 def add(args):
-    """add cloud 
+    """adds a cloud 
     
     refstack add --endpoint='http://127.0.0.1:5000/v3/' --test-user='demo' 
     --test-key='pass' --admin-endpoint='http://127.0.0.1:5000/v3/' 
@@ -50,7 +50,7 @@ def add(args):
 
     
 def remove(args):
-    """remove cloud 
+    """removes a cloud 
     refstack remove {cloud_id}
 
     confirms that cloud-id 123 has been removed from the database as well as 
@@ -67,7 +67,7 @@ def remove(args):
 
 
 def clouds(args):
-    """returns either a list of cached tests"""
+    """returns a list of your clouds"""
     print 'Your clouds:\n'
     print 'id | endpoint | test-user | admin-user '
     print '---------------------------------------'
@@ -79,7 +79,7 @@ def clouds(args):
 def run(args):
     """run test command
 
-    refstack run --cloud_id {123} --sha {sha}
+    refstack run {cloud_id} --sha {sha}
 
     triggers local run of tempest with specified cloud_id returns a 
     test_id so that the user can check status or cancel the test"""
@@ -117,15 +117,6 @@ def tests(args):
     """returns either a list of clouds"""
     print 'tests triggered'
 
-
-def clouds(args):
-    """returns either a list of cached tests"""
-    print 'Your clouds:\n'
-    print 'id | endpoint | test-user | admin-user '
-    print '---------------------------------------'
-    for row in db.query(Cloud).all():
-        print "%s | %s | %s | %s " % (row.id, row.endpoint, row.test_user, row.admin_user) 
-    print ''
 
 def subcommands(subparsers):
     """argparse subparsers with """ 

@@ -13,45 +13,44 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from flask.ext.sqlalchemy import SQLAlchemy
-from sqlalchemy.exc import IntegrityError
-from app import app
+"""striaght up sqlalchemy declarative_base model structure. 
 
-db = SQLAlchemy(app)
+    *I created this because i was having a problem getting 
+    the cli to use the models that were generated for the flask 
+    webapp. The plan is to use this for both. But I have not 
+    started my serious efforts on the web interface.  dl 10.2013
+
+    *For now in dev I have this database in /tmp we can talk 
+    about someplace else for it by default. 
+"""
+from datetime import datetime
+from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker,relationship, backref
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Binary, Boolean
+
+engine = create_engine('sqlite:////tmp/refstack.db', convert_unicode=True)
+db = scoped_session(sessionmaker(autocommit=False,
+                                 autoflush=False,
+                                 bind=engine))
+
+Base = declarative_base()
+Base.query = db.query_property()
 
 
-class Vendor(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    vendor_name = db.Column(db.String(80), unique=True)
-    contact_email = db.Column(db.String(120), unique=True)
 
-    def __str__(self):
-        return self.vendor_name
-
-
-class Cloud(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    vendor_id = db.Column(db.Integer, db.ForeignKey('vendor.id'))
-    vendor = db.relationship('Vendor',
-                             backref=db.backref('clouds',
+class User(Base):
+    __tablename__ = 'user'
+    id = Column(Integer, primary_key=True)
+    vendor_id = Column(Integer, ForeignKey('vendor.id'))
+    vendor = relationship('Vendor',
+                             backref=backref('clouds',
                                                 lazy='dynamic'))
-    endpoint = db.Column(db.String(120), unique=False)
-    test_user = db.Column(db.String(80), unique=False)
-    test_key = db.Column(db.String(80), unique=False)
-    admin_endpoint = db.Column(db.String(120), unique=False)
-    admin_user = db.Column(db.String(80), unique=False)
-    admin_key = db.Column(db.String(80), unique=False)
-
-    def __str__(self):
-        return self.endpoint
-
-
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(60))
-    email = db.Column(db.String(200), unique=True)
-    openid = db.Column(db.String(200), unique=True)
-
+    name = Column(String(60))
+    email = Column(String(200), unique=True)
+    openid = Column(String(200), unique=True)
+    authorized = Column(Boolean, default=False)
+    
     def __init__(self, name, email, openid):
         self.name = name
         self.email = email
@@ -59,3 +58,79 @@ class User(db.Model):
 
     def __str__(self):
         return self.name
+
+
+
+class Vendor(Base):
+    __tablename__ = 'vendor'
+    id = Column(Integer, primary_key=True)
+    vendor_name = Column(String(80), unique=True)
+    contact_email = Column(String(120), unique=True)
+
+    def __str__(self):
+        return self.vendor_name
+
+
+
+class Cloud(Base):
+    """*need to take the time to descibe this stuff in detail. 
+    """
+    __tablename__ = 'cloud'
+    id = Column(Integer, primary_key=True)
+    
+    endpoint = Column(String(120), unique=True)
+    test_user = Column(String(80), unique=False)
+    test_key = Column(String(80), unique=False)
+    admin_endpoint = Column(String(120), unique=False)
+    admin_user = Column(String(80), unique=False)
+    admin_key = Column(String(80), unique=False)
+
+    def __init__(self,
+                 endpoint,
+                 test_user,
+                 test_key,
+                 admin_endpoint,
+                 admin_user,
+                 admin_key):
+        """init method to allow ordered input """
+        self.endpoint = endpoint
+        self.test_user = test_user
+        self.test_key = test_key
+        self.admin_endpoint = admin_endpoint
+        self.admin_user = admin_user
+        self.admin_key = admin_key
+    
+
+
+class Test(Base):
+    __tablename__ = 'test'
+    id = Column(Integer, primary_key=True)
+    cloud_id = Column(Integer, ForeignKey('cloud.id'))
+    cloud = relationship('Cloud',
+                          backref=backref('tests',lazy='dynamic'))
+    status = relationship("TestStatus",
+                         order_by="desc(test_status.timestamp)",
+                         primaryjoin="TestStatus.test_id==Test.id")
+
+
+
+class TestStatus(Base):
+    __tablename__ = 'test_status'
+    id = Column(Integer, primary_key=True)
+    test_id = Column(Integer, ForeignKey('test.id'))
+    message = Column(String(1024))
+    finished = Column(Boolean, default=False)
+    timestamp = Column(DateTime, default=datetime.now)
+
+
+
+class TestResults(Base):
+    __tablename__ = 'test_results'
+    id = Column(Integer, primary_key=True)
+    test_id = Column(Integer, ForeignKey('test.id'))
+    test = relationship('Test',
+                          backref=backref('results',lazy='dynamic'))
+    timestamp = Column(DateTime, default=datetime.now)
+    blob = Column(Binary)
+
+

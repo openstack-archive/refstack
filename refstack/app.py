@@ -19,8 +19,10 @@ from flask import Flask, session
 
 
 
-db_path = os.path.abspath(
-    os.path.join(os.path.basename(__file__), "../"))
+#db_path = os.path.abspath(
+#    os.path.join(os.path.basename(__file__), "../"))
+
+db_path = 'tmp'
 
 app = Flask(__name__)
 
