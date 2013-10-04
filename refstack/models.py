@@ -48,6 +48,7 @@ class User(Base):
                                                 lazy='dynamic'))
     name = Column(String(60))
     email = Column(String(200), unique=True)
+    email_verified = Column(Boolean)
     openid = Column(String(200), unique=True)
     authorized = Column(Boolean, default=False)
     
@@ -60,7 +61,11 @@ class User(Base):
         return self.name
 
 
-
+"""
+Note: The vendor list will be pre-populated from the sponsoring company database. 
+TODO: better define the vendor object and its relationship with user
+it needs the ability to facilitate a login. 
+"""
 class Vendor(Base):
     __tablename__ = 'vendor'
     id = Column(Integer, primary_key=True)
@@ -84,7 +89,7 @@ class Cloud(Base):
     admin_endpoint = Column(String(120), unique=False)
     admin_user = Column(String(80), unique=False)
     admin_key = Column(String(80), unique=False)
-    
+
     def __init__(self,
                  endpoint,
                  test_user,
@@ -111,6 +116,7 @@ class Test(Base):
     config = Column(String(4096))
 
 
+
 class TestStatus(Base):
     __tablename__ = 'test_status'
     id = Column(Integer, primary_key=True)
@@ -120,6 +126,7 @@ class TestStatus(Base):
     message = Column(String(1024))
     finished = Column(Boolean, default=False)
     timestamp = Column(DateTime, default=datetime.now)
+
 
 
 class TestResults(Base):
