@@ -13,11 +13,13 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from refstack.common.cloud import Cloud
 
 class TempestConfig(object):
     """temptest config options. gets converted to a tempest config file"""
     config = {}
     
+
     def output(self):
         """outputs config in propper format"""
         output = ''

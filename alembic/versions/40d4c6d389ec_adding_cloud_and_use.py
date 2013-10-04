@@ -35,12 +35,7 @@ def upgrade():
         sa.Column('admin_key', sa.String(length=80), nullable=True),
         sa.ForeignKeyConstraint(['vendor_id'], ['vendor.id'], ),
         sa.PrimaryKeyConstraint('id'),
-        sa.UniqueConstraint('admin_endpoint'),
-        sa.UniqueConstraint('admin_key'),
-        sa.UniqueConstraint('admin_user'),
-        sa.UniqueConstraint('endpoint'),
-        sa.UniqueConstraint('test_key'),
-        sa.UniqueConstraint('test_user')
+        sa.UniqueConstraint('endpoint')
     )
     ### end Alembic commands ###
 

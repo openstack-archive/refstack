@@ -42,7 +42,7 @@ fileConfig(config.config_file_name)
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
-from refstack.web import db
+from refstack.models import db
 target_metadata = db.metadata
 
 

@@ -14,92 +14,187 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import os.path
-import sys
-import subprocess
+"""
+"""
 import argparse
 from textwrap import dedent
-from refstack.common.test import Test
-
-basedir = os.path.dirname(__file__)
-
-def call(*args, **kwargs):
-    """subprocess.call with error checking."""
-    assert not subprocess.call(*args, **kwargs)
-
-class actions(argparse.Action):
-    """ david please comment this """
-    test_id = None
-    params = {}
-
-    def __call__(self, parser, params, values, option_string=None, **kwargs):
-        """Triggered by -c command line argument """
-        self.params = params
-        setattr(self.params, self.dest, values)
-
-        self._print(self.params, verbose=True)
-
-        # action function mapping
-        actions = { 'run' : self.run,
-                    'status' : self.status,
-                    'cancel' : self.cancel,
-                    'result' : self.result,
-                    'export' : self.export,
-                    'list' : self.list }
-
-        if len(self.params.command) > 1:
-            print "Please only use one command at a time!\n\n"
-            parser.print_help()
-            sys.exit(1)
-
-        for command in self.params.command:
-            if command in actions:
-                actions[command]()
+from sqlalchemy.exc import IntegrityError
+from refstack.localmodels import *
 
 
-    def _print(self, output, verbose=False):
-        """ print wrapper so -v and -s can be respected """
-        if not self.params.silent:
-            if verbose is False:
-                print(output)
-            elif verbose is True and self.params.verbose > 0:
-                print(output)
+def add(args):
+    """add cloud 
+    
+    refstack add --endpoint='http://127.0.0.1:5000/v3/' --test-user='demo' 
+    --test-key='pass' --admin-endpoint='http://127.0.0.1:5000/v3/' 
+    --admin-user='admin' --admin-key='pass'
+
+    outputs confirmation along with the id of the cloud that was just added.
+    endpoint is a unique key so you only get to add one record per end point"""
+    try:
+        cloud = Cloud(args.endpoint,
+                      args.test_user,
+                      args.test_key,
+                      args.admin_endpoint,
+                      args.admin_user,
+                      args.admin_key)
+
+        db.add(cloud)
+        db.commit()
+
+        print 'New cloud added with id: %s ' % (cloud.id)
+
+    except IntegrityError:
+        print 'A Cloud with %s as its endpoint has already been added. ' % args.endpoint 
 
 
-    def run(self):
-    	""" run test command"""
-    	self._print('run command called',True)
-        tester = Test()
-        self._print(tester.config)
+    
+def remove(args):
+    """remove cloud 
+    refstack remove {cloud_id}
+
+    confirms that cloud-id 123 has been removed from the database as well as 
+    all tests assosiateed with it."""
+    cloud = db.query(Cloud).get(args.cloud_id)
+
+    if cloud is None:
+        print 'No cloud with id: %s ' % args.cloud_id
+
+    else: 
+        db.delete(cloud)
+        db.commit()
+        print 'cloud %s has been deleted.' % args.cloud_id
 
 
-    def status(self):
-    	""" get the status of a running test"""
-    	self._print('status command called',True)
+def clouds(args):
+    """returns either a list of cached tests"""
+    print 'Your clouds:\n'
+    print 'id | endpoint | test-user | admin-user '
+    print '---------------------------------------'
+    for row in db.query(Cloud).all():
+        print "%s | %s | %s | %s " % (row.id, row.endpoint, row.test_user, row.admin_user) 
+    print ''
 
 
-    def cancel(self):
-    	""" cancels a running test"""
-    	self._print('cancel command called',True)
+def run(args):
+    """run test command
+
+    refstack run --cloud_id {123} --sha {sha}
+
+    triggers local run of tempest with specified cloud_id returns a 
+    test_id so that the user can check status or cancel the test"""
+    print 'run triggered'
 
 
-    def result(self):
-    	""" outputs the results of a test"""
-    	self._print('result command called',True)
+def status(args):
+    """get the status of a running test
+
+    refstack status --test-id {123}
+    """
+    print 'status triggered'
 
 
-    def export(self):
-    	""" export something forgot why I adddedd this"""
-    	self._print('export command called',True)
+def cancel(args):
+    """cancels a running test
+
+    refstack cancel --test-id {test_id}
+
+    stops the running test if it is running and displays output to user"""
+    print 'cancel triggered'
 
 
-    def list(self):
-    	""" returns a list of cached test results"""
-    	self._print('list command called',True)
+def result(args):
+    """outputs the results of a test
+
+    refstack results --test_id --format {screen|subunit}
+
+    if the test isn't finished it will say in progress otherwise will return
+    subunit|screen output"""
+    print 'result triggered'
+
+
+def tests(args):
+    """returns either a list of clouds"""
+    print 'tests triggered'
+
+
+def clouds(args):
+    """returns either a list of cached tests"""
+    print 'Your clouds:\n'
+    print 'id | endpoint | test-user | admin-user '
+    print '---------------------------------------'
+    for row in db.query(Cloud).all():
+        print "%s | %s | %s | %s " % (row.id, row.endpoint, row.test_user, row.admin_user) 
+    print ''
+
+def subcommands(subparsers):
+    """argparse subparsers with """ 
+    add_cloud_parser = subparsers.add_parser('add', help='Add a new Cloud')
+    
+    add_cloud_parser.add_argument('--endpoint',
+                                    required=True,
+                                    action='store',
+                                    dest='endpoint',
+                                    help='Non-admin keystone endpoint')
+
+    add_cloud_parser.add_argument('--test-user',
+                                    required=True,
+                                    action='store',
+                                    dest='test_user',
+                                    help='Non-admin keystone user')
+
+    add_cloud_parser.add_argument('--test-key',
+                                    required=True,
+                                    action='store',
+                                    dest='test_key',
+                                    help='Non-admin keystone password or key')
+
+    add_cloud_parser.add_argument('--admin-endpoint',
+                                    required=True,
+                                    action='store',
+                                    dest='admin_endpoint',
+                                    help='Admin keystone endpoint')
+
+    add_cloud_parser.add_argument('--admin-user',
+                                    required=True,
+                                    action='store',
+                                    dest='admin_user',
+                                    help='Admin keystone user')
+
+    add_cloud_parser.add_argument('--admin-key',
+                                    required=True,
+                                    action='store',
+                                    dest='admin_key',
+                                    help='Admin keystone key or password')
+
+    """argparse options for the remove command """ 
+    remove_parser = subparsers.add_parser('remove', help='remove a Cloud')
+
+    remove_parser.add_argument(action='store',
+                               dest='cloud_id',
+                               help='The id of the cloud you want to remove')
+
+    """argparse options for the run command """ 
+    run_parser = subparsers.add_parser('run', help='run tests on cloud')
+
+    """argparse options for the status command """ 
+    status_parser = subparsers.add_parser('status', help='status of test')
+
+    """argparse options for the cancel command """ 
+    cancel_parser = subparsers.add_parser('cancel', help='cancel a test')
+    
+    """argparse options for the result command """ 
+    result_parser = subparsers.add_parser('result', help='provides results')
+
+    """argparse options for the tests command """ 
+    tests_parser = subparsers.add_parser('tests', help='list tests')
+
+    """argparse options for the clouds command """ 
+    clouds_parser = subparsers.add_parser('clouds', help='list clouds')
+
 
 
 def main():
-    """ command line hook """
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=dedent("""\
@@ -112,30 +207,31 @@ def main():
                     Refstack CLI:
                        \n\n\n """))
 
-
     # output options
     parser.add_argument('--verbose', '-v', action='count')
     parser.add_argument('--silent', '-s', action='store_true')
 
-    
-    # all paramaters can be overridden
-    parser.add_argument('--test-id', nargs='?', type=int,
-        default=None,
-        help="""id of the test you want to interact with.. if you are starting 
-            a new test you can leave this blank and it will 
-            return a new test_id""")
+    subparsers = parser.add_subparsers(help='Sub commands', dest='command')
 
-    parser.add_argument('command',  nargs='+', action=actions,
-          help="Command to execute. ",
-          choices=['run','status','cancel','result','export','list'] )
+    subcommands(subparsers)
 
     args = parser.parse_args()
-    # validate input
-    #option_given = not (args.c == None)
 
-    #if not option_given:
-    #    parser.print_help()
-    #    sys.exit(1)
+    # action function mapping
+    actions = { 'add': add,
+                'remove': remove,
+                'run': run,
+                'status': status,
+                'cancel': cancel,
+                'result': result,
+                'tests': tests,
+                'clouds': clouds}
+
+    if args.command in actions:
+        actions[args.command](args)
+    else:
+        parser.print_help()
+        sys.exit(1)
 
 
 

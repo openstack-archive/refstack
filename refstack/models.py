@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # Copyright (c) 2013 Piston Cloud Computing, Inc.
 # All Rights Reserved.
@@ -36,12 +35,12 @@ class Cloud(db.Model):
     vendor = db.relationship('Vendor',
                              backref=db.backref('clouds',
                                                 lazy='dynamic'))
-    endpoint = db.Column(db.String(120), unique=True)
-    test_user = db.Column(db.String(80), unique=True)
-    test_key = db.Column(db.String(80), unique=True)
-    admin_endpoint = db.Column(db.String(120), unique=True)
-    admin_user = db.Column(db.String(80), unique=True)
-    admin_key = db.Column(db.String(80), unique=True)
+    endpoint = db.Column(db.String(120), unique=False)
+    test_user = db.Column(db.String(80), unique=False)
+    test_key = db.Column(db.String(80), unique=False)
+    admin_endpoint = db.Column(db.String(120), unique=False)
+    admin_user = db.Column(db.String(80), unique=False)
+    admin_key = db.Column(db.String(80), unique=False)
 
     def __str__(self):
         return self.endpoint
@@ -50,7 +49,7 @@ class Cloud(db.Model):
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(60))
-    email = db.Column(db.String(200))
+    email = db.Column(db.String(200), unique=True)
     openid = db.Column(db.String(200), unique=True)
 
     def __init__(self, name, email, openid):
