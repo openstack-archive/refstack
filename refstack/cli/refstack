@@ -79,7 +79,7 @@ def clouds(args):
 def start(args):
     """start test command
 
-    refstack start {cloud_id} --sha {sha}
+    refstack start {cloud_id} --test-id {test_id} --sha {sha} 
 
     triggers local run of tempest with specified cloud_id returns a 
     test_id so that the user can check status or cancel the test"""
@@ -119,6 +119,9 @@ def tests(args):
 
 
 def subcommands(subparsers):
+    """argparse options for the clouds command """ 
+    clouds_parser = subparsers.add_parser('clouds', help='list clouds')
+
     """argparse subparsers with """ 
     add_cloud_parser = subparsers.add_parser('add', help='Add a new Cloud')
     
@@ -168,21 +171,53 @@ def subcommands(subparsers):
     """argparse options for the start command """ 
     start_parser = subparsers.add_parser('start', help='start tests on cloud')
 
+    start_parser.add_argument(action='store',
+                              dest='cloud_id',
+                              help='The id of the cloud you want to test')
+
+    start_parser.add_argument('--test-id',
+                              required=False,
+                              action='store',
+                              dest='test_id',
+                              help='optionally specify a test-id')
+    
+    start_parser.add_argument('--sha',
+                              required=False,
+                              action='store',
+                              dest='sha',
+                              help='optionally specify a sha for the tempest version to use')
+
     """argparse options for the status command """ 
-    status_parser = subparsers.add_parser('status', help='status of test')
+    status_parser = subparsers.add_parser('status', help='returns status of test')
+    status_parser.add_argument(action='store',
+                               dest='test_id',
+                               help='The id of the test you want status of.')
+
+    status_parser.add_argument('--list',
+                               '-l',
+                               action='store_true',
+                               help='list status history')
+
 
     """argparse options for the cancel command """ 
     cancel_parser = subparsers.add_parser('cancel', help='cancel a test')
     
+    cancel_parser.add_argument(action='store',
+                               dest='test_id',
+                               help='The id of the test you want to cancel')
+
+
+
     """argparse options for the result command """ 
     result_parser = subparsers.add_parser('result', help='provides results')
-
+    result_parser.add_argument(action='store',
+                               dest='test_id',
+                               help='The id of the test you want to cancel')
+    
     """argparse options for the tests command """ 
     tests_parser = subparsers.add_parser('tests', help='list tests')
 
-    """argparse options for the clouds command """ 
-    clouds_parser = subparsers.add_parser('clouds', help='list clouds')
-
+    
 
 
 def main():
@@ -211,9 +246,9 @@ def main():
     # action function mapping
     actions = { 'add': add,
                 'remove': remove,
-                'run': run,
-                'status': status,
+                'start': start,
                 'cancel': cancel,
+                'status': status,
                 'result': result,
                 'tests': tests,
                 'clouds': clouds}
