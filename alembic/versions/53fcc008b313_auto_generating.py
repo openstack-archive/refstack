@@ -34,14 +34,14 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('test_id', sa.Integer(), nullable=True),
     sa.Column('message', sa.String(length=1024), nullable=True),
-    sa.Column('finished', sa.Boolean(), nullable=True),
+    sa.Column('finished', sa.Boolean(), nullable=False),
     sa.Column('timestamp', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['test_id'], ['test.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     
-    op.add_column(u'user', sa.Column('vendor_id', sa.Integer(), nullable=True))
-    op.add_column(u'user', sa.Column('authorized', sa.Boolean(), nullable=True))
+    op.add_column(u'user', sa.Column('vendor_id',sa.Integer(), nullable=True))
+    op.add_column(u'user', sa.Column('authorized',sa.Boolean(create_constraint=False),nullable=True ))
     ### end Alembic commands ###
 
 

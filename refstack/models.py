@@ -84,7 +84,7 @@ class Cloud(Base):
     admin_endpoint = Column(String(120), unique=False)
     admin_user = Column(String(80), unique=False)
     admin_key = Column(String(80), unique=False)
-
+    
     def __init__(self,
                  endpoint,
                  test_user,
@@ -108,20 +108,18 @@ class Test(Base):
     cloud_id = Column(Integer, ForeignKey('cloud.id'))
     cloud = relationship('Cloud',
                           backref=backref('tests',lazy='dynamic'))
-    status = relationship("TestStatus",
-                         order_by="desc(test_status.timestamp)",
-                         primaryjoin="TestStatus.test_id==Test.id")
-
+    config = Column(String(4096))
 
 
 class TestStatus(Base):
     __tablename__ = 'test_status'
     id = Column(Integer, primary_key=True)
     test_id = Column(Integer, ForeignKey('test.id'))
+    test = relationship('Test',
+                          backref=backref('status',lazy='dynamic'))
     message = Column(String(1024))
     finished = Column(Boolean, default=False)
     timestamp = Column(DateTime, default=datetime.now)
-
 
 
 class TestResults(Base):

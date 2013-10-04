@@ -76,20 +76,20 @@ def clouds(args):
     print ''
 
 
-def run(args):
-    """run test command
+def start(args):
+    """start test command
 
-    refstack run {cloud_id} --sha {sha}
+    refstack start {cloud_id} --sha {sha}
 
     triggers local run of tempest with specified cloud_id returns a 
     test_id so that the user can check status or cancel the test"""
-    print 'run triggered'
+    print 'start triggered'
 
 
 def status(args):
     """get the status of a running test
 
-    refstack status --test-id {123}
+    refstack status {test-id}
     """
     print 'status triggered'
 
@@ -165,8 +165,8 @@ def subcommands(subparsers):
                                dest='cloud_id',
                                help='The id of the cloud you want to remove')
 
-    """argparse options for the run command """ 
-    run_parser = subparsers.add_parser('run', help='run tests on cloud')
+    """argparse options for the start command """ 
+    start_parser = subparsers.add_parser('start', help='start tests on cloud')
 
     """argparse options for the status command """ 
     status_parser = subparsers.add_parser('status', help='status of test')
