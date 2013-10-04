@@ -115,6 +115,8 @@ class Test(Base):
                           backref=backref('tests',lazy='dynamic'))
     config = Column(String(4096))
 
+    def __init__(self, cloud_id):
+        self.cloud_id = cloud_id
 
 
 class TestStatus(Base):
@@ -127,7 +129,10 @@ class TestStatus(Base):
     finished = Column(Boolean, default=False)
     timestamp = Column(DateTime, default=datetime.now)
 
-
+    def __init__(self,test_id, message, finished=False):
+        self.test_id = test_id
+        self.message = message
+        self.finished = finished
 
 class TestResults(Base):
     __tablename__ = 'test_results'
