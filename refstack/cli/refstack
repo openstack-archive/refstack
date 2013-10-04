@@ -102,9 +102,12 @@ def start(args):
     # if cloud doesn't have a test id already or the test id isn't specified 
     if test is None:
         # creat a new test
-        print 'need a new test'
+        print 'Adding a new test.'
         test = Test(args.cloud_id)
         db.add(test)
+
+        # TODO tie in config generation here 
+
         db.commit()
         print 'test added with id: %s' % test.id
 
