@@ -134,6 +134,7 @@ class TestStatus(Base):
         self.message = message
         self.finished = finished
 
+
 class TestResults(Base):
     __tablename__ = 'test_results'
     id = Column(Integer, primary_key=True)
