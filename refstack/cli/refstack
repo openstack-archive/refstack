@@ -119,7 +119,7 @@ def start(args):
     test_status = db.query(TestStatus).filter_by(test_id=test.id).order_by(TestStatus.id.desc()).first()
 
     if test_status is None:
-        # no entries in the status log..  
+        # no entries in the status log..  add 'new'
         print 'nothing in status log.. add something'
         test_status = TestStatus(test.id, 'new')
         db.add(test_status)
@@ -133,14 +133,15 @@ def start(args):
 
     elif test_status.message in ('finished','new','canceled'):
         #finished, new, canceled: trigger clean start new test run
-        print 'proceed with clean start of test'
+        print 'start clean and run'
         test_status = TestStatus(test.id, 'running')
         db.add(test_status)
         db.commit()
 
     elif test_status.message in ('running'):
         # running: report the current status
-        print 'already running todo: add status log out put here'
+        print 'already running '
+        status(args)
 
 
 def status(args):
