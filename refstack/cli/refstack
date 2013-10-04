@@ -22,7 +22,6 @@ from textwrap import dedent
 from sqlalchemy.exc import IntegrityError
 from refstack.models import *
 
-
 def add(args):
     """adds a cloud 
     
@@ -104,6 +103,11 @@ def start(args):
         # creat a new test
         print 'Adding a new test.'
         test = Test(args.cloud_id)
+
+        test.congif = 
+
+
+
         db.add(test)
 
         # TODO tie in config generation here 
@@ -127,11 +131,12 @@ def start(args):
 
     print 'status is: %s' % test_status.message  
 
-    if test_status.message == 'stalled':
+    if test_status.message in ('stalled','failed'):
         # stalled: clean up , trigger clean start new test run
-        print 'im stalled and need to be kicked'
+        print 'Test has stalled or failed and needs to be kicked'
+        status(args)
 
-    elif test_status.message in ('finished','new','canceled'):
+    elif test_status.message in ('ready','finished','new','canceled'):
         #finished, new, canceled: trigger clean start new test run
         print 'start clean and run'
         test_status = TestStatus(test.id, 'running')
