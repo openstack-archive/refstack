@@ -16,6 +16,7 @@
 #    under the License.
 """
 """
+import sys
 import argparse
 from textwrap import dedent
 from sqlalchemy.exc import IntegrityError
@@ -25,8 +26,8 @@ from refstack.models import *
 def add(args):
     """adds a cloud 
     
-    refstack add --endpoint='http://127.0.0.1:5000/v3/' --test-user='demo' 
-    --test-key='pass' --admin-endpoint='http://127.0.0.1:5000/v3/' 
+    refstack add --endpoint='http://127.0.0.1:5000/v3/' --test-user='demo' \
+    --test-key='pass' --admin-endpoint='http://127.0.0.1:5000/v3/' \
     --admin-user='admin' --admin-key='pass'
 
     outputs confirmation along with the id of the cloud that was just added.
@@ -43,6 +44,7 @@ def add(args):
         db.commit()
 
         print 'New cloud added with id: %s ' % (cloud.id)
+        clouds(args)
 
     except IntegrityError:
         print 'A Cloud with %s as its endpoint has already been added. ' % args.endpoint 
@@ -58,8 +60,9 @@ def remove(args):
     cloud = db.query(Cloud).get(args.cloud_id)
 
     if cloud is None:
-        print 'No cloud with id: %s ' % args.cloud_id
-
+        print 'Invalid cloud-id, Please use one from this list.'
+        clouds(args)
+        
     else: 
         db.delete(cloud)
         db.commit()
@@ -79,11 +82,62 @@ def clouds(args):
 def start(args):
     """start test command
 
-    refstack start {cloud_id} --test-id {test_id} --sha {sha} 
+    refstack start {cloud_id} --sha {sha} 
 
     triggers local run of tempest with specified cloud_id returns a 
     test_id so that the user can check status or cancel the test"""
     print 'start triggered'
+
+    #load the cloud from the specified id
+    cloud = db.query(Cloud).get(args.cloud_id)
+
+    if cloud is None:
+        print 'Invalid cloud-id, Please use one from this list.'
+
+        clouds(args)
+        sys.exit(1)
+
+    test = db.query(Test).filter_by(cloud_id=args.cloud_id).first()
+
+    # if cloud doesn't have a test id already or the test id isn't specified 
+    if test is None:
+        # creat a new test
+        print 'need a new test'
+        test = Test(args.cloud_id)
+        db.add(test)
+        db.commit()
+        print 'test added with id: %s' % test.id
+
+    else:
+        print 'existing test.. loaded it has id: %s ' % test.id 
+
+    # weather we already have a test or we just loaded it .. we can now check its status
+    #   what is the current status?
+    test_status = db.query(TestStatus).filter_by(test_id=test.id).order_by(TestStatus.id.desc()).first()
+
+    if test_status is None:
+        # no entries in the status log..  
+        print 'nothing in status log.. add something'
+        test_status = TestStatus(test.id, 'new')
+        db.add(test_status)
+        db.commit()
+
+    print 'status is: %s' % test_status.message  
+
+    if test_status.message == 'stalled':
+        # stalled: clean up , trigger clean start new test run
+        print 'im stalled and need to be kicked'
+
+    elif test_status.message in ('finished','new','canceled'):
+        #finished, new, canceled: trigger clean start new test run
+        print 'proceed with clean start of test'
+        test_status = TestStatus(test.id, 'running')
+        db.add(test_status)
+        db.commit()
+
+    elif test_status.message in ('running'):
+        # running: report the current status
+        print 'already running todo: add status log out put here'
 
 
 def status(args):
@@ -91,7 +145,20 @@ def status(args):
 
     refstack status {test-id}
     """
-    print 'status triggered'
+    test = db.query(Test).get(args.test_id)
+
+    if test is None:
+        # This isn't a valid test id
+        print '%s is not a valid test-id.' % args.test_id
+        sys.exit(1)
+    else:
+        
+        test_status = db.query(TestStatus).filter_by(test_id=test.id).order_by(TestStatus.id.desc()).all()
+
+        print 'Status Log for test-id %s (top is most recent)' % args.test_id
+        print 'id | timestamp | message'
+        for row in test_status:
+            print '%s | %s | %s ' % (row.id, row.timestamp, row.message)
 
 
 def cancel(args):
@@ -101,7 +168,26 @@ def cancel(args):
 
     stops the running test if it is running and displays output to user"""
     print 'cancel triggered'
+    test = db.query(Test).get(args.test_id)
 
+    if test is None:
+        # This isn't a valid test id
+        print '%s is not a valid test-id.' % args.test_id
+        sys.exit(1)
+
+    else:
+        test_status = db.query(TestStatus).filter_by(test_id=test.id).order_by(TestStatus.id.desc()).first()
+
+        if test_status.message in ('running') :
+            # do cleanup and then mark the last status to 'canceled'
+            test_status = TestStatus(test.id, 'canceled')
+            db.add(test_status)
+            db.commit()
+            
+        else:
+            print 'test %s does not apear to be running' % args.test_id
+
+        status(args)
 
 def result(args):
     """outputs the results of a test
@@ -114,8 +200,25 @@ def result(args):
 
 
 def tests(args):
-    """returns either a list of clouds"""
+    """returns either a list of tests for the specified cloud-id"""
     print 'tests triggered'
+    #load the cloud from the specified id
+    cloud = db.query(Cloud).get(args.cloud_id)
+
+    if cloud is None:
+        print 'Invalid cloud-id, Please use one from this list.'
+
+        clouds(args)
+        sys.exit(1)
+
+    print 'tests for cloud with id: %s \n' % args.cloud_id
+
+    print 'id | status '
+    print '---------------------------------------'
+    for row in db.query(Test).filter_by(cloud_id=args.cloud_id).all():
+        _status = db.query(TestStatus).filter_by(test_id=row.id).order_by(TestStatus.id.desc()).first()
+        print "%s | %s " % (row.id, _status.message) 
+    print ''
 
 
 def subcommands(subparsers):
@@ -175,12 +278,6 @@ def subcommands(subparsers):
                               dest='cloud_id',
                               help='The id of the cloud you want to test')
 
-    start_parser.add_argument('--test-id',
-                              required=False,
-                              action='store',
-                              dest='test_id',
-                              help='optionally specify a test-id')
-    
     start_parser.add_argument('--sha',
                               required=False,
                               action='store',
@@ -217,7 +314,9 @@ def subcommands(subparsers):
     """argparse options for the tests command """ 
     tests_parser = subparsers.add_parser('tests', help='list tests')
 
-    
+    tests_parser.add_argument(action='store',
+                              dest='cloud_id',
+                              help='The id of the cloud you want to test')
 
 
 def main():
