@@ -13,13 +13,13 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from refstack.common.cloud import Cloud
+from keystoneclient.v2_0 import client
+from refstack.models import *
 
 class TempestConfig(object):
     """temptest config options. gets converted to a tempest config file"""
     config = {}
     
-
     def output(self):
         """outputs config in propper format"""
         output = ''
@@ -31,13 +31,78 @@ class TempestConfig(object):
         return output
 
 
-    def __init__(self):
+    def build_config_from_keystone(self):
+        """uses the keystoneclient libs to query a clouds endpoint and 
+        retrive a service catelog. that it then uses to populate the 
+        values for our specific tempest config"""
+        # load an existing cloud
+        self._cloud = db.query(Cloud).filter_by(id=self.cloud_id).first()
+
+        if not self._cloud:
+            # cloud not found.. invalid id 
+            # maybe I should do someting about this .. 
+            return None
+
+
+        # This stuff we know before hitting up keystone 
+        self.config['identity']['uri'] = self._cloud.admin_endpoint
+        self.config['identity']['admin_username'] = self._cloud.admin_user
+        self.config['identity']['admin_password'] = self._cloud.admin_key
+        self.config['identity']['username'] = self._cloud.test_user
+        self.config['identity']['password'] = self._cloud.test_key
+        self.config['identity']['tenant_name'] = self._cloud.admin_user
+
+        # keystone client object 
+        self._keystone = client.Client(username=self._cloud.admin_user,
+                                       password=self._cloud.admin_key,
+                                       tenant_name=self._cloud.admin_user,
+                                       auth_url=self._cloud.admin_endpoint)
+
+        if self._keystone is None:
+            """TODO.. this should cause a fail"""
+            print "keystone didnt connect for some reason"
+            return None
+
+        self._keystone.management_url = self._cloud.admin_endpoint
+
+        # make sure this keystone server can list services using has_service_catalog
+        if not self._keystone.has_service_catalog():
+            # we have no service catelog all tests are fail because we can't build a config
+            print "fail "
+        else:
+            print "has service catalog"
+
+        self.service_catalog = {}
+
+        # make a local dict of the service catalog
+        for item in self._keystone.service_catalog.catalog['serviceCatalog']:
+            self.service_catalog[item['name']]=item['endpoints'][0]['publicURL']
+
+            print  "%s : %s" % (item['name'],item['endpoints'][0]['publicURL'])
+
+        # setup output service_available
+        for service in self.config['service_available'].keys():
+            if self.service_catalog.has_key(service):
+                self.config['service_available'][service] = True
+
+        # boto settings 
+        self.config['boto']['ec2_url'] = self.service_catalog['ec2']
+        self.config['boto']['s3_url'] = self.service_catalog['s3']
+        
+        # return the actual config
+        return self.output()
+
+
+
+    def __init__(self, cloud_id):
         """ sets up the default configs"""
+        self.cloud_id = cloud_id
+
         self.config['DEFAULT'] = {
             'debug':True,
             'use_stderr':False,
-            'log_file':'',
-            'lock_path':'',
+            'log_file':'output',
+            'lock_path': '/tmp/'+atr(cloud_id)+'/',
             'default_log_levels':"""tempest.stress=INFO,amqplib=WARN,
                 sqlalchemy=WARN,boto=WARN,suds=INFO,keystone=INFO,
                 eventlet.wsgi.server=WARN"""}
@@ -72,8 +137,8 @@ class TempestConfig(object):
             'image_ssh_password': '',
             'image_alt_ssh_user': '',
             'image_alt_ssh_password': '',
-            'build_interval': '',
-            'build_timeout': '',
+            'build_interval': '1',
+            'build_timeout': '400',
             'run_ssh': False,
             'ssh_user': '',
             'fixed_network_name': '',
@@ -102,7 +167,7 @@ class TempestConfig(object):
         self.config['image'] = {
             'catalog_type': 'image',
             'api_version': 1,
-            'http_image': ''}
+            'http_image': 'ttp://download.cirros-cloud.net/0.3.1/cirros-0.3.1-x86_64-uec.tar.gz'}
 
         self.config['network'] = {
             'catalog_type': 'network',
@@ -116,7 +181,7 @@ class TempestConfig(object):
         self.config['volume'] = {
             'catalog_type': 'volume',
             'disk_format': 'raw',
-            'build_interval': 1,
+            'build_interval': '1',
             'build_timeout': 400,
             'multi_backend_enabled': False,
             'backend1_name': 'BACKEND_1',
@@ -133,8 +198,8 @@ class TempestConfig(object):
 
         self.config['boto'] = {
             'ssh_user': 'cirros',
-            'ec2_url': 'http://172.16.200.130:8773/services/Cloud',
-            's3_url': 'http://172.16.200.130:3333',
+            'ec2_url': '',
+            's3_url': '',
             'aws_access': '',
             'aws_secret': '',
             's3_materials_path': '',
@@ -156,8 +221,8 @@ class TempestConfig(object):
             '#keypair_name': 'heat_key'}
 
         self.config['dashboard'] = {
-            'dashboard_url': 'http://172.16.200.130/',
-            'login_url': 'http://172.16.200.130/auth/login/'}
+            'dashboard_url': '',
+            'login_url': ''}
 
         self.config['scenario'] = {
             'img_dir': '',
@@ -173,13 +238,13 @@ class TempestConfig(object):
             'timeout': 15 }
 
         self.config['service_available'] = {
-            'cinder': True,
+            'cinder': False,
             'neutron': False,
-            'glance': True,
+            'glance': False,
             'swift': False,
-            'nova': True,
+            'nova': False,
             'heat': False,
-            'horizon': True }
+            'horizon': False }
 
         self.config['stress'] = {
             'max_instances': 32,

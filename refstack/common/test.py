@@ -15,15 +15,6 @@
 #    under the License.
 from refstack.common.tempest_config import TempestConfig
 
-class Tests(dict):
-    """ behaves like a dictionary of test objects """
-    user_id = None
-    vendor_id = None
-
-    def __init__(self,user_id=None,vendor_id=None):
-        """ accepts either a vendor or a user id then sets its self up 
-        an object full of test objects filtered by the passed in id"""
-
 
 class Test(object):
     """ Test functions"""
@@ -31,6 +22,7 @@ class Test(object):
     sha = None
     cloud_id = None
     _status = None
+
 
     def __init__(self,cloud_id=None,test_id=None,sha=None):
         """ init method loads specified id or fails"""
@@ -55,8 +47,14 @@ class Test(object):
 
     def run_local():
         """ triggers local run"""
-        # spawns 
+        # generates config
+        
+        # write to disk (this should cleanly invoke tempest with this config instead and then )
+        
+        
         return "run_local called"
+
+
 
 
     def cancel(self):
@@ -79,4 +77,4 @@ class Test(object):
     def config(self):
         """The config property. outputs a tempest config based on settings"""    
         return self.tempest_config.output()
-    
+
