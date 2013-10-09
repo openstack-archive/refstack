@@ -48,7 +48,6 @@ def add(args):
     except IntegrityError:
         print 'A Cloud with %s as its endpoint has already been added. ' % args.endpoint 
 
-
     
 def remove(args):
     """removes a cloud 
@@ -85,14 +84,11 @@ def start(args):
 
     triggers local run of tempest with specified cloud_id returns a 
     test_id so that the user can check status or cancel the test"""
-    print 'start triggered'
-
     #load the cloud from the specified id
     cloud = db.query(Cloud).get(args.cloud_id)
 
     if cloud is None:
         print 'Invalid cloud-id, Please use one from this list.'
-
         clouds(args)
         sys.exit(1)
 
@@ -104,14 +100,10 @@ def start(args):
         print 'Adding a new test.'
         test = Test(args.cloud_id)
 
-        test.congif = 
-
-
-
+        #test.config = 
         db.add(test)
 
         # TODO tie in config generation here 
-
         db.commit()
         print 'test added with id: %s' % test.id
 
@@ -147,6 +139,8 @@ def start(args):
         # running: report the current status
         print 'already running '
         status(args)
+
+    
 
 
 def status(args):
@@ -197,6 +191,7 @@ def cancel(args):
             print 'test %s does not apear to be running' % args.test_id
 
         status(args)
+
 
 def result(args):
     """outputs the results of a test
