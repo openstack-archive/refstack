@@ -51,7 +51,8 @@ class User(Base):
     email_verified = Column(Boolean)
     openid = Column(String(200), unique=True)
     authorized = Column(Boolean, default=False)
-    
+
+
     def __init__(self, name, email, openid):
         self.name = name
         self.email = email
@@ -59,6 +60,7 @@ class User(Base):
 
     def __str__(self):
         return self.name
+
 
 
 """
@@ -71,6 +73,7 @@ class Vendor(Base):
     id = Column(Integer, primary_key=True)
     vendor_name = Column(String(80), unique=True)
     contact_email = Column(String(120), unique=True)
+
 
     def __str__(self):
         return self.vendor_name
@@ -89,6 +92,7 @@ class Cloud(Base):
     admin_endpoint = Column(String(120), unique=False)
     admin_user = Column(String(80), unique=False)
     admin_key = Column(String(80), unique=False)
+
 
     def __init__(self,
                  endpoint,
@@ -115,8 +119,10 @@ class Test(Base):
                           backref=backref('tests',lazy='dynamic'))
     config = Column(String(4096))
 
+
     def __init__(self, cloud_id):
         self.cloud_id = cloud_id
+
 
 
 class TestStatus(Base):
@@ -129,10 +135,12 @@ class TestStatus(Base):
     finished = Column(Boolean, default=False)
     timestamp = Column(DateTime, default=datetime.now)
 
+
     def __init__(self,test_id, message, finished=False):
         self.test_id = test_id
         self.message = message
         self.finished = finished
+
 
 
 class TestResults(Base):
