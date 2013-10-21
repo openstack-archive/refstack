@@ -16,6 +16,8 @@
 from keystoneclient.v2_0 import client
 from refstack.models import *
 
+
+
 class TempestConfig(object):
     """temptest config options. gets converted to a tempest config file"""
     config = {}
@@ -69,8 +71,8 @@ class TempestConfig(object):
         if not self._keystone.has_service_catalog():
             # we have no service catelog all tests are fail because we can't build a config
             print "fail "
-        else:
-            print "has service catalog"
+        #else:
+        #    print "has service catalog"
 
         self.service_catalog = {}
 
@@ -78,7 +80,7 @@ class TempestConfig(object):
         for item in self._keystone.service_catalog.catalog['serviceCatalog']:
             self.service_catalog[item['name']]=item['endpoints'][0]['publicURL']
 
-            print  "%s : %s" % (item['name'],item['endpoints'][0]['publicURL'])
+            #print  "%s : %s" % (item['name'],item['endpoints'][0]['publicURL'])
 
         # setup output service_available
         for service in self.config['service_available'].keys():
@@ -102,7 +104,7 @@ class TempestConfig(object):
             'debug':True,
             'use_stderr':False,
             'log_file':'output',
-            'lock_path': '/tmp/'+atr(cloud_id)+'/',
+            'lock_path': '/tmp/'+str(cloud_id)+'/',
             'default_log_levels':"""tempest.stress=INFO,amqplib=WARN,
                 sqlalchemy=WARN,boto=WARN,suds=INFO,keystone=INFO,
                 eventlet.wsgi.server=WARN"""}
