@@ -22,6 +22,7 @@ from textwrap import dedent
 from sqlalchemy.exc import IntegrityError
 from refstack.models import *
 
+
 def add(args):
     """adds a cloud 
     
@@ -140,7 +141,7 @@ def start(args):
         print 'already running '
         status(args)
 
-    
+
 
 
 def status(args):
