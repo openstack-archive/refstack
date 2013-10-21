@@ -27,8 +27,8 @@ from wtforms import Form, BooleanField, TextField, \
     PasswordField, validators
 from flask_mail import Mail
 
-from app import app 
-from models import Vendor, Cloud, User, db
+from refstack.app import app 
+from refstack.models import *
 
 mail = Mail(app)
 
@@ -43,9 +43,9 @@ class SecureView(ModelView):
         """ """
         return g.user is not None
 
-admin.add_view(SecureView(Vendor, db.session))
-admin.add_view(SecureView(Cloud, db.session))
-admin.add_view(SecureView(User, db.session))
+admin.add_view(SecureView(Vendor, db))
+admin.add_view(SecureView(Cloud, db))
+admin.add_view(SecureView(User, db))
 
 
 @app.before_request
