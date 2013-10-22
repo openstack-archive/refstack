@@ -13,16 +13,18 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import os
 from refstack.common.tempest_config import TempestConfig
-
+import testrepository.repository.file
+from testrepository import ui
+from testrepository.commands import run
+from testrepository.commands import init
 
 """Source for test results.
 
 This abstracts the various sources of test results that Tribunal can 
 read from.
 """
-
-
 class UnreloadableStream(Exception):
     """The test stream can not be reloaded (probably because it is a pipe)."""
 
@@ -74,22 +76,34 @@ class TestRepositorySource(object):
         # Work around bug in testrepository (just filed, no # yet).
         self.testr_directory = os.path.expanduser(testr_directory)
         
+
     def get_subunit_stream(self):
         try:
             return self.testrepository_last_stream()
         except KeyError:
             raise NoStreamPresent()
 
-    def reload(self):
-        # run the test suite again.
-        from testrepository.commands import run
-        
-        cmd = run.run(ui)
-        # Work around 'testr run' loading to the wrong repo.
-        
+    def init(self):
+        os.chdir(self.testr_directory)
+        cmd = init.init()
+
+
+    def run(self):
         here = os.getcwd()
         os.chdir(self.testr_directory)
-        
+        cmd = run.run(ui)
+        try:
+            res = cmd.execute()
+        finally:
+            os.chdir(here)
+
+
+    def reload(self):
+        # run the test suite again.
+        cmd = run.run(ui)
+        # Work around 'testr run' loading to the wrong repo.
+        here = os.getcwd()
+        os.chdir(self.testr_directory)
         try:
             res = cmd.execute()
         finally:
@@ -102,8 +116,8 @@ class TestRepositorySource(object):
             return
         return self.testrepository_last_stream()
 
+
     def testrepository_last_stream(self):
-        import testrepository.repository.file
         factory = testrepository.repository.file.RepositoryFactory()
         repo = factory.open(self.testr_directory)
         # this is poor because it just returns a stringio for the whole 
@@ -147,8 +161,10 @@ class Test(object):
         # generates config
         
         # write to disk (this should cleanly invoke tempest with this config instead and then )
+        self.tr = TestRepositorySource('/tmp/')
         
-        
+
+
         return "run_local called"
 
 
