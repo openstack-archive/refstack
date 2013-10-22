@@ -14,11 +14,98 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import os
+import errno
 from refstack.common.tempest_config import TempestConfig
 import testrepository.repository.file
 from testrepository import ui
 from testrepository.commands import run
 from testrepository.commands import init
+
+
+
+class RefstackTestRepositoryUI(ui.AbstractUI):
+    """A testrepository.ui.AbstractUI that glues it into Refstack.
+    """
+
+    def __init__(self, subunit, here):
+        """Create a UI to run a TestRepository command under subunit_window.
+
+        :param subunit: A Subunit thing.
+        :param here: What should the 'here' be for the UI.
+        """
+        self.window = subunit
+        self.here = here
+
+    def _check_cmd(self):
+        # TODO: prompt for options and arguments here.
+        # Options are available on self.cmd.options
+        options = []
+        self.options = optparse.Values()
+        seen_options = set()
+        for option, value in options:
+            setattr(self.options, option, value)
+            seen_options.add(option)
+        if not 'quiet' in seen_options:
+            setattr(self.options, 'quiet', False)
+        for option in self.cmd.options:
+            if not option.dest in seen_options:
+                setattr(self.options, option.dest, option.default)
+        
+        # Arguments on self.cmd.args
+        parsed_args = {}
+        unparsed = []
+        failed = False
+        for arg in self.cmd.args:
+            try:
+                parsed_args[arg.name] = arg.parse(unparsed)
+            except ValueError:
+                failed = True
+                break
+        self.arguments = parsed_args
+        return unparsed == [] and not failed
+
+
+    def output_error(self, error_tuple):
+        # Shows the error in a dialog. We could instead have a 'console' on 
+        # the SubunitWindow and write the error into the console.
+        import traceback
+        exctype, value, tb = error_tuple
+        as_string = ''.join(traceback.format_exception(exctype, value, tb))
+
+
+    def output_rest(self, rest_string):
+        # TODO: format as HTML, embed a browser?
+        raise NotImplementedError(self.output_rest)
+
+
+    def output_results(self, suite_or_test):
+        # TODO: feed to the main window
+        raise NotImplementedError(self.output_results)
+
+
+    def output_stream(self, stream):
+        # TODO: ask for a filename to save to.
+        raise NotImplementedError(self.output_stream)
+
+
+    def output_table(self, table):
+        raise NotImplementedError(self.output_table)
+
+
+    def output_values(self, values):
+        # TODO: log this to the GUI somehow.
+        outputs = []
+        for label, value in values:
+            outputs.append('%s: %s' % (label, value))
+        print '%s\n' % ' '.join(outputs)
+
+
+    def subprocess_Popen(self, *args, **kwargs):
+        # TODO: use a GTK GIO thingy
+        import subprocess
+        return subprocess.Popen(*args, **kwargs)
+
+
 
 """Source for test results.
 
@@ -75,7 +162,7 @@ class TestRepositorySource(object):
     def __init__(self, testr_directory):
         # Work around bug in testrepository (just filed, no # yet).
         self.testr_directory = os.path.expanduser(testr_directory)
-        
+        self.ui = RefstackTestRepositoryUI()
 
     def get_subunit_stream(self):
         try:
@@ -85,8 +172,8 @@ class TestRepositorySource(object):
 
     def init(self):
         os.chdir(self.testr_directory)
-        cmd = init.init()
-
+        cmd = init.init(ui)
+        cmd.execute()
 
     def run(self):
         here = os.getcwd()
@@ -162,8 +249,6 @@ class Test(object):
         
         # write to disk (this should cleanly invoke tempest with this config instead and then )
         self.tr = TestRepositorySource('/tmp/')
-        
-
 
         return "run_local called"
 
