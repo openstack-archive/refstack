@@ -27,18 +27,15 @@ class RefstackTestRepositoryUI(ui.AbstractUI):
     """A testrepository.ui.AbstractUI that glues it into Refstack.
     """
 
-    def __init__(self, subunit, here):
+    def __init__(self, here):
         """Create a UI to run a TestRepository command under subunit_window.
 
-        :param subunit: A Subunit thing.
         :param here: What should the 'here' be for the UI.
         """
-        self.window = subunit
         self.here = here
 
     def _check_cmd(self):
-        # TODO: prompt for options and arguments here.
-        # Options are available on self.cmd.options
+        # TODO: rewrite this .. not meant to be used the way im using it
         options = []
         self.options = optparse.Values()
         seen_options = set()
