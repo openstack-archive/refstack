@@ -105,7 +105,7 @@ class Test(object):
             # set test id
             self.test_id = id
 
-        self.tempest_config = TempestConfig()
+        self.tempest_config = TempestConfig(cloud_id)
         self.cloud_id = cloud_id
         self.sha = sha
 
@@ -127,7 +127,14 @@ class Test(object):
         return "run_local called"
 
 
+    def write_config(self, path):
+        """writes config to path specified"""
+        # get the config
+        output = self.tempest_config.build_config_from_keystone()
 
+        with open(path+"tempest.conf", "w") as config_file:
+            config_file.write(output)
+        
 
     def cancel(self):
         """ cancels a running test"""
