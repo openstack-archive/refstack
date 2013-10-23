@@ -47,8 +47,7 @@ class TestRepositorySource(object):
         self.testr_directory = os.path.expanduser(testr_directory)
         self._ui = TestRepositoryUI(self.testr_directory)
         
-        if not os.path.exists(testr_directory+'.testrepository'):
-            self.init()
+        self.init_repo()
 
 
     def get_subunit_stream(self):
@@ -58,12 +57,15 @@ class TestRepositorySource(object):
             raise NoStreamPresent()
 
 
-    def init(self):
+    def init_repo(self):
         """inits a new testrepository repo in the supplied path"""
         #os.chdir(self.testr_directory)
-        cmd = init.init(self._ui)
-        cmd.run()
-
+        try:
+            cmd = init.init(self._ui)
+            cmd.run()
+        except OSError:
+            # if this happens its fine .. just means the repo is already there
+            pass        
 
     def run(self):
         here = os.getcwd()
