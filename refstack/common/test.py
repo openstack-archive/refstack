@@ -14,94 +14,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import os
+import sys
 import errno
 from refstack.common.tempest_config import TempestConfig
 import testrepository.repository.file
 from testrepository import ui
 from testrepository.commands import run
 from testrepository.commands import init
-
-
-
-class RefstackTestRepositoryUI(ui.AbstractUI):
-    """A testrepository.ui.AbstractUI that glues it into Refstack.
-    """
-
-    def __init__(self, here):
-        """Create a UI to run a TestRepository command under subunit_window.
-
-        :param here: What should the 'here' be for the UI.
-        """
-        self.here = here
-
-    def _check_cmd(self):
-        # TODO: rewrite this .. not meant to be used the way im using it
-        options = []
-        self.options = optparse.Values()
-        seen_options = set()
-        for option, value in options:
-            setattr(self.options, option, value)
-            seen_options.add(option)
-        if not 'quiet' in seen_options:
-            setattr(self.options, 'quiet', False)
-        for option in self.cmd.options:
-            if not option.dest in seen_options:
-                setattr(self.options, option.dest, option.default)
-        
-        # Arguments on self.cmd.args
-        parsed_args = {}
-        unparsed = []
-        failed = False
-        for arg in self.cmd.args:
-            try:
-                parsed_args[arg.name] = arg.parse(unparsed)
-            except ValueError:
-                failed = True
-                break
-        self.arguments = parsed_args
-        return unparsed == [] and not failed
-
-
-    def output_error(self, error_tuple):
-        # Shows the error in a dialog. We could instead have a 'console' on 
-        # the SubunitWindow and write the error into the console.
-        import traceback
-        exctype, value, tb = error_tuple
-        as_string = ''.join(traceback.format_exception(exctype, value, tb))
-
-
-    def output_rest(self, rest_string):
-        # TODO: format as HTML, embed a browser?
-        raise NotImplementedError(self.output_rest)
-
-
-    def output_results(self, suite_or_test):
-        # TODO: feed to the main window
-        raise NotImplementedError(self.output_results)
-
-
-    def output_stream(self, stream):
-        # TODO: ask for a filename to save to.
-        raise NotImplementedError(self.output_stream)
-
-
-    def output_table(self, table):
-        raise NotImplementedError(self.output_table)
-
-
-    def output_values(self, values):
-        # TODO: log this to the GUI somehow.
-        outputs = []
-        for label, value in values:
-            outputs.append('%s: %s' % (label, value))
-        print '%s\n' % ' '.join(outputs)
-
-
-    def subprocess_Popen(self, *args, **kwargs):
-        # TODO: use a GTK GIO thingy
-        import subprocess
-        return subprocess.Popen(*args, **kwargs)
-
 
 
 """Source for test results.
@@ -147,6 +66,18 @@ class FileTestSource(object):
             return self.input_file
 
 
+
+class TestRepositoryUI(ui.AbstractUI):
+    """nothing"""
+    def __init__(self, here):
+        """Create a UI to run a TestRepository command
+
+        :param here: What should the 'here' be for the UI.
+        """
+        self.here = here
+
+
+
 class TestRepositorySource(object):
     """Get test results from a testrepository.
 
@@ -159,7 +90,8 @@ class TestRepositorySource(object):
     def __init__(self, testr_directory):
         # Work around bug in testrepository (just filed, no # yet).
         self.testr_directory = os.path.expanduser(testr_directory)
-        self.ui = RefstackTestRepositoryUI()
+        self._ui = TestRepositoryUI(self.testr_directory)
+        
 
     def get_subunit_stream(self):
         try:
@@ -167,38 +99,22 @@ class TestRepositorySource(object):
         except KeyError:
             raise NoStreamPresent()
 
+
     def init(self):
-        os.chdir(self.testr_directory)
-        cmd = init.init(ui)
-        cmd.execute()
+        #os.chdir(self.testr_directory)
+        cmd = init.init(self._ui)
+        cmd.run()
+
 
     def run(self):
         here = os.getcwd()
         os.chdir(self.testr_directory)
-        cmd = run.run(ui)
+        self._ui.c = (self.testr_directory)
+        cmd = run.run(self._ui)
         try:
             res = cmd.execute()
         finally:
             os.chdir(here)
-
-
-    def reload(self):
-        # run the test suite again.
-        cmd = run.run(ui)
-        # Work around 'testr run' loading to the wrong repo.
-        here = os.getcwd()
-        os.chdir(self.testr_directory)
-        try:
-            res = cmd.execute()
-        finally:
-            os.chdir(here)
-        # Ignoring detail of exit code: the subunit parsing + ui error
-        # methods will inform the user.
-        if res == 3:
-            # TODO: give a warning if execution failed
-            # But if it went badly wrong.. something 
-            return
-        return self.testrepository_last_stream()
 
 
     def testrepository_last_stream(self):
