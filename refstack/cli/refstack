@@ -21,7 +21,7 @@ import argparse
 from textwrap import dedent
 from sqlalchemy.exc import IntegrityError
 from refstack.models import *
-
+from refstack.common.tempest_config import TempestConfig
 
 def add(args):
     """adds a cloud 
@@ -49,6 +49,19 @@ def add(args):
     except IntegrityError:
         print 'A Cloud with %s as its endpoint has already been added. ' % args.endpoint 
 
+
+def config(args):
+    """ returns a raw output of the config for specified cloud"""
+    cloud = db.query(Cloud).get(args.cloud_id)
+
+    if cloud is None:
+        print 'Invalid cloud-id, Please use one from this list.'
+        clouds(args)
+        sys.exit(1)
+
+    t = TempestConfig(args.cloud_id)
+    
+    print t.build_config_from_keystone()
     
 def remove(args):
     """removes a cloud 
@@ -322,6 +335,12 @@ def subcommands(subparsers):
                               dest='cloud_id',
                               help='The id of the cloud you want to test')
 
+    """argparse options for the tests command """ 
+    tests_parser = subparsers.add_parser('config', help='output tempest config for cloud')
+
+    tests_parser.add_argument(action='store',
+                              dest='cloud_id',
+                              help='The id of the cloud you want a config for')
 
 def main():
     parser = argparse.ArgumentParser(
@@ -354,6 +373,7 @@ def main():
                 'status': status,
                 'result': result,
                 'tests': tests,
+                'config': config,
                 'clouds': clouds}
 
     if args.command in actions:
