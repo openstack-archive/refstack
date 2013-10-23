@@ -23,50 +23,6 @@ from testrepository.commands import run
 from testrepository.commands import init
 
 
-"""Source for test results.
-
-This abstracts the various sources of test results that Tribunal can 
-read from.
-"""
-class UnreloadableStream(Exception):
-    """The test stream can not be reloaded (probably because it is a pipe)."""
-
-
-class NoStreamPresent(Exception):
-    """The TestSource does not contain any subunit streams."""
-
-
-class FileTestSource(object):
-    """Tests results read from a file.
-
-    Reloading re-reads the contents of the file.
-    """
-
-    def __init__(self, input_file):
-        """Make a new file testsource.
-
-        :param input_file: Open file containing test results.
-        """
-        fcntl.fcntl(input_file, fcntl.F_SETFL, os.O_NONBLOCK)
-        self.input_file = input_file
-        
-    def get_subunit_stream(self):
-        return self.input_file
-
-    def reload(self):
-        try:
-            self.input_file.seek(0)
-        except IOError, e:
-            sys.stderr.write("error seeking file: %s\n" % e)
-            if e.errno == errno.ESPIPE:
-                raise UnreloadableStream()
-            else:
-                raise
-        else:
-            return self.input_file
-
-
-
 class TestRepositoryUI(ui.AbstractUI):
     """nothing"""
     def __init__(self, here):
@@ -88,10 +44,12 @@ class TestRepositorySource(object):
     """
 
     def __init__(self, testr_directory):
-        # Work around bug in testrepository (just filed, no # yet).
         self.testr_directory = os.path.expanduser(testr_directory)
         self._ui = TestRepositoryUI(self.testr_directory)
         
+        if not os.path.exists(testr_directory+'.testrepository'):
+            self.init()
+
 
     def get_subunit_stream(self):
         try:
@@ -101,6 +59,7 @@ class TestRepositorySource(object):
 
 
     def init(self):
+        """inits a new testrepository repo in the supplied path"""
         #os.chdir(self.testr_directory)
         cmd = init.init(self._ui)
         cmd.run()
@@ -109,7 +68,7 @@ class TestRepositorySource(object):
     def run(self):
         here = os.getcwd()
         os.chdir(self.testr_directory)
-        self._ui.c = (self.testr_directory)
+        self._ui.c = (self.testr_directory+'tempest.conf')
         cmd = run.run(self._ui)
         try:
             res = cmd.execute()
