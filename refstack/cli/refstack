@@ -206,7 +206,6 @@ def result(args):
 
 def tests(args):
     """returns either a list of tests for the specified cloud-id"""
-    print 'tests triggered'
     #load the cloud from the specified id
     cloud = db.query(Cloud).get(args.cloud_id)
 
