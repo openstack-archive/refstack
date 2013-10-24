@@ -23,6 +23,7 @@ from sqlalchemy.exc import IntegrityError
 from refstack.models import *
 from refstack.common.tempest_config import TempestConfig
 
+
 def add(args):
     """adds a cloud 
     
@@ -51,7 +52,7 @@ def add(args):
 
 
 def config(args):
-    """ returns a raw output of the config for specified cloud"""
+    """returns a raw output of the config for specified cloud"""
     cloud = db.query(Cloud).get(args.cloud_id)
 
     if cloud is None:
@@ -62,7 +63,8 @@ def config(args):
     t = TempestConfig(args.cloud_id)
     
     print t.build_config_from_keystone()
-    
+
+
 def remove(args):
     """removes a cloud 
     refstack remove {cloud_id}
