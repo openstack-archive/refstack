@@ -22,6 +22,7 @@ from textwrap import dedent
 from sqlalchemy.exc import IntegrityError
 from refstack.models import *
 from refstack.common.tempest_config import TempestConfig
+from refstack.common.tester import Tester
 
 
 def add(args):
@@ -132,7 +133,6 @@ def start(args):
 
     if test_status is None:
         # no entries in the status log..  add 'new'
-        print 'nothing in status log.. add something'
         test_status = TestStatus(test.id, 'new')
         db.add(test_status)
         db.commit()
@@ -151,11 +151,13 @@ def start(args):
         db.add(test_status)
         db.commit()
 
+        t = Tester(args.cloud_id)
+        t.run()
+
     elif test_status.message in ('running'):
         # running: report the current status
         print 'already running '
         status(args)
-
 
 
 
