@@ -67,10 +67,12 @@ class TestRepositorySource(object):
             # if this happens its fine .. just means the repo is already there
             pass        
 
+
     def run(self):
         here = os.getcwd()
         os.chdir(self.testr_directory)
-        self._ui.c = (self.testr_directory+'tempest.conf')
+        self._ui.c = self.testr_directory+'tempest.conf'
+
         cmd = run.run(self._ui)
         try:
             res = cmd.execute()
@@ -88,7 +90,7 @@ class TestRepositorySource(object):
 
 
 
-class Test(object):
+class Tester(object):
     """ Test functions"""
     test_id = None
     sha = None
@@ -108,6 +110,7 @@ class Test(object):
         self.tempest_config = TempestConfig(cloud_id)
         self.cloud_id = cloud_id
         self.sha = sha
+        self.test_path = "/tmp/%s" % self.cloud_id
 
 
     def run_remote(self):
@@ -118,13 +121,25 @@ class Test(object):
 
 
     def run_local():
-        """ triggers local run"""
-        # generates config
+        """triggers local run"""
+        # make sure we have a folder to put a repo in.. 
+        if not os.path.exists(self.test_path):
+            os.makedirs(self.test_path)
         
-        # write to disk (this should cleanly invoke tempest with this config instead and then )
-        self.tr = TestRepositorySource('/tmp/')
+        # write the tempest config to that folder
+        self.write_config(self.test_path)
 
-        return "run_local called"
+        # setup the repo wrapper.. this creates the repo if its not already there
+        tr = TestRepositorySource(self.test_path)
+
+        # run tests
+        tr.run()
+        
+        # get back the results 
+        result = tr.testrepository_last_stream()
+
+        # write results to database maybe .. or return them .. not sure which .. 
+        return result.read()
 
 
     def write_config(self, path):
