@@ -151,9 +151,13 @@ class Tester(object):
         output = self.tempest_config.build_config_from_keystone()
 
         testr_output = dedent("""[DEFAULT]
-                            test_command=python -m subunit.run discover . $LISTOPT $IDOPTION
-                            test_id_option=--load-list $IDFILE
-                            test_list_option=--list""")
+                                 test_command=OS_STDOUT_CAPTURE=${OS_STDOUT_CAPTURE:-1} \
+                                              OS_STDERR_CAPTURE=${OS_STDERR_CAPTURE:-1} \
+                                              OS_TEST_TIMEOUT=${OS_TEST_TIMEOUT:-500} \
+                                              ${PYTHON:-python} -m subunit.run discover -t ./ ./tempest $LISTOPT $IDOPTION
+                                 test_id_option=--load-list $IDFILE
+                                 test_list_option=--list
+                                 group_regex=([^\.]*\.)*""")
 
         with open(path+"tempest.conf", "w") as config_file:
             config_file.write(output)
