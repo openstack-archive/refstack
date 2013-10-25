@@ -16,6 +16,7 @@
 import os
 import sys
 import errno
+from textwrap import dedent
 from refstack.common.tempest_config import TempestConfig
 import testrepository.repository.file
 from testrepository import ui
@@ -110,7 +111,7 @@ class Tester(object):
         self.tempest_config = TempestConfig(cloud_id)
         self.cloud_id = cloud_id
         self.sha = sha
-        self.test_path = "/tmp/%s" % self.cloud_id
+        self.test_path = "/tmp/%s/" % cloud_id
 
 
     def run_remote(self):
@@ -120,7 +121,7 @@ class Tester(object):
         # no sha indicates trunk
 
 
-    def run_local():
+    def run_local(self):
         """triggers local run"""
         # make sure we have a folder to put a repo in.. 
         if not os.path.exists(self.test_path):
@@ -145,10 +146,21 @@ class Tester(object):
     def write_config(self, path):
         """writes config to path specified"""
         # get the config
+        print "writing configs %s" % path
+
         output = self.tempest_config.build_config_from_keystone()
+
+        testr_output = dedent("""[DEFAULT]
+                            test_command=python -m subunit.run discover . $LISTOPT $IDOPTION
+                            test_id_option=--load-list $IDFILE
+                            test_list_option=--list""")
 
         with open(path+"tempest.conf", "w") as config_file:
             config_file.write(output)
+
+        with open(path+".testr.conf", "w") as testr_config_file:
+            testr_config_file.write(testr_output)
+
         
 
     def cancel(self):
