@@ -4,7 +4,12 @@ body {
     margin: 30px;
     padding: 0;
 }
-
+.container{
+    width:  !important;
+}
+.grid{
+    width: 1224px !important;
+}
 .inner_container{
     z-index: 100;
     position: relative;
@@ -12,7 +17,7 @@ body {
 
 .header{
     display: block;
-    
+    height: 70px;
 }
 
 a {
@@ -37,14 +42,14 @@ p.error {
     background: #EBCACA;
 }
 
-.navigation{
+.ref_nav{
     display: inline-block;
     z-index:10000;
     float: right;
     margin-top: 15px;
     
 }
-.navigation li { 
+.ref_nav li { 
     display: inline-block;
     padding-left: 5px;
 
@@ -90,11 +95,7 @@ a.logo:hover{
 .logo span{
     color: #329000;
 }
-.unit{
 
-    padding: 0px;
-    margin-top: 0px;
-}
 input[type="submit"] {
     background: #CADEEB;
     color: #335E79;
@@ -145,3 +146,5 @@ input[name="openid"] {
 .green{
     color: #329000;
 }
+
+

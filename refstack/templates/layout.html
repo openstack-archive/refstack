@@ -13,7 +13,7 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='refstack.css') }}">
     <!-- compiled and minified bootstrap JavaScript -->
     
-    {% block admin_css %}{% endblock %}
+    {% block head_css %}{% endblock %}
   </head>
   <body>	
   	<div class="container">
@@ -22,7 +22,7 @@
           <span class="glyphicon glyphicon-check"></span>
           Refstack
         </a>
-        <ul class="navigation">
+        <ul class="ref_nav">
           {% if g.user %}
             {% if g.user.su %}
               <li>
@@ -84,14 +84,15 @@
         </ul>
        </div>
 
-      <div class="grid">
+      <div class="inner_container">
           {% for message in get_flashed_messages() %}
             <p class=message>{{ message }}</p>
           {% endfor %}
-          <div class="inner_container">
+          <div class="">
           {% block body %}{% endblock %}
           </div>
   		</div>
   	</div>
+    {% block tail_js %}{% endblock %}
   </body>
 </html>
