@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # Copyright (c) 2013 Piston Cloud Computing, Inc.
 # All Rights Reserved.
@@ -59,8 +58,13 @@ def before_request():
 @app.route('/', methods=['POST', 'GET'])
 def index():
     """Index view"""
-    vendors = Vendor.query.all()
-    return render_template('index.html', vendors=vendors)
+    if g.user is not None:
+        # something else 
+        clouds = Cloud.query.all()
+        return render_template('home.html', clouds=clouds)
+    else:
+        vendors = Vendor.query.all()
+        return render_template('index.html', vendors=vendors)
 
 
 @app.route('/login', methods=['GET', 'POST'])

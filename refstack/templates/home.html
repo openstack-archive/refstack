@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% block title %}Welcome{% endblock %}
+{% block body %}    
+    <div class="panel panel-default unit one-of-two">
+        <div class="panel-heading">
+            <span class="glyphicon glyphicon-cloud"></span> Clouds
+        </div>
+        <table class="table">
+            {% for cloud in clouds %}
+                <tr>
+
+                    <td>
+                        {{ cloud.label }}
+                    </td>
+                    <td align="right">
+                        <button type="button" class="btn btn-default btn-xs">
+                            <span class="glyphicon glyphicon-pencil"></span> 
+                        </button>
+                        <button type="button" class="btn btn-default btn-xs">
+                            <span class="glyphicon glyphicon-trash"></span> 
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+        </table>     
+    </div>
+
+    <div class="panel panel-default unit one-of-two">
+        <div class="panel-heading">
+            <span class="glyphicon glyphicon-list"></span> Tests
+        </div>
+        <table class="table">
+            {% for test in tests %}
+                <tr>
+                    <td>
+                        <button type="button" class="btn btn-default btn-xs">
+                            <span class="glyphicon glyphicon-pencil"></span> 
+                        </button>
+                    </td>
+                    <td>
+                        {{ test.cloud.label }}
+                    </td>
+                </tr>
+                {% endfor %}
+        </table>
+    </div>
+
+{% endblock %}
