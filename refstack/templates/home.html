@@ -16,12 +16,22 @@
                         {{ cloud.label }}
                     </td>
                     <td align="right">
-                        <button type="button" class="btn btn-default btn-xs">
-                            <span class="glyphicon glyphicon-pencil"></span> 
-                        </button>
-                        <button type="button" class="btn btn-default btn-xs">
-                            <span class="glyphicon glyphicon-trash"></span> 
-                        </button>
+                        <div class="btn-group">
+                            <button type="button"
+                                    class="btn btn-default btn-xs"
+                                    rel="tooltip" 
+                                    title="Edit Cloud"
+                                    data-placement="left">
+                                <span class="glyphicon glyphicon-pencil"></span> 
+                            </button>
+                            <button type="button" 
+                                    class="btn btn-default btn-xs"
+                                    rel="tooltip" 
+                                    title="Delete Cloud"
+                                    data-placement="right">
+                                <span class="glyphicon glyphicon-trash"></span> 
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -46,4 +56,13 @@
         </table>
     </div>
 
+
+<script type="text/javascript">
+    $(function () {
+        $("[rel='tooltip']").tooltip({container:'body'});
+    });
+</script>
+  
+
 {% endblock %}
+

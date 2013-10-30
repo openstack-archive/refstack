@@ -91,13 +91,13 @@ input[name="openid"] {
     padding-left: 24px;
 }
 
-.left{
+.one-of-three .left{
     background-color: #5FD4B1;
 }
-.center{
+.one-of-three .center{
     background-color: #689AD3;
 }
-.right{
+.one-of-three .right{
     background-color: #99EE6B;
 }
 
