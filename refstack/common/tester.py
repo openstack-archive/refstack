@@ -16,13 +16,14 @@
 import os
 import sys
 import errno
+from subprocess import call
 from textwrap import dedent
 from refstack.common.tempest_config import TempestConfig
 import testrepository.repository.file
 from testrepository import ui
-from testrepository.commands import run
+#from testrepository.commands import run
 from testrepository.commands import init
-
+from fabric.api import run
 
 class TestRepositoryUI(ui.AbstractUI):
     """nothing"""
@@ -75,11 +76,9 @@ class TestRepositorySource(object):
         self._ui.c = self.testr_directory+'tempest.conf'
 
         cmd = run.run(self._ui)
-        try:
-            res = cmd.execute()
-        finally:
-            os.chdir(here)
-
+        
+        res = cmd.execute()
+        
 
     def testrepository_last_stream(self):
         factory = testrepository.repository.file.RepositoryFactory()
@@ -133,23 +132,40 @@ class Tester(object):
         # setup the repo wrapper.. this creates the repo if its not already there
         tr = TestRepositorySource(self.test_path)
 
+        """TODO: So this is supposed to use the testr wrapper to trigger a run.. however.. 
+        I am completly blocked on how to make it work the right way.. so I am moving on 
+        for now once the congigs are setup and repo initiated it will call a subprocess 
+        run the command .. THEN query the repo for the last set of results and store the 
+        subunit stream. 
+
         # run tests
-        tr.run()
-        
+        #tr.run()
+        """
+
+        print "starting test"
+        call([self.test_path+'runtests.sh']) # replace this
+        print "finished with tests"
+
         # get back the results 
         result = tr.testrepository_last_stream()
 
         # write results to database maybe .. or return them .. not sure which .. 
         return result.read()
-
+        #return None
 
     def write_config(self, path):
         """writes config to path specified"""
         # get the config
         print "writing configs %s" % path
 
-        output = self.tempest_config.build_config_from_keystone()
+        self.config = self.tempest_config.build_config_from_keystone()
 
+        runtests_script = """#!/bin/bash
+cd %s
+testr run
+exit $?""" % path
+
+        """TODO make this cleaner"""
         testr_output = """[DEFAULT]
 test_command=OS_STDOUT_CAPTURE=${OS_STDOUT_CAPTURE:-1} \
              OS_STDERR_CAPTURE=${OS_STDERR_CAPTURE:-1} \
@@ -158,10 +174,14 @@ test_command=OS_STDOUT_CAPTURE=${OS_STDOUT_CAPTURE:-1} \
 test_id_option=--load-list $IDFILE
 test_list_option=--list
 group_regex=([^\.]*\.)*"""
+        
+        with open(path+"runtests.sh", "w") as runtests_script_file:
+            runtests_script_file.write(runtests_script)
 
+        os.chmod(path+"runtests.sh", 0744)
 
         with open(path+"tempest.conf", "w") as config_file:
-            config_file.write(output)
+            config_file.write(self.config)
 
         with open(path+".testr.conf", "w") as testr_config_file:
             testr_config_file.write(testr_output)

@@ -109,56 +109,30 @@ def start(args):
         clouds(args)
         sys.exit(1)
 
+    # run the damn test
+    t = Tester(args.cloud_id)
+    results = t.run_local()
+
+    # store the results 
     test = db.query(Test).filter_by(cloud_id=args.cloud_id).first()
 
-    # if cloud doesn't have a test id already or the test id isn't specified 
-    if test is None:
-        # creat a new test
-        print 'Adding a new test.'
-        test = Test(args.cloud_id)
+    # creat a new test
+    print 'Adding a new test.'
+    test = Test(args.cloud_id)
+    test.config = t.config
+    db.add(test)
+    db.commit()
+    print 'test added with id: %s' % test.id
 
-        #test.config = 
-        db.add(test)
 
-        # TODO tie in config generation here 
-        db.commit()
-        print 'test added with id: %s' % test.id
+    # do cleanup and then mark the last status to 'canceled'
+    test_result = TestResults()
+    test_result.test_id = test.id
+    test_result.blob = result 
 
-    else:
-        print 'existing test.. loaded it has id: %s ' % test.id 
-
-    # weather we already have a test or we just loaded it .. we can now check its status
-    #   what is the current status?
-    test_status = db.query(TestStatus).filter_by(test_id=test.id).order_by(TestStatus.id.desc()).first()
-
-    if test_status is None:
-        # no entries in the status log..  add 'new'
-        test_status = TestStatus(test.id, 'new')
-        db.add(test_status)
-        db.commit()
-
-    print 'status is: %s' % test_status.message  
-
-    if test_status.message in ('stalled','failed'):
-        # stalled: clean up , trigger clean start new test run
-        print 'Test has stalled or failed and needs to be kicked'
-        status(args)
-
-    elif test_status.message in ('ready','finished','new','canceled'):
-        #finished, new, canceled: trigger clean start new test run
-        print 'start clean and run'
-        test_status = TestStatus(test.id, 'running')
-        db.add(test_status)
-        db.commit()
-
-        t = Tester(args.cloud_id)
-        t.run()
-
-    elif test_status.message in ('running'):
-        # running: report the current status
-        print 'already running '
-        status(args)
-
+    
+    db.add(test_result)
+    db.commit()
 
 
 def status(args):
