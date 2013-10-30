@@ -27,9 +27,10 @@
             </tr>
             <tr>
               <td>
-                  Authorized by Vendor: 
+                  Vendor: 
               </td>
               <td >
+                  {{ user.vendor.vendor_name }}
                   {% if user.authorized %}
                     <span class="glyphicon glyphicon-ok-circle green" ></span>
                   {% else %}
