@@ -95,8 +95,6 @@ class Cloud(Base):
     admin_key = Column(String(80), unique=False)
 
 
-        
-
 
 class Test(Base):
     __tablename__ = 'test'
