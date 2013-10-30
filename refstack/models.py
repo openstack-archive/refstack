@@ -51,7 +51,7 @@ class User(Base):
     email_verified = Column(Boolean)
     openid = Column(String(200), unique=True)
     authorized = Column(Boolean, default=False)
-
+    su = Column(Boolean, default=False)
 
     def __init__(self, name, email, openid):
         self.name = name
