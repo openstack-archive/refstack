@@ -4,28 +4,38 @@
         <div class="unit span-grid">
             <h2>What is Refstack?</h2>
         </div>
-        <div class="unit one-of-three">
-            An existence proof of the certified openstack APIs.
+        <div class="unit one-of-three left option">
+            <span class="glyphicon glyphicon-check"></span>
+            <p>An existence proof of the certified openstack APIs.</p>
         </div>
-        <div class="unit one-of-three">
-            A reference OpenStack environment for tools developers.
+        <div class="unit one-of-three center option">
+            <span class="glyphicon glyphicon-check"></span>
+            <p>A reference OpenStack environment for tools developers.</p>
         </div>
-        <div class="unit one-of-three">
-            A certification process for OpenStack service and product vendors.
+        <div class="unit one-of-three right option">
+            <span class="glyphicon glyphicon-check"></span>
+            <p>A certification process for OpenStack service and product vendors.</p>
         </div>
         <div class="unit span-grid">
             <br/>
-            Some of vendors registered with RefStack:<br/><br/>
+            Vendors that are registered with RefStack:<br/><br/>
             <ul>
                 {% for vendor in vendors %}
                 <li><a href="mailto:{{ vendor.contact_email }}">{{ vendor.vendor_name }}</a></li>
                 {% endfor %}
             </ul>
         </div>
-        <div class="unit span-grid">
+        <div class="unit one-of-two">
             <h3>Get involved!</h3>
-            We welcome collaboration. To join the conversation jump into #refstack on freenode.
+            We welcome collaboration. <Br>
+            To join the conversation jump into <a href="irc://irc.freenode.net/channel?refstack">#refstack</a> on freenode.
             <br/><br/>
             For a living blueprint see our <a href="https://etherpad.openstack.org/RefStackBlueprint">etherpad</a>! 
+        </div>
+        <div class="unit one-of-two">
+            <h3>Refstack CLI</h3>
+            The refstack command line interface allows you to pre-test your cloud. <br>
+            <br/>
+            Documentation coming soon!
         </div>
 {% endblock %}

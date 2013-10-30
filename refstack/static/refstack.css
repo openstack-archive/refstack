@@ -1,12 +1,23 @@
 body {
-    font-family: 'Georgia', serif;
+    font-family: helvetica, san-serif;
     font-size: 16px;
     margin: 30px;
     padding: 0;
 }
 
+.unit {
+    margin: 0px;
+    padding: 0px;
+}
+
 a {
-    color: #335E79;
+    color: #274F7D;
+    text-decoration: none;
+}
+
+a:hover{
+    text-decoration: underline;
+    color: #274F7D;
 }
 
 p.message {
@@ -21,14 +32,52 @@ p.error {
     background: #EBCACA;
 }
 
-.navigation li { display: inline;}
+.navigation{
+    display: block;
+    float: right;
+}
+.navigation li { 
+    display: inline-block;
+    padding-left: 5px;
+
+}
 
 input {
-    font-family: 'Georgia', serif;
+    font-family: helvetica, san-serif;
     font-size: 16px;
     border: 1px solid black;
     color: #335E79;
     padding: 2px;
+}
+
+
+
+h1, h2, h3, h4 {
+    font-weight: normal;
+    font-family: helvetica, san-serif;
+    margin:0px;
+    padding: 0px;
+}
+
+h2{
+    font-size: 18px;
+    margin-bottom: 0px !important;
+}
+
+.logo{
+    display: block;
+    height: 50px;
+   
+    color: #274F7D;
+    font-size: 30px;
+    font-weight: bold;
+}
+a.logo:hover{
+    text-decoration: none;
+    color: #274F7D;
+}
+.logo span{
+    color: #329000;
 }
 
 input[type="submit"] {
@@ -42,6 +91,34 @@ input[name="openid"] {
     padding-left: 24px;
 }
 
-h1, h2 {
-    font-weight: normal;
+.left{
+    background-color: #5FD4B1;
 }
+.center{
+    background-color: #689AD3;
+}
+.right{
+    background-color: #99EE6B;
+}
+
+.option{
+    border-radius: 10px;
+    padding: 25px 20px;
+    color: white;
+    height: 175px;
+    font-size: 22px;
+}
+.option p{
+    display: block;
+    width: 210px;
+    float: right;
+}
+
+.panel-heading{
+    font-weight: bold;
+}
+.panel-heading span{
+    color: #274F7D;
+    margin-right: 6px;
+}
+

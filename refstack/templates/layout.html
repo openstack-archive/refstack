@@ -1,36 +1,62 @@
 <!doctype html>
-<head>
-<title>{% block title %}Welcome{% endblock %} | RefStack</title>
-<link rel="stylesheet" type="text/css" href="{{ url_for('static',
-  filename='refstack.css') }}">	
-  <link rel="stylesheet" type="text/css" href="/static/toast.css">
-</head>
-<body>
-	
-	<div class="container">
-	    <div class="grid">
+<html>
+  <head>
+    <title>{% block title %}Welcome{% endblock %} | RefStack</title>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+    <!-- refstack specific js-->
+    <script src="{{ url_for('static', filename='refstack.js') }}"></script>
 
-<div class="unit one-of-two">	</div>
-	
-<div class="unit one-of-two">	
-<ul class="navigation">
-  <li><a href="{{ url_for('index') }}">overview</a>
-  {% if g.user %}
-  <li><a href="{{ url_for('edit_profile') }}">profile</a>
-  <li><a href="{{ url_for('logout') }}">sign out [{{ g.user.name }}]</a>
-  {% else %}
-  <li><a href="{{ url_for('login') }}">sign in</a>
-  {% endif %}
-</ul>
-</div>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='refstack.css') }}">	
+    <link rel="stylesheet" type="text/css" href="/static/toast.css">
+    <!-- compiled and minified bootstrap JavaScript -->
+    
 
-{% for message in get_flashed_messages() %}
-  <p class=message>{{ message }}
-{% endfor %}
-
-{% block body %}{% endblock %}
-
-
-		</div>
-	</div>
-</body></html>
+  </head>
+  <body>	
+  	<div class="container">
+  	    <div class="grid">
+          <div class="unit one-of-two">	
+            <a href="/" class="logo">
+              <span class="glyphicon glyphicon-check"></span>
+              Refstack
+            </a>
+          </div>
+          	
+          <div class="unit one-of-two">	
+            
+            <ul class="navigation">
+              
+              {% if g.user %}
+                <li>
+                  <a href="{{ url_for('index') }}">home</a>
+                </li>
+                <li> | </li>
+                <li>
+                  <span class="glyphicon glyphicon-user"></span>
+                  <a href="{{ url_for('edit_profile') }}">{{ g.user.name }}</a>
+                </li>
+                <li> | </li>
+                <li>
+                  <a href="{{ url_for('logout') }}">sign out</a>
+                </li>
+              {% else %}
+                <li>
+                  <a href="{{ url_for('index') }}">Overview</a>
+                </li>
+                <li> | </li>
+                <li>
+                  <a href="{{ url_for('login') }}">sign in</a>
+                </li>
+              {% endif %}
+            </ul>
+          </div>
+          {% for message in get_flashed_messages() %}
+            <p class=message>{{ message }}</p>
+          {% endfor %}
+          {% block body %}{% endblock %}
+  		</div>
+  	</div>
+  </body>
+</html>
