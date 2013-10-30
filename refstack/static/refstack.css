@@ -12,9 +12,7 @@ body {
 
 .header{
     display: block;
-    height: 80px;
-
-
+    
 }
 
 a {
@@ -65,15 +63,16 @@ input {
 }
 
 h1, h2, h3, h4 {
-    font-weight: normal;
+    
     font-family: helvetica, san-serif;
     margin:0px;
     padding: 0px;
 }
 
 h2{
-    font-size: 18px;
+    font-size: 22px;
     margin-bottom: 0px !important;
+    font-weight: bold;
 }
 
 .logo{
@@ -91,7 +90,11 @@ a.logo:hover{
 .logo span{
     color: #329000;
 }
+.unit{
 
+    padding: 0px;
+    margin-top: 0px;
+}
 input[type="submit"] {
     background: #CADEEB;
     color: #335E79;
@@ -103,13 +106,13 @@ input[name="openid"] {
     padding-left: 24px;
 }
 
-.one-of-three .left{
+.index_left{
     background-color: #5FD4B1;
 }
-.one-of-three .center{
+.index_center{
     background-color: #689AD3;
 }
-.one-of-three .right{
+.index_right{
     background-color: #99EE6B;
 }
 
