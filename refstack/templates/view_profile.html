@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+{% block title %}View Profile{% endblock %}
+{% block body %}
+ 
+ <div class="panel panel-default unit one-of-two">
+        <div class="panel-heading">
+            <span class="glyphicon glyphicon-user"></span> {{ user.name }}'s profile
+            
+            <a href="/profile/edit" style="float: right;">
+                <span class="glyphicon glyphicon-pencil"></span>
+            </a>
+            
+        </div>
+        <table class="table">
+            <tr>
+              <td>
+                E-Mail: 
+              </td>
+              <td >
+                  {{ user.email }}
+                  {% if user.email_verified %}
+                    <span class="glyphicon glyphicon-ok-circle green" ></span>
+                  {% else %}
+                    <span class="glyphicon glyphicon-remove-circle red"></span>
+                  {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <td>
+                  Authorized by Vendor: 
+              </td>
+              <td >
+                  {% if user.authorized %}
+                    <span class="glyphicon glyphicon-ok-circle green" ></span>
+                  {% else %}
+                    <span class="glyphicon glyphicon-remove-circle red"></span>
+                  {% endif %}
+              </td>
+          </tr>
+
+        </table>     
+    </div>   
+ 
+{% endblock %}
