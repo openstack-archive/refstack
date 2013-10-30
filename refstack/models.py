@@ -86,6 +86,7 @@ class Cloud(Base):
     __tablename__ = 'cloud'
     id = Column(Integer, primary_key=True)
     
+    label = Column(String(60), unique=False)
     endpoint = Column(String(120), unique=True)
     test_user = Column(String(80), unique=False)
     test_key = Column(String(80), unique=False)
@@ -94,21 +95,7 @@ class Cloud(Base):
     admin_key = Column(String(80), unique=False)
 
 
-    def __init__(self,
-                 endpoint,
-                 test_user,
-                 test_key,
-                 admin_endpoint,
-                 admin_user,
-                 admin_key):
-        """init method to allow ordered input """
-        self.endpoint = endpoint
-        self.test_user = test_user
-        self.test_key = test_key
-        self.admin_endpoint = admin_endpoint
-        self.admin_user = admin_user
-        self.admin_key = admin_key
-    
+        
 
 
 class Test(Base):
