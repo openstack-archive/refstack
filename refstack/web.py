@@ -33,14 +33,14 @@ mail = Mail(app)
 
 # setup flask-openid
 oid = OpenID(app)
-admin = Admin(app)
+admin = Admin(app, base_template='admin/master.html')
 
 
 class SecureView(ModelView):
     """ """
     def is_accessible(self):
         """ """
-        return g.user is not None
+        return g.user.su is not False
 
 admin.add_view(SecureView(Vendor, db))
 admin.add_view(SecureView(Cloud, db))
