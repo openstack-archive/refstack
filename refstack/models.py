@@ -73,7 +73,7 @@ class Vendor(Base):
     id = Column(Integer, primary_key=True)
     vendor_name = Column(String(80), unique=True)
     contact_email = Column(String(120), unique=True)
-
+    contact_name = Column(String(120), unique=False)
 
     def __str__(self):
         return self.vendor_name
