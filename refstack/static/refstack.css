@@ -83,7 +83,6 @@ h2{
 .logo{
     display: inline-block;
     height: 50px;
-   
     color: #274F7D;
     font-size: 30px;
     font-weight: bold;
@@ -119,14 +118,14 @@ input[name="openid"] {
 
 .option{
     border-radius: 10px;
-    padding: 25px 20px;
+    padding: 15px 15px;
     color: white;
-    height: 175px;
-    font-size: 22px;
+    height: 110px;
+    font-size: 20px;
 }
 .option p{
     display: block;
-    width: 210px;
+    width: 215px;
     float: right;
 }
 
