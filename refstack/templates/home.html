@@ -4,7 +4,10 @@
     <div class="panel panel-default unit one-of-two">
         <div class="panel-heading">
             <span class="glyphicon glyphicon-cloud"></span> Clouds
-             <button type="button" class="btn btn-default btn-xs" style="float: right;">
+             <button type="button"
+                     class="btn btn-default btn-xs" 
+                     onclick="location.href='/create-cloud'" 
+                     style="float: right;">
                 <span class="glyphicon glyphicon-plus-sign"></span> add cloud
             </button>
 
@@ -29,14 +32,16 @@
                                     class="btn btn-default btn-xs"
                                     rel="tooltip" 
                                     title="Edit Cloud"
-                                    data-placement="top">
+                                    data-placement="top"
+                                    onclick="window.location='/edit-cloud/{{ cloud.id }}'">
                                 <span class="glyphicon glyphicon-pencil"></span> 
                             </button>
                             <button type="button" 
                                     class="btn btn-default btn-xs"
                                     rel="tooltip" 
                                     title="Delete Cloud"
-                                    data-placement="top">
+                                    data-placement="top"
+                                    onclick="window.location='/delete-cloud/{{ cloud.id }}'">
                                 <span class="glyphicon glyphicon-trash"></span> 
                             </button>
                         </div>

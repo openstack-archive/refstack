@@ -60,7 +60,7 @@ def index():
     """Index view"""
     if g.user is not None:
         # something else 
-        clouds = Cloud.query.all()
+        clouds = Cloud.query.filter_by(user_id=g.user.id).all()
         return render_template('home.html', clouds=clouds)
     else:
         vendors = Vendor.query.all()
@@ -119,6 +119,113 @@ def create_profile():
             return redirect(oid.get_next_url())
     return render_template(
         'create_profile.html', next_url=oid.get_next_url())
+
+@app.route('/delete-cloud/<int:cloud_id>', methods=['GET', 'POST'])
+def delete_cloud(cloud_id):
+    """ delete function for clouds"""
+    c = Cloud.query.filter_by(id=cloud_id).first()
+
+    if not c:
+        flash(u'Not a valid Cloud ID!')
+    elif not c.user_id == g.user.id:
+        flash(u"This isn't your cloud!")         
+    else:
+        db.delete(c)
+        db.commit()
+
+    return redirect('/')
+
+@app.route('/edit-cloud/<int:cloud_id>', methods=['GET', 'POST'])
+def edit_cloud(cloud_id):
+    c = Cloud.query.filter_by(id=cloud_id).first()
+
+    if not c:
+        flash(u'Not a valid Cloud ID!')
+        return redirect('/')
+    elif not c.user_id == g.user.id:
+        flash(u"This isn't your cloud!") 
+
+    if request.method == 'POST':
+        #validate this biotch
+        if not request.form['label']:
+            flash(u'Error: All fields are required')
+        elif not request.form['endpoint']:
+            flash(u'Error: All fields are required')
+        elif not request.form['test_user']:
+            flash(u'Error: All fields are required')
+        elif not request.form['test_key']:
+            flash(u'Error: All fields are required')
+        elif not request.form['admin_endpoint']:
+            flash(u'Error: All fields are required')
+        elif not request.form['admin_user']:
+            flash(u'Error: All fields are required')
+        elif not request.form['admin_key']:
+            flash(u'Error: All fields are required')
+        else:
+            c.label = request.form['label']
+            c.endpoint = request.form['endpoint']
+            c.test_user = request.form['test_user']
+            c.test_key = request.form['test_key']
+            c.admin_endpoint = request.form['admin_endpoint']
+            c.admin_user = request.form['admin_user']
+            c.admin_key = request.form['admin_key']
+            
+            db.commit()
+
+            flash(u'Cloud Saved!')
+            return redirect('/')
+
+    form = dict(label=c.label,
+                endpoint=c.endpoint,
+                test_user=c.test_user,
+                test_key=c.test_key,
+                admin_endpoint=c.admin_endpoint,
+                admin_user=c.admin_user,
+                admin_key=c.admin_key)
+
+
+
+    return render_template('edit_cloud.html',form=form)
+
+
+@app.route('/create-cloud', methods=['GET', 'POST'])
+def create_cloud():
+    """This is the handler for creating a new cloud"""
+    
+    #if g.user is None:
+    #    abort(401)
+    if request.method == 'POST':
+        if not request.form['label']:
+            flash(u'Error: All fields are required')
+        elif not request.form['endpoint']:
+            flash(u'Error: All fields are required')
+        elif not request.form['test_user']:
+            flash(u'Error: All fields are required')
+        elif not request.form['test_key']:
+            flash(u'Error: All fields are required')
+        elif not request.form['admin_endpoint']:
+            flash(u'Error: All fields are required')
+        elif not request.form['admin_user']:
+            flash(u'Error: All fields are required')
+        elif not request.form['admin_key']:
+            flash(u'Error: All fields are required')
+        else:
+            c = Cloud()
+            c.user_id = g.user.id
+            c.label = request.form['label']
+            c.endpoint = request.form['endpoint']
+            c.test_user = request.form['test_user']
+            c.test_key = request.form['test_key']
+            c.admin_endpoint = request.form['admin_endpoint']
+            c.admin_user = request.form['admin_user']
+            c.admin_key = request.form['admin_key']
+
+            db.add(c)
+            db.commit()
+            return redirect('/')
+
+    return render_template('create_cloud.html', next_url='/')
+
 
 
 @app.route('/profile/edit', methods=['GET', 'POST'])
