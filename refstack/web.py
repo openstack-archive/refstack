@@ -76,8 +76,8 @@ def login():
     # if we are already logged in, go back to were we came from
     if g.user is not None:
         return redirect(oid.get_next_url())
-    return oid.try_login("https://login.launchpad.net/", 
-                         ask_for=['email', 'nickname'])
+    return oid.try_login("https://login.launchpad.net/",
+                          ask_for=['email', 'nickname'])
     
 
 @oid.after_login
