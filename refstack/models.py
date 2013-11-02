@@ -86,6 +86,9 @@ class Cloud(Base):
     __tablename__ = 'cloud'
     id = Column(Integer, primary_key=True)
     
+    user = relationship('User',
+                          backref=backref('clouds',lazy='dynamic'))
+
     label = Column(String(60), unique=False)
     endpoint = Column(String(120), unique=True)
     test_user = Column(String(80), unique=False)
