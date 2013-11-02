@@ -24,6 +24,13 @@ from testrepository import ui
 #from testrepository.commands import run
 from testrepository.commands import init
 from fabric.api import run
+import gear
+
+class TesterWorker(object):
+    """gearman worker code"""
+    def __init__(self):
+        #self.worker = gear.Worker('remote_test')
+        pass
 
 class TestRepositoryUI(ui.AbstractUI):
     """nothing"""
