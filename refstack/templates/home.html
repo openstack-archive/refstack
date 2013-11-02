@@ -1,12 +1,13 @@
 {% extends "layout.html" %}
 {% block title %}Welcome{% endblock %}
-{% block body %}    
+{% block body %}
     <div class="panel panel-default unit one-of-two">
         <div class="panel-heading">
             <span class="glyphicon glyphicon-cloud"></span> Clouds
              <button type="button" class="btn btn-default btn-xs" style="float: right;">
                 <span class="glyphicon glyphicon-plus-sign"></span> add cloud
             </button>
+
         </div>
         <table class="table">
             {% for cloud in clouds %}
@@ -63,12 +64,11 @@
         </table>
     </div>
 
-
-<script type="text/javascript">
-    $(function () {
-        $("[rel='tooltip']").tooltip({container:'body'});
-    });
-</script>
+    <script type="text/javascript">
+        $(function () {
+            $("[rel='tooltip']").tooltip({container:'body'});
+        });
+    </script>
   
 
 {% endblock %}
