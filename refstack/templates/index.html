@@ -19,9 +19,9 @@
         <div class="unit span-grid">
             <br/>
             Vendors that are registered with RefStack:<br/><br/>
-            <ul>
+            <ul class="vendors">
                 {% for vendor in vendors %}
-                <li><a href="mailto:{{ vendor.contact_email }}">{{ vendor.vendor_name }}</a></li>
+                <li>{{ vendor.vendor_name }}</li>
                 {% endfor %}
             </ul>
         </div>

@@ -145,5 +145,12 @@ input[name="openid"] {
 .green{
     color: #329000;
 }
-
-
+.vendors{
+    text-align: center;
+    color: #274F7D;
+    
+}
+.vendors li{
+    display: inline-block;
+    padding: 0px 5px;
+}
