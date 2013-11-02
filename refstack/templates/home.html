@@ -41,7 +41,7 @@
                                     rel="tooltip" 
                                     title="Delete Cloud"
                                     data-placement="top"
-                                    onclick="window.location='/delete-cloud/{{ cloud.id }}'">
+                                    onclick="confirm_delete_cloud('{{ cloud.id }}','{{ cloud.label}}')">
                                 <span class="glyphicon glyphicon-trash"></span> 
                             </button>
                         </div>
@@ -72,7 +72,21 @@
     <script type="text/javascript">
         $(function () {
             $("[rel='tooltip']").tooltip({container:'body'});
-        });
+
+            
+
+        }
+
+        
+        );
+        function confirm_delete_cloud(cloud_id,label)
+        {
+            var r=confirm("Are you sure you want to delete " + label + "?");
+            if (r==true)
+            {
+                window.location='/delete-cloud/'+cloud_id;
+            }
+        }
     </script>
   
 
