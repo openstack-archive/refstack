@@ -18,19 +18,34 @@ import sys
 import errno
 from subprocess import call
 from textwrap import dedent
+from refstack.app import app
 from refstack.common.tempest_config import TempestConfig
 import testrepository.repository.file
 from testrepository import ui
 #from testrepository.commands import run
 from testrepository.commands import init
-from fabric.api import run
+
 import gear
 
 class TesterWorker(object):
     """gearman worker code"""
-    def __init__(self):
-        #self.worker = gear.Worker('remote_test')
+    def __init__(self,app):
+        self.worker = gear.Worker('run_remote_test')
+        
+        self.worker.addServer(app.gearman_server)
+        self.worker.registerFunction('run_remote_test')
+
+
+    def run_remote_test(self):
         pass
+
+
+    def run_job(self):
+        while True:
+            job = self.worker.getJob()
+            job.sendWorkComplete(job.arguments.reverse())
+
+
 
 class TestRepositoryUI(ui.AbstractUI):
     """nothing"""
