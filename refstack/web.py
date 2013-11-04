@@ -53,7 +53,7 @@ def before_request():
     g.user = None
     if 'openid' in session:
         g.user = User.query.filter_by(openid=session['openid']).first()
-
+    
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
