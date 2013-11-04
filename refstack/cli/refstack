@@ -1,0 +1,366 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2013 Piston Cloud Computing, Inc.
+# All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+"""
+"""
+import sys
+import argparse
+from textwrap import dedent
+from sqlalchemy.exc import IntegrityError
+from refstack.models import *
+from refstack.common.tempest_config import TempestConfig
+from refstack.common.tester import Tester
+
+
+def add(args):
+    """adds a cloud 
+    
+    refstack add --endpoint='http://127.0.0.1:5000/v3/' --test-user='demo' \
+    --test-key='pass' --admin-endpoint='http://127.0.0.1:5000/v3/' \
+    --admin-user='admin' --admin-key='pass'
+
+    outputs confirmation along with the id of the cloud that was just added.
+    endpoint is a unique key so you only get to add one record per end point"""
+    try:
+        cloud = Cloud(args.endpoint,
+                      args.test_user,
+                      args.test_key,
+                      args.admin_endpoint,
+                      args.admin_user,
+                      args.admin_key)
+
+        db.add(cloud)
+        db.commit()
+
+        print 'New cloud added with id: %s ' % (cloud.id)
+        clouds(args)
+
+    except IntegrityError:
+        print 'A Cloud with %s as its endpoint has already been added. ' % args.endpoint 
+
+
+def config(args):
+    """returns a raw output of the config for specified cloud"""
+    cloud = db.query(Cloud).get(args.cloud_id)
+
+    if cloud is None:
+        print 'Invalid cloud-id, Please use one from this list.'
+        clouds(args)
+        sys.exit(1)
+
+    t = TempestConfig(args.cloud_id)
+    
+    print t.build_config_from_keystone()
+
+
+def remove(args):
+    """removes a cloud 
+    refstack remove {cloud_id}
+
+    confirms that cloud-id 123 has been removed from the database as well as 
+    all tests assosiateed with it."""
+    cloud = db.query(Cloud).get(args.cloud_id)
+
+    if cloud is None:
+        print 'Invalid cloud-id, Please use one from this list.'
+        clouds(args)
+        
+    else: 
+        db.delete(cloud)
+        db.commit()
+        print 'cloud %s has been deleted.' % args.cloud_id
+
+
+def clouds(args):
+    """returns a list of your clouds"""
+    print 'Your clouds:\n'
+    print 'id | endpoint | test-user | admin-user '
+    print '---------------------------------------'
+    for row in db.query(Cloud).all():
+        print "%s | %s | %s | %s " % (row.id, row.endpoint, row.test_user, row.admin_user) 
+    print ''
+
+
+def start(args):
+    """start test command
+
+    refstack start {cloud_id} --sha {sha} 
+
+    triggers local run of tempest with specified cloud_id returns a 
+    test_id so that the user can check status or cancel the test"""
+    #load the cloud from the specified id
+    cloud = db.query(Cloud).get(args.cloud_id)
+
+    if cloud is None:
+        print 'Invalid cloud-id, Please use one from this list.'
+        clouds(args)
+        sys.exit(1)
+
+    # run the damn test
+    t = Tester(args.cloud_id)
+    results = t.run_local()
+
+    # store the results 
+    test = db.query(Test).filter_by(cloud_id=args.cloud_id).first()
+
+    # creat a new test
+    print 'Adding a new test.'
+    test = Test(args.cloud_id)
+    test.config = t.config
+    db.add(test)
+    db.commit()
+    print 'test added with id: %s' % test.id
+
+
+    # do cleanup and then mark the last status to 'canceled'
+    test_result = TestResults()
+    test_result.test_id = test.id
+    test_result.blob = result 
+
+    
+    db.add(test_result)
+    db.commit()
+
+
+def status(args):
+    """get the status of a running test
+
+    refstack status {test-id}
+    """
+    test = db.query(Test).get(args.test_id)
+
+    if test is None:
+        # This isn't a valid test id
+        print '%s is not a valid test-id.' % args.test_id
+        sys.exit(1)
+    else:
+        
+        test_status = db.query(TestStatus).filter_by(test_id=test.id).order_by(TestStatus.id.desc()).all()
+
+        print 'Status Log for test-id %s (top is most recent)' % args.test_id
+        print 'id | timestamp | message'
+        for row in test_status:
+            print '%s | %s | %s ' % (row.id, row.timestamp, row.message)
+
+
+def cancel(args):
+    """cancels a running test
+
+    refstack cancel --test-id {test_id}
+
+    stops the running test if it is running and displays output to user"""
+    print 'cancel triggered'
+    test = db.query(Test).get(args.test_id)
+
+    if test is None:
+        # This isn't a valid test id
+        print '%s is not a valid test-id.' % args.test_id
+        sys.exit(1)
+
+    else:
+        test_status = db.query(TestStatus).filter_by(test_id=test.id).order_by(TestStatus.id.desc()).first()
+
+        if test_status.message in ('running') :
+            # do cleanup and then mark the last status to 'canceled'
+            test_status = TestStatus(test.id, 'canceled')
+            db.add(test_status)
+            db.commit()
+            
+        else:
+            print 'test %s does not apear to be running' % args.test_id
+
+        status(args)
+
+
+def result(args):
+    """outputs the results of a test
+
+    refstack results --test_id --format {screen|subunit}
+
+    if the test isn't finished it will say in progress otherwise will return
+    subunit|screen output"""
+    print 'result triggered'
+
+
+def tests(args):
+    """returns either a list of tests for the specified cloud-id"""
+    #load the cloud from the specified id
+    cloud = db.query(Cloud).get(args.cloud_id)
+
+    if cloud is None:
+        print 'Invalid cloud-id, Please use one from this list.'
+
+        clouds(args)
+        sys.exit(1)
+
+    print 'tests for cloud with id: %s \n' % args.cloud_id
+
+    print 'id | status '
+    print '---------------------------------------'
+    for row in db.query(Test).filter_by(cloud_id=args.cloud_id).all():
+        _status = db.query(TestStatus).filter_by(test_id=row.id).order_by(TestStatus.id.desc()).first()
+        print "%s | %s " % (row.id, _status.message) 
+    print ''
+
+
+def subcommands(subparsers):
+    """argparse options for the clouds command """ 
+    clouds_parser = subparsers.add_parser('clouds', help='list clouds')
+
+    """argparse subparsers with """ 
+    add_cloud_parser = subparsers.add_parser('add', help='Add a new Cloud')
+    
+    add_cloud_parser.add_argument('--endpoint',
+                                    required=True,
+                                    action='store',
+                                    dest='endpoint',
+                                    help='Non-admin keystone endpoint')
+
+    add_cloud_parser.add_argument('--test-user',
+                                    required=True,
+                                    action='store',
+                                    dest='test_user',
+                                    help='Non-admin keystone user')
+
+    add_cloud_parser.add_argument('--test-key',
+                                    required=True,
+                                    action='store',
+                                    dest='test_key',
+                                    help='Non-admin keystone password or key')
+
+    add_cloud_parser.add_argument('--admin-endpoint',
+                                    required=True,
+                                    action='store',
+                                    dest='admin_endpoint',
+                                    help='Admin keystone endpoint')
+
+    add_cloud_parser.add_argument('--admin-user',
+                                    required=True,
+                                    action='store',
+                                    dest='admin_user',
+                                    help='Admin keystone user')
+
+    add_cloud_parser.add_argument('--admin-key',
+                                    required=True,
+                                    action='store',
+                                    dest='admin_key',
+                                    help='Admin keystone key or password')
+
+    """argparse options for the remove command """ 
+    remove_parser = subparsers.add_parser('remove', help='remove a Cloud')
+
+    remove_parser.add_argument(action='store',
+                               dest='cloud_id',
+                               help='The id of the cloud you want to remove')
+
+    """argparse options for the start command """ 
+    start_parser = subparsers.add_parser('start', help='start tests on cloud')
+
+    start_parser.add_argument(action='store',
+                              dest='cloud_id',
+                              help='The id of the cloud you want to test')
+
+    start_parser.add_argument('--sha',
+                              required=False,
+                              action='store',
+                              dest='sha',
+                              help='optionally specify a sha for the tempest version to use')
+
+    """argparse options for the status command """ 
+    status_parser = subparsers.add_parser('status', help='returns status of test')
+    status_parser.add_argument(action='store',
+                               dest='test_id',
+                               help='The id of the test you want status of.')
+
+    status_parser.add_argument('--list',
+                               '-l',
+                               action='store_true',
+                               help='list status history')
+
+
+    """argparse options for the cancel command """ 
+    cancel_parser = subparsers.add_parser('cancel', help='cancel a test')
+    
+    cancel_parser.add_argument(action='store',
+                               dest='test_id',
+                               help='The id of the test you want to cancel')
+
+
+
+    """argparse options for the result command """ 
+    result_parser = subparsers.add_parser('result', help='provides results')
+    result_parser.add_argument(action='store',
+                               dest='test_id',
+                               help='The id of the test you want to cancel')
+    
+    """argparse options for the tests command """ 
+    tests_parser = subparsers.add_parser('tests', help='list tests')
+
+    tests_parser.add_argument(action='store',
+                              dest='cloud_id',
+                              help='The id of the cloud you want to test')
+
+    """argparse options for the tests command """ 
+    tests_parser = subparsers.add_parser('config', help='output tempest config for cloud')
+
+    tests_parser.add_argument(action='store',
+                              dest='cloud_id',
+                              help='The id of the cloud you want a config for')
+
+def main():
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=dedent("""\
+                            This is a CLI utility for refstack
+
+                            """),
+        epilog=dedent("""\
+                    Usage:
+
+                    Refstack CLI:
+                       \n\n\n """))
+
+    # output options
+    parser.add_argument('--verbose', '-v', action='count')
+    parser.add_argument('--silent', '-s', action='store_true')
+
+    subparsers = parser.add_subparsers(help='Sub commands', dest='command')
+
+    subcommands(subparsers)
+
+    args = parser.parse_args()
+
+    # action function mapping
+    actions = { 'add': add,
+                'remove': remove,
+                'start': start,
+                'cancel': cancel,
+                'status': status,
+                'result': result,
+                'tests': tests,
+                'config': config,
+                'clouds': clouds}
+
+    if args.command in actions:
+        actions[args.command](args)
+    else:
+        parser.print_help()
+        sys.exit(1)
+
+
+
+if __name__ == '__main__':
+    main()

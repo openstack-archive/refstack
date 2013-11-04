@@ -37,3 +37,16 @@ nosetests.xml
 *.db
 *.DS_Store
 manifest.yml
+refstack/localmodels.py
+
+refstack/common/debug.py
+
+refstack/client/.testrepository/format
+
+refstack/client/.testrepository/next-stream
+
+refstack/client/.smbdeleteAAA06c94.4
+
+scripts/members_sponsors_20131030.csv
+
+refstack/client/.smbdeleteAAA9ef44.4

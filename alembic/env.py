@@ -1,3 +1,19 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2013 Piston Cloud Computing, Inc.
+# All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
 from __future__ import with_statement
 
 import os
@@ -8,13 +24,13 @@ sys.path.append("./")
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
-from refstack.web import app
+from refstack import app
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 cur_db_uri = config.get_section_option('alembic', 'sqlalchemy.url')
-my_db_uri = app.config.get('SQLALCHEMY_DATABASE_URI', cur_db_uri)
+my_db_uri = 'sqlite:////tmp/refstack.db' # app.config.get('SQLALCHEMY_DATABASE_URI', cur_db_uri)
 config.set_section_option('alembic', 'sqlalchemy.url', my_db_uri)
 
 # Interpret the config file for Python logging.
@@ -26,8 +42,8 @@ fileConfig(config.config_file_name)
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
-from refstack.web import db
-target_metadata = db.metadata
+from refstack.models import *
+target_metadata = Base.metadata
 
 
 def run_migrations_offline():

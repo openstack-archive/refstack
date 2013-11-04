@@ -1,12 +1,33 @@
 body {
-    font-family: 'Georgia', serif;
+    font-family: helvetica, san-serif;
     font-size: 16px;
     margin: 30px;
     padding: 0;
 }
+.container{
+    width:  !important;
+}
+.grid{
+    width: 1224px !important;
+}
+.inner_container{
+    z-index: 100;
+    position: relative;
+}
+
+.header{
+    display: block;
+    height: 70px;
+}
 
 a {
-    color: #335E79;
+    color: #274F7D;
+    text-decoration: none;
+}
+
+a:hover{
+    text-decoration: underline;
+    color: #274F7D;
 }
 
 p.message {
@@ -21,14 +42,57 @@ p.error {
     background: #EBCACA;
 }
 
-.navigation li { display: inline;}
+.ref_nav{
+    display: inline-block;
+    z-index:10000;
+    float: right;
+    margin-top: 15px;
+    
+}
+.ref_nav li { 
+    display: inline-block;
+    padding-left: 5px;
+
+}
 
 input {
-    font-family: 'Georgia', serif;
+    font-family: helvetica, san-serif;
     font-size: 16px;
     border: 1px solid black;
     color: #335E79;
     padding: 2px;
+}
+
+.dropdown-menu li {
+    display: block;
+}
+
+h1, h2, h3, h4 {
+    
+    font-family: helvetica, san-serif;
+    margin:0px;
+    padding: 0px;
+}
+
+h2{
+    font-size: 22px;
+    margin-bottom: 0px !important;
+    font-weight: bold;
+}
+
+.logo{
+    display: inline-block;
+    height: 50px;
+    color: #274F7D;
+    font-size: 30px;
+    font-weight: bold;
+}
+a.logo:hover{
+    text-decoration: none;
+    color: #274F7D;
+}
+.logo span{
+    color: #329000;
 }
 
 input[type="submit"] {
@@ -42,6 +106,51 @@ input[name="openid"] {
     padding-left: 24px;
 }
 
-h1, h2 {
-    font-weight: normal;
+.index_left{
+    background-color: #5FD4B1;
+}
+.index_center{
+    background-color: #689AD3;
+}
+.index_right{
+    background-color: #99EE6B;
+}
+
+.option{
+    border-radius: 10px;
+    padding: 15px 15px;
+    color: white;
+    height: 110px;
+    font-size: 20px;
+}
+.option p{
+    display: block;
+    width: 215px;
+    float: right;
+}
+
+.panel-heading{
+    font-weight: bold;
+}
+.panel-heading span{
+    color: #274F7D;
+    margin-right: 6px;
+}
+
+
+.red{
+    color: red;
+}
+
+.green{
+    color: #329000;
+}
+.vendors{
+    text-align: center;
+    color: #274F7D;
+    
+}
+.vendors li{
+    display: inline-block;
+    padding: 0px 5px;
 }

@@ -1,117 +1,70 @@
-# LICENSE HERE
-"""
-Simple Refstack website.
-"""
-
+#
+# Copyright (c) 2013 Piston Cloud Computing, Inc.
+# All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
 import os
-import random
-import sqlite3
-import sys
-from flask import Flask, abort, flash, request, redirect, url_for, render_template, g, session
+import requests
+from flask import Flask, abort, flash, request, redirect, url_for, \
+    render_template, g, session
 from flask_openid import OpenID
-from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.admin import Admin, BaseView, expose, AdminIndexView
 from flask.ext.admin.contrib.sqlamodel import ModelView
-from sqlalchemy.exc import IntegrityError
 from flask.ext.security import Security, SQLAlchemyUserDatastore, \
     UserMixin, RoleMixin, login_required
-
-from wtforms import Form, BooleanField, TextField, PasswordField, validators
+from wtforms import Form, BooleanField, TextField, \
+    PasswordField, validators
 from flask_mail import Mail
-import requests    
 
-app = Flask(__name__)
-
-app.config['MAILGUN_KEY'] = 'key-this-is-a-fake-key'
-app.config['MAILGUN_DOMAIN'] = 'hastwoparents.com'
-
-
-app.config['SECRET_KEY'] = 'GIANT_UGLY-SECRET-GOES-H3r3'
-db_path = os.path.abspath(os.path.join(os.path.basename(__file__), "../"))
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///%s/refstack.db' % (db_path))
-app.config['DEBUG'] = True
-
-app.config['SECURITY_PASSWORD_HASH'] = 'sha512_crypt'
-app.config['SECURITY_PASSWORD_SALT'] = app.config['SECRET_KEY']
-app.config['SECURITY_POST_LOGIN_VIEW'] = 'dashboard'
-app.config['SECURITY_RECOVERABLE'] = True
-app.config['SECURITY_REGISTERABLE'] = True
-app.config['SECURITY_EMAIL_SENDER'] = "admin@hastwoparents.com"
-
-app.config['MAIL_SERVER'] = 'smtp.mailgun.org'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USERNAME'] = 'postmaster@hastwoparents.com'
-app.config['MAIL_PASSWORD'] = 'ugly-password'
+from refstack.app import app 
+from refstack.models import *
 
 mail = Mail(app)
 
 # setup flask-openid
 oid = OpenID(app)
-db = SQLAlchemy(app)
+admin = Admin(app, base_template='admin/master.html')
 
-
-class Vendor(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    vendor_name = db.Column(db.String(80), unique=True)
-    contact_email = db.Column(db.String(120), unique=True)
-    
-    def __str__(self):
-        return self.vendor_name
-
-class Cloud(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    vendor_id = db.Column(db.Integer, db.ForeignKey('vendor.id'))
-    vendor = db.relationship('Vendor',
-        backref=db.backref('clouds', lazy='dynamic'))
-
-    endpoint = db.Column(db.String(120), unique=True)
-    test_user = db.Column(db.String(80), unique=True)
-    test_key = db.Column(db.String(80), unique=True)
-    admin_endpoint = db.Column(db.String(120), unique=True)
-    admin_user = db.Column(db.String(80), unique=True)
-    admin_key = db.Column(db.String(80), unique=True)
-    
-    def __str__(self):
-        return self.endpoint
-
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(60))
-    email = db.Column(db.String(200))
-    openid = db.Column(db.String(200), unique=True)
-
-    def __init__(self, name, email, openid):
-        self.name = name
-        self.email = email
-        self.openid = openid
-    
-    def __str__(self):
-        return self.name
-
-# IndexView = AdminIndexView(url="/")
-admin = Admin(app) #, index_view=IndexView)
 
 class SecureView(ModelView):
+    """ """
     def is_accessible(self):
-        return g.user is not None
+        """ """
+        return g.user.su is not False
 
-admin.add_view(SecureView(Vendor, db.session))
-admin.add_view(SecureView(Cloud, db.session))
-admin.add_view(SecureView(User, db.session))
+admin.add_view(SecureView(Vendor, db))
+admin.add_view(SecureView(Cloud, db))
+admin.add_view(SecureView(User, db))
 
 
 @app.before_request
 def before_request():
+    """Runs before the request it self"""
     g.user = None
     if 'openid' in session:
         g.user = User.query.filter_by(openid=session['openid']).first()
 
 
-@app.route('/', methods=['POST','GET'])
+@app.route('/', methods=['POST', 'GET'])
 def index():
-    vendors = Vendor.query.all()
-    return render_template('index.html', vendors = vendors)
+    """Index view"""
+    if g.user is not None:
+        # something else 
+        clouds = Cloud.query.filter_by(user_id=g.user.id).all()
+        return render_template('home.html', clouds=clouds)
+    else:
+        vendors = Vendor.query.all()
+        return render_template('index.html', vendors=vendors)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -123,10 +76,9 @@ def login():
     # if we are already logged in, go back to were we came from
     if g.user is not None:
         return redirect(oid.get_next_url())
-    return oid.try_login("https://login.launchpad.net/", ask_for=['email', 'nickname'])
-    # return render_template('login.html', next=oid.get_next_url(),
-    #                       error=oid.fetch_error())
-
+    return oid.try_login("https://login.launchpad.net/",
+                          ask_for=['email', 'nickname'])
+    
 
 @oid.after_login
 def create_or_login(resp):
@@ -162,13 +114,121 @@ def create_profile():
             flash(u'Error: you have to enter a valid email address')
         else:
             flash(u'Profile successfully created')
-            db.session.add(User(name, email, session['openid']))
-            db.session.commit()
+            db.add(User(name, email, session['openid']))
+            db.commit()
             return redirect(oid.get_next_url())
-    return render_template('create_profile.html', next_url=oid.get_next_url())
+    return render_template(
+        'create_profile.html', next_url=oid.get_next_url())
+
+@app.route('/delete-cloud/<int:cloud_id>', methods=['GET', 'POST'])
+def delete_cloud(cloud_id):
+    """ delete function for clouds"""
+    c = Cloud.query.filter_by(id=cloud_id).first()
+
+    if not c:
+        flash(u'Not a valid Cloud ID!')
+    elif not c.user_id == g.user.id:
+        flash(u"This isn't your cloud!")         
+    else:
+        db.delete(c)
+        db.commit()
+
+    return redirect('/')
+
+@app.route('/edit-cloud/<int:cloud_id>', methods=['GET', 'POST'])
+def edit_cloud(cloud_id):
+    c = Cloud.query.filter_by(id=cloud_id).first()
+
+    if not c:
+        flash(u'Not a valid Cloud ID!')
+        return redirect('/')
+    elif not c.user_id == g.user.id:
+        flash(u"This isn't your cloud!") 
+
+    if request.method == 'POST':
+        #validate this biotch
+        if not request.form['label']:
+            flash(u'Error: All fields are required')
+        elif not request.form['endpoint']:
+            flash(u'Error: All fields are required')
+        elif not request.form['test_user']:
+            flash(u'Error: All fields are required')
+        elif not request.form['test_key']:
+            flash(u'Error: All fields are required')
+        elif not request.form['admin_endpoint']:
+            flash(u'Error: All fields are required')
+        elif not request.form['admin_user']:
+            flash(u'Error: All fields are required')
+        elif not request.form['admin_key']:
+            flash(u'Error: All fields are required')
+        else:
+            c.label = request.form['label']
+            c.endpoint = request.form['endpoint']
+            c.test_user = request.form['test_user']
+            c.test_key = request.form['test_key']
+            c.admin_endpoint = request.form['admin_endpoint']
+            c.admin_user = request.form['admin_user']
+            c.admin_key = request.form['admin_key']
+            
+            db.commit()
+
+            flash(u'Cloud Saved!')
+            return redirect('/')
+
+    form = dict(label=c.label,
+                endpoint=c.endpoint,
+                test_user=c.test_user,
+                test_key=c.test_key,
+                admin_endpoint=c.admin_endpoint,
+                admin_user=c.admin_user,
+                admin_key=c.admin_key)
 
 
-@app.route('/profile', methods=['GET', 'POST'])
+
+    return render_template('edit_cloud.html',form=form)
+
+
+@app.route('/create-cloud', methods=['GET', 'POST'])
+def create_cloud():
+    """This is the handler for creating a new cloud"""
+    
+    #if g.user is None:
+    #    abort(401)
+    if request.method == 'POST':
+        if not request.form['label']:
+            flash(u'Error: All fields are required')
+        elif not request.form['endpoint']:
+            flash(u'Error: All fields are required')
+        elif not request.form['test_user']:
+            flash(u'Error: All fields are required')
+        elif not request.form['test_key']:
+            flash(u'Error: All fields are required')
+        elif not request.form['admin_endpoint']:
+            flash(u'Error: All fields are required')
+        elif not request.form['admin_user']:
+            flash(u'Error: All fields are required')
+        elif not request.form['admin_key']:
+            flash(u'Error: All fields are required')
+        else:
+            c = Cloud()
+            c.user_id = g.user.id
+            c.label = request.form['label']
+            c.endpoint = request.form['endpoint']
+            c.test_user = request.form['test_user']
+            c.test_key = request.form['test_key']
+            c.admin_endpoint = request.form['admin_endpoint']
+            c.admin_user = request.form['admin_user']
+            c.admin_key = request.form['admin_key']
+
+            db.add(c)
+            db.commit()
+            return redirect('/')
+
+    return render_template('create_cloud.html', next_url='/')
+
+
+
+@app.route('/profile/edit', methods=['GET', 'POST'])
 def edit_profile():
     """Updates a profile"""
     if g.user is None:
@@ -176,8 +236,8 @@ def edit_profile():
     form = dict(name=g.user.name, email=g.user.email)
     if request.method == 'POST':
         if 'delete' in request.form:
-            db.session.delete(g.user)
-            db.session.commit()
+            db.delete(g.user)
+            db.commit()
             session['openid'] = None
             flash(u'Profile deleted')
             return redirect(url_for('index'))
@@ -191,20 +251,26 @@ def edit_profile():
             flash(u'Profile successfully created')
             g.user.name = form['name']
             g.user.email = form['email']
-            db.session.commit()
+            db.commit()
             return redirect(url_for('edit_profile'))
     return render_template('edit_profile.html', form=form)
 
 
+@app.route('/profile', methods=['GET', 'POST'])
+def view_profile():
+    """Updates a profile"""
+    if g.user is None:
+        abort(401)
+    
+    return render_template('view_profile.html', user=g.user)
+
+
 @app.route('/logout')
 def logout():
+    """logout route"""
     session.pop('openid', None)
     flash(u'You have been signed out')
     return redirect(oid.get_next_url())
 
 
 
-if __name__ == '__main__':  
-    app.logger.setLevel('DEBUG')
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)

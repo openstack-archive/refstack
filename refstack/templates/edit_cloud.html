@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block title %}Create Cloud{% endblock %}
+{% block body %}
+  <h2>Edit Cloud</h2>
+  <form action="" method='post'>
+    <dl>
+      <dt>Label:</dt>
+      <dd><input type='text' name='label' size='30' value="{{ form.label }}"></dd>
+      <dt>Non-Admin Keystone Endpoint:</dt>
+      <dd><input type='text' name='endpoint' size='30' value="{{ form.endpoint }}"></dd>
+      <dt>Non-Admin User:</dt>
+      <dd><input type='text' name='test_user' size='30' value="{{ form.test_user }}"></dd>
+      <dt>Non-Admin Password or Key:</dt>
+      <dd><input type='text' name='test_key' size='30' value="{{ form.test_key }}"></dd>
+      <dt>Admin Keystone Endpoint:</dt>
+      <dd><input type='text' name='admin_endpoint' size='30' value="{{ form.admin_endpoint }}"></dd>
+      <dt>Admin User:</dt>
+      <dd><input type='text' name='admin_user' size='30' value="{{ form.admin_user }}"></dd>
+      <dt>Admin Password or Key:</dt>
+      <dd><input type='text' name='admin_key' size='30' value="{{ form.admin_key }}"></dd>
+    </dl>
+    <p>
+      <input type='button' value="Cancel" onclick="location.href='/'">
+      <input type='submit' value="Save">
+      <input type='hidden' name='next' value="{{ next }}">
+  </form>
+  
+{% endblock %}
+
