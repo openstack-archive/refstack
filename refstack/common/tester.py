@@ -180,7 +180,7 @@ class Tester(object):
         # get the config
         print "writing configs %s" % path
 
-        self.config = self.tempest_config.build_config_from_keystone()
+        self._config = self.tempest_config.build_config_from_keystone()
 
         runtests_script = """#!/bin/bash
 cd %s
@@ -203,7 +203,7 @@ group_regex=([^\.]*\.)*"""
         os.chmod(path+"runtests.sh", 0744)
 
         with open(path+"tempest.conf", "w") as config_file:
-            config_file.write(self.config)
+            config_file.write(self._config)
 
         with open(path+".testr.conf", "w") as testr_config_file:
             testr_config_file.write(testr_output)

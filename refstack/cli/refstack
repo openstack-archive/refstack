@@ -126,16 +126,17 @@ def start(args):
     db.commit()
     print 'test added with id: %s' % test.id
 
-
+    
+    '''
     # do cleanup and then mark the last status to 'canceled'
     test_result = TestResults()
     test_result.test_id = test.id
-    test_result.blob = result 
+    test_result.subunit = result 
 
     
     db.add(test_result)
     db.commit()
-
+    '''
 
 def status(args):
     """get the status of a running test
