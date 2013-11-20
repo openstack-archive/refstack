@@ -14,8 +14,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-"""
-"""
 import sys
 import argparse
 from textwrap import dedent
@@ -26,8 +24,8 @@ from refstack.common.tester import Tester
 
 
 def add(args):
-    """adds a cloud 
-    
+    """adds a cloud
+
     refstack add --endpoint='http://127.0.0.1:5000/v3/' --test-user='demo' \
     --test-key='pass' --admin-endpoint='http://127.0.0.1:5000/v3/' \
     --admin-user='admin' --admin-key='pass'
@@ -51,7 +49,7 @@ def add(args):
         clouds(args)
 
     except IntegrityError:
-        print 'A Cloud with %s as its endpoint has already been added. ' % args.endpoint 
+        print 'A Cloud with %s as its endpoint has already been added. ' % args.endpoint
 
 
 def config(args):
@@ -64,23 +62,23 @@ def config(args):
         sys.exit(1)
 
     t = TempestConfig(args.cloud_id)
-    
+
     print t.build_config_from_keystone()
 
 
 def remove(args):
-    """removes a cloud 
+    """removes a cloud
     refstack remove {cloud_id}
 
-    confirms that cloud-id 123 has been removed from the database as well as 
+    confirms that cloud-id 123 has been removed from the database as well as
     all tests assosiateed with it."""
     cloud = db.query(Cloud).get(args.cloud_id)
 
     if cloud is None:
         print 'Invalid cloud-id, Please use one from this list.'
         clouds(args)
-        
-    else: 
+
+    else:
         db.delete(cloud)
         db.commit()
         print 'cloud %s has been deleted.' % args.cloud_id
@@ -92,16 +90,16 @@ def clouds(args):
     print 'id | endpoint | test-user | admin-user '
     print '---------------------------------------'
     for row in db.query(Cloud).all():
-        print "%s | %s | %s | %s " % (row.id, row.endpoint, row.test_user, row.admin_user) 
+        print "%s | %s | %s | %s " % (row.id, row.endpoint, row.test_user, row.admin_user)
     print ''
 
 
 def start(args):
     """start test command
 
-    refstack start {cloud_id} --sha {sha} 
+    refstack start {cloud_id} --sha {sha}
 
-    triggers local run of tempest with specified cloud_id returns a 
+    triggers local run of tempest with specified cloud_id returns a
     test_id so that the user can check status or cancel the test"""
     #load the cloud from the specified id
     cloud = db.query(Cloud).get(args.cloud_id)
@@ -115,7 +113,7 @@ def start(args):
     t = Tester(args.cloud_id)
     results = t.run_local()
 
-    # store the results 
+    # store the results
     test = db.query(Test).filter_by(cloud_id=args.cloud_id).first()
 
     # creat a new test
@@ -126,17 +124,18 @@ def start(args):
     db.commit()
     print 'test added with id: %s' % test.id
 
-    
+
     '''
     # do cleanup and then mark the last status to 'canceled'
     test_result = TestResults()
     test_result.test_id = test.id
-    test_result.subunit = result 
+    test_result.subunit = result
 
-    
+
     db.add(test_result)
     db.commit()
     '''
+
 
 def status(args):
     """get the status of a running test
@@ -150,7 +149,7 @@ def status(args):
         print '%s is not a valid test-id.' % args.test_id
         sys.exit(1)
     else:
-        
+
         test_status = db.query(TestStatus).filter_by(test_id=test.id).order_by(TestStatus.id.desc()).all()
 
         print 'Status Log for test-id %s (top is most recent)' % args.test_id
@@ -181,7 +180,7 @@ def cancel(args):
             test_status = TestStatus(test.id, 'canceled')
             db.add(test_status)
             db.commit()
-            
+
         else:
             print 'test %s does not apear to be running' % args.test_id
 
@@ -215,17 +214,17 @@ def tests(args):
     print '---------------------------------------'
     for row in db.query(Test).filter_by(cloud_id=args.cloud_id).all():
         _status = db.query(TestStatus).filter_by(test_id=row.id).order_by(TestStatus.id.desc()).first()
-        print "%s | %s " % (row.id, _status.message) 
+        print "%s | %s " % (row.id, _status.message)
     print ''
 
 
 def subcommands(subparsers):
-    """argparse options for the clouds command """ 
+    """argparse options for the clouds command """
     clouds_parser = subparsers.add_parser('clouds', help='list clouds')
 
-    """argparse subparsers with """ 
+    """argparse subparsers with """
     add_cloud_parser = subparsers.add_parser('add', help='Add a new Cloud')
-    
+
     add_cloud_parser.add_argument('--endpoint',
                                     required=True,
                                     action='store',
@@ -262,14 +261,14 @@ def subcommands(subparsers):
                                     dest='admin_key',
                                     help='Admin keystone key or password')
 
-    """argparse options for the remove command """ 
+    """argparse options for the remove command """
     remove_parser = subparsers.add_parser('remove', help='remove a Cloud')
 
     remove_parser.add_argument(action='store',
                                dest='cloud_id',
                                help='The id of the cloud you want to remove')
 
-    """argparse options for the start command """ 
+    """argparse options for the start command """
     start_parser = subparsers.add_parser('start', help='start tests on cloud')
 
     start_parser.add_argument(action='store',
@@ -282,7 +281,7 @@ def subcommands(subparsers):
                               dest='sha',
                               help='optionally specify a sha for the tempest version to use')
 
-    """argparse options for the status command """ 
+    """argparse options for the status command """
     status_parser = subparsers.add_parser('status', help='returns status of test')
     status_parser.add_argument(action='store',
                                dest='test_id',
@@ -294,34 +293,35 @@ def subcommands(subparsers):
                                help='list status history')
 
 
-    """argparse options for the cancel command """ 
+    """argparse options for the cancel command """
     cancel_parser = subparsers.add_parser('cancel', help='cancel a test')
-    
+
     cancel_parser.add_argument(action='store',
                                dest='test_id',
                                help='The id of the test you want to cancel')
 
 
 
-    """argparse options for the result command """ 
+    """argparse options for the result command """
     result_parser = subparsers.add_parser('result', help='provides results')
     result_parser.add_argument(action='store',
                                dest='test_id',
                                help='The id of the test you want to cancel')
-    
-    """argparse options for the tests command """ 
+
+    """argparse options for the tests command """
     tests_parser = subparsers.add_parser('tests', help='list tests')
 
     tests_parser.add_argument(action='store',
                               dest='cloud_id',
                               help='The id of the cloud you want to test')
 
-    """argparse options for the tests command """ 
+    """argparse options for the tests command """
     tests_parser = subparsers.add_parser('config', help='output tempest config for cloud')
 
     tests_parser.add_argument(action='store',
                               dest='cloud_id',
                               help='The id of the cloud you want a config for')
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -362,7 +362,6 @@ def main():
     else:
         parser.print_help()
         sys.exit(1)
-
 
 
 if __name__ == '__main__':

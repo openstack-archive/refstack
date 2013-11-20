@@ -13,15 +13,15 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-"""striaght up sqlalchemy declarative_base model structure. 
+"""striaght up sqlalchemy declarative_base model structure.
 
-    *I created this because i was having a problem getting 
-    the cli to use the models that were generated for the flask 
-    webapp. The plan is to use this for both. But I have not 
+    *I created this because i was having a problem getting
+    the cli to use the models that were generated for the flask
+    webapp. The plan is to use this for both. But I have not
     started my serious efforts on the web interface.  dl 10.2013
 
-    *For now in dev I have this database in /tmp we can talk 
-    about someplace else for it by default. 
+    *For now in dev I have this database in /tmp we can talk
+    about someplace else for it by default.
 """
 from datetime import datetime
 from sqlalchemy import create_engine
@@ -36,7 +36,6 @@ db = scoped_session(sessionmaker(autocommit=False,
 
 Base = declarative_base()
 Base.query = db.query_property()
-
 
 
 class User(Base):
@@ -62,11 +61,10 @@ class User(Base):
         return self.name
 
 
-
 """
-Note: The vendor list will be pre-populated from the sponsoring company database. 
+Note: The vendor list will be pre-populated from the sponsoring company database.
 TODO: better define the vendor object and its relationship with user
-it needs the ability to facilitate a login. 
+it needs the ability to facilitate a login.
 """
 class Vendor(Base):
     __tablename__ = 'vendor'
@@ -79,13 +77,12 @@ class Vendor(Base):
         return self.vendor_name
 
 
-
 class Cloud(Base):
-    """*need to take the time to descibe this stuff in detail. 
+    """*need to take the time to descibe this stuff in detail.
     """
     __tablename__ = 'cloud'
     id = Column(Integer, primary_key=True)
-    
+
     label = Column(String(60), unique=False)
     endpoint = Column(String(120), unique=True)
     test_user = Column(String(80), unique=False)
@@ -112,7 +109,6 @@ class Test(Base):
         self.cloud_id = cloud_id
 
 
-
 class TestStatus(Base):
     __tablename__ = 'test_status'
     id = Column(Integer, primary_key=True)
@@ -128,7 +124,6 @@ class TestStatus(Base):
         self.test_id = test_id
         self.message = message
         self.finished = finished
-
 
 
 class TestResults(Base):

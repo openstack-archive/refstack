@@ -13,8 +13,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import os
-import requests
 from flask import Flask, abort, flash, request, redirect, url_for, \
     render_template, g, session
 from flask_openid import OpenID
@@ -26,7 +24,7 @@ from wtforms import Form, BooleanField, TextField, \
     PasswordField, validators
 from flask_mail import Mail
 
-from refstack.app import app 
+from refstack.app import app
 from refstack.models import *
 
 mail = Mail(app)
@@ -37,10 +35,9 @@ admin = Admin(app, base_template='admin/master.html')
 
 
 class SecureView(ModelView):
-    """ """
     def is_accessible(self):
-        """ """
         return g.user.su is not False
+
 
 admin.add_view(SecureView(Vendor, db))
 admin.add_view(SecureView(Cloud, db))
@@ -49,17 +46,17 @@ admin.add_view(SecureView(User, db))
 
 @app.before_request
 def before_request():
-    """Runs before the request it self"""
+    """Runs before the request itself."""
     g.user = None
     if 'openid' in session:
         g.user = User.query.filter_by(openid=session['openid']).first()
-    
+
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
-    """Index view"""
+    """Index view."""
     if g.user is not None:
-        # something else 
+        # something else
         clouds = Cloud.query.filter_by(user_id=g.user.id).all()
         return render_template('home.html', clouds=clouds)
     else:
@@ -70,15 +67,16 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 @oid.loginhandler
 def login():
-    """Does the login via OpenID.  Has to call into `oid.try_login`
-    to start the OpenID machinery.
+    """Does the login via OpenID.
+
+    Has to call into `oid.try_login` to start the OpenID machinery.
     """
     # if we are already logged in, go back to were we came from
     if g.user is not None:
         return redirect(oid.get_next_url())
     return oid.try_login("https://login.launchpad.net/",
                           ask_for=['email', 'nickname'])
-    
+
 
 @oid.after_login
 def create_or_login(resp):
@@ -120,20 +118,22 @@ def create_profile():
     return render_template(
         'create_profile.html', next_url=oid.get_next_url())
 
+
 @app.route('/delete-cloud/<int:cloud_id>', methods=['GET', 'POST'])
 def delete_cloud(cloud_id):
-    """ delete function for clouds"""
+    """Delete function for clouds."""
     c = Cloud.query.filter_by(id=cloud_id).first()
 
     if not c:
         flash(u'Not a valid Cloud ID!')
     elif not c.user_id == g.user.id:
-        flash(u"This isn't your cloud!")         
+        flash(u"This isn't your cloud!")
     else:
         db.delete(c)
         db.commit()
 
     return redirect('/')
+
 
 @app.route('/edit-cloud/<int:cloud_id>', methods=['GET', 'POST'])
 def edit_cloud(cloud_id):
@@ -143,7 +143,7 @@ def edit_cloud(cloud_id):
         flash(u'Not a valid Cloud ID!')
         return redirect('/')
     elif not c.user_id == g.user.id:
-        flash(u"This isn't your cloud!") 
+        flash(u"This isn't your cloud!")
 
     if request.method == 'POST':
         #validate this biotch
@@ -169,7 +169,7 @@ def edit_cloud(cloud_id):
             c.admin_endpoint = request.form['admin_endpoint']
             c.admin_user = request.form['admin_user']
             c.admin_key = request.form['admin_key']
-            
+
             db.commit()
 
             flash(u'Cloud Saved!')
@@ -190,8 +190,8 @@ def edit_cloud(cloud_id):
 
 @app.route('/create-cloud', methods=['GET', 'POST'])
 def create_cloud():
-    """This is the handler for creating a new cloud"""
-    
+    """This is the handler for creating a new cloud."""
+
     #if g.user is None:
     #    abort(401)
     if request.method == 'POST':
@@ -227,10 +227,9 @@ def create_cloud():
     return render_template('create_cloud.html', next_url='/')
 
 
-
 @app.route('/profile/edit', methods=['GET', 'POST'])
 def edit_profile():
-    """Updates a profile"""
+    """Updates a profile."""
     if g.user is None:
         abort(401)
     form = dict(name=g.user.name, email=g.user.email)
@@ -258,16 +257,16 @@ def edit_profile():
 
 @app.route('/profile', methods=['GET', 'POST'])
 def view_profile():
-    """Updates a profile"""
+    """Updates a profile."""
     if g.user is None:
         abort(401)
-    
+
     return render_template('view_profile.html', user=g.user)
 
 
 @app.route('/logout')
 def logout():
-    """logout route"""
+    """Log out."""
     session.pop('openid', None)
     flash(u'You have been signed out')
     return redirect(oid.get_next_url())

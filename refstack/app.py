@@ -14,9 +14,12 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import os
-from flask import Flask, session
 
+"""Common Flask app config."""
+
+import os
+
+import flask
 
 
 #db_path = os.path.abspath(
@@ -24,7 +27,9 @@ from flask import Flask, session
 
 db_path = 'tmp'
 
-app = Flask(__name__)
+
+app = flask.Flask(__name__)
+
 
 app.config['MAILGUN_KEY'] = '#@#@#@#@'
 app.config['MAILGUN_DOMAIN'] = 'refstack.org'

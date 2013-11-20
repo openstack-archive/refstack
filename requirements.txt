@@ -12,7 +12,7 @@ WTForms==1.0.4
 Werkzeug==0.8.3
 alembic==0.5.0
 gunicorn==0.17.4
-psycopg2==2.5
+#psycopg2==2.5
 pyOpenSSL==0.13
 pycrypto==2.6
 python-openid==2.2.5

@@ -15,7 +15,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import os
+
 from web import app
+
 
 app.logger.setLevel('DEBUG')
 port = int(os.environ.get('PORT', 5000))
