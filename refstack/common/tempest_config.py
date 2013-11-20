@@ -17,11 +17,10 @@ from keystoneclient.v2_0 import client
 from refstack.models import *
 
 
-
 class TempestConfig(object):
     """temptest config options. gets converted to a tempest config file"""
     config = {}
-    
+
     def output(self):
         """outputs config in propper format"""
         output = ''
@@ -34,19 +33,18 @@ class TempestConfig(object):
 
 
     def build_config_from_keystone(self):
-        """uses the keystoneclient libs to query a clouds endpoint and 
-        retrive a service catelog. that it then uses to populate the 
+        """uses the keystoneclient libs to query a clouds endpoint and
+        retrive a service catelog. that it then uses to populate the
         values for our specific tempest config"""
         # load an existing cloud
         self._cloud = db.query(Cloud).filter_by(id=self.cloud_id).first()
 
         if not self._cloud:
-            # cloud not found.. invalid id 
-            # maybe I should do someting about this .. 
+            # cloud not found.. invalid id
+            # maybe I should do someting about this ..
             return None
 
-
-        # This stuff we know before hitting up keystone 
+        # This stuff we know before hitting up keystone
         self.config['identity']['uri'] = self._cloud.admin_endpoint
         self.config['identity']['admin_username'] = self._cloud.admin_user
         self.config['identity']['admin_password'] = self._cloud.admin_key
@@ -54,7 +52,7 @@ class TempestConfig(object):
         self.config['identity']['password'] = self._cloud.test_key
         self.config['identity']['tenant_name'] = self._cloud.admin_user
 
-        # keystone client object 
+        # keystone client object
         self._keystone = client.Client(username=self._cloud.admin_user,
                                        password=self._cloud.admin_key,
                                        tenant_name=self._cloud.admin_user,
@@ -87,13 +85,12 @@ class TempestConfig(object):
             if self.service_catalog.has_key(service):
                 self.config['service_available'][service] = True
 
-        # boto settings 
+        # boto settings
         self.config['boto']['ec2_url'] = self.service_catalog['ec2']
         self.config['boto']['s3_url'] = self.service_catalog['s3']
-        
+
         # return the actual config
         return self.output()
-
 
 
     def __init__(self, cloud_id):
@@ -190,7 +187,7 @@ class TempestConfig(object):
             'backend2_name': 'BACKEND_2',
             'storage_protocol': 'iSCSI',
             'vendor_name': 'Open Source' }
-        
+
         self.config['object-storage'] = {
             'catalog_type': 'object-store',
             'container_sync_timeout': 120,

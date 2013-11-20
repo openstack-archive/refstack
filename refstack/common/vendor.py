@@ -17,7 +17,7 @@ from refstack.common import *
 
 
 class Vendor:
-    """ Vendor functions"""
+    """Vendor functions"""
     def __init__(self, id):
         """ init method loads specified id or fails"""
 
