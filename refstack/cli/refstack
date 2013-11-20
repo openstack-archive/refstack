@@ -35,12 +35,14 @@ def add(args):
     outputs confirmation along with the id of the cloud that was just added.
     endpoint is a unique key so you only get to add one record per end point"""
     try:
-        cloud = Cloud(args.endpoint,
-                      args.test_user,
-                      args.test_key,
-                      args.admin_endpoint,
-                      args.admin_user,
-                      args.admin_key)
+        cloud = Cloud()
+
+        cloud.endpoint = args.endpoint
+        cloud.test_user = args.test_user
+        cloud.test_key = args.test_key
+        cloud.admin_endpoint = args.admin_endpoint
+        cloud.admin_user = args.admin_user
+        cloud.admin_key = args.admin_key
 
         db.add(cloud)
         db.commit()
@@ -124,16 +126,17 @@ def start(args):
     db.commit()
     print 'test added with id: %s' % test.id
 
-
+    
+    '''
     # do cleanup and then mark the last status to 'canceled'
     test_result = TestResults()
     test_result.test_id = test.id
-    test_result.blob = result 
+    test_result.subunit = result 
 
     
     db.add(test_result)
     db.commit()
-
+    '''
 
 def status(args):
     """get the status of a running test

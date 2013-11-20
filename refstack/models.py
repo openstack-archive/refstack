@@ -138,6 +138,7 @@ class TestResults(Base):
     test = relationship('Test',
                           backref=backref('results',lazy='dynamic'))
     timestamp = Column(DateTime, default=datetime.now)
+    subunit = Column(String(8192))
     blob = Column(Binary)
 
 
