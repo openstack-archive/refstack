@@ -13,6 +13,10 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import os
+import logging
+
+import flask
 from flask import Flask, abort, flash, request, redirect, url_for, \
     render_template, g, session
 from flask_openid import OpenID
@@ -24,11 +28,20 @@ from wtforms import Form, BooleanField, TextField, \
     PasswordField, validators
 from flask_mail import Mail
 
-from refstack.app import app
+from refstack import app as base_app
+from refstack import utils
 from refstack.models import *
 
-mail = Mail(app)
 
+# TODO(termie): temporary hack for first-run experience
+utils.make_dir(utils.INSTANCE_FOLDER_PATH)
+
+# TODO(termie): transition all the routes below to blueprints
+# TODO(termie): use extensions setup from the create_app() call
+
+app = base_app.create_app()
+
+mail = Mail(app)
 # setup flask-openid
 oid = OpenID(app)
 admin = Admin(app, base_template='admin/master.html')
@@ -270,6 +283,3 @@ def logout():
     session.pop('openid', None)
     flash(u'You have been signed out')
     return redirect(oid.get_next_url())
-
-
-
