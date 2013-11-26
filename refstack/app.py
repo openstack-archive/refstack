@@ -56,8 +56,7 @@ def create_app(config=None, app_name=None, blueprints=None):
     configure_app(app, config)
     configure_hook(app)
     configure_blueprints(app, blueprints)
-    # NOTE(termie): commented out until we switch the web config to this
-    #configure_extensions(app)
+    configure_extensions(app)
     configure_logging(app)
     configure_template_filters(app)
     configure_error_handlers(app)
@@ -90,31 +89,31 @@ def configure_extensions(app):
     # flask-sqlalchemy
     db.init_app(app)
 
-    # flask-mail
-    mail.init_app(app)
+    ## flask-mail
+    #mail.init_app(app)
 
-    # flask-cache
-    cache.init_app(app)
+    ## flask-cache
+    #cache.init_app(app)
 
-    # flask-babel
-    babel = Babel(app)
+    ## flask-babel
+    #babel = Babel(app)
 
-    @babel.localeselector
-    def get_locale():
-        accept_languages = app.config.get('ACCEPT_LANGUAGES')
-        return request.accept_languages.best_match(accept_languages)
+    #@babel.localeselector
+    #def get_locale():
+    #    accept_languages = app.config.get('ACCEPT_LANGUAGES')
+    #    return request.accept_languages.best_match(accept_languages)
 
-    # flask-login
-    login_manager.login_view = 'frontend.login'
-    login_manager.refresh_view = 'frontend.reauth'
+    ## flask-login
+    #login_manager.login_view = 'frontend.login'
+    #login_manager.refresh_view = 'frontend.reauth'
 
-    @login_manager.user_loader
-    def load_user(id):
-        return User.query.get(id)
-    login_manager.setup_app(app)
+    #@login_manager.user_loader
+    #def load_user(id):
+    #    return User.query.get(id)
+    #login_manager.setup_app(app)
 
-    # flask-openid
-    oid.init_app(app)
+    ## flask-openid
+    #oid.init_app(app)
 
 
 def configure_blueprints(app, blueprints):
