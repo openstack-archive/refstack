@@ -4,16 +4,15 @@
 
 import os
 
-from utils import make_dir, INSTANCE_FOLDER_PATH
+from utils import make_dir, INSTANCE_FOLDER_PATH, PROJECT_ROOT
 
 
 class BaseConfig(object):
 
-    PROJECT = "fbone"
+    PROJECT = "refstack"
 
-    # Get app root path, also can use flask.root_path.
-    # ../../config.py
-    PROJECT_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+    # The app root path, also can use flask.root_path.
+    PROJECT_ROOT = PROJECT_ROOT
 
     DEBUG = False
     TESTING = False

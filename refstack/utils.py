@@ -6,15 +6,17 @@
     Utils has nothing to do with models and views.
 """
 
-import string
-import random
-import os
-
 from datetime import datetime
+import logging
+import os
+import pprint
+import random
+import string
 
 
-# Instance folder path, make it independent.
-INSTANCE_FOLDER_PATH = os.path.join('/tmp', 'instance')
+# Instance folder path, if set, otherwise project root.
+PROJECT_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+INSTANCE_FOLDER_PATH = os.environ.get('INSTANCE_FOLDER_PATH', PROJECT_ROOT)
 
 ALLOWED_AVATAR_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
@@ -104,3 +106,11 @@ def make_dir(dir_path):
             os.mkdir(dir_path)
     except Exception, e:
         raise e
+
+
+### Begin Non-Fbone stuff
+
+
+def dump_config(app):
+    """Useful to dump app config for debug purposes."""
+    return pprint.pformat(dict(app.config.iteritems()))
