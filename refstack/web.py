@@ -29,12 +29,13 @@ from wtforms import Form, BooleanField, TextField, \
 from flask_mail import Mail
 
 from refstack import app as base_app
-from refstack import utils
+from refstack.extensions import db
 from refstack.extensions import oid
 from refstack.models import Cloud
 from refstack.models import Test
 from refstack.models import TestResults
 from refstack.models import TestStatus
+from refstack.models import User
 from refstack.models import Vendor
 
 
@@ -114,8 +115,8 @@ def create_profile():
             flash(u'Error: you have to enter a valid email address')
         else:
             flash(u'Profile successfully created')
-            db.add(User(name, email, session['openid']))
-            db.commit()
+            db.session.add(User(name, email, session['openid']))
+            db.session.commit()
             return redirect(oid.get_next_url())
     return render_template(
         'create_profile.html', next_url=oid.get_next_url())
@@ -131,8 +132,8 @@ def delete_cloud(cloud_id):
     elif not c.user_id == g.user.id:
         flash(u"This isn't your cloud!")
     else:
-        db.delete(c)
-        db.commit()
+        db.session.delete(c)
+        db.session.commit()
 
     return redirect('/')
 
@@ -172,7 +173,7 @@ def edit_cloud(cloud_id):
             c.admin_user = request.form['admin_user']
             c.admin_key = request.form['admin_key']
 
-            db.commit()
+            db.session.commit()
 
             flash(u'Cloud Saved!')
             return redirect('/')
@@ -222,8 +223,8 @@ def create_cloud():
             c.admin_user = request.form['admin_user']
             c.admin_key = request.form['admin_key']
 
-            db.add(c)
-            db.commit()
+            db.session.add(c)
+            db.session.commit()
             return redirect('/')
 
     return render_template('create_cloud.html', next_url='/')
@@ -237,8 +238,8 @@ def edit_profile():
     form = dict(name=g.user.name, email=g.user.email)
     if request.method == 'POST':
         if 'delete' in request.form:
-            db.delete(g.user)
-            db.commit()
+            db.session.delete(g.user)
+            db.session.commit()
             session['openid'] = None
             flash(u'Profile deleted')
             return redirect(url_for('index'))
@@ -252,7 +253,7 @@ def edit_profile():
             flash(u'Profile successfully created')
             g.user.name = form['name']
             g.user.email = form['email']
-            db.commit()
+            db.session.commit()
             return redirect(url_for('edit_profile'))
     return render_template('edit_profile.html', form=form)
 
