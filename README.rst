@@ -32,4 +32,14 @@ This is our documentation for how we get this set up::
   # gunicorn:
   gunicorn refstack.web:app
 
+  # To actually configure this winner, check out the config section and
+  # crack open refstack.cfg in vim.
+  # `vim refstack.cfg`
+
   # Now browse to http://localhost:8000
+
+
+Configuration
+-------------
+
+Coming soon!

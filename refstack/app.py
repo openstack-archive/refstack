@@ -15,7 +15,11 @@ from .config import DefaultConfig
 #from .admin import admin
 #from .extensions import db, mail, cache, login_manager, oid
 from .extensions import db, mail, login_manager, oid
-from .utils import INSTANCE_FOLDER_PATH
+
+from refstack import utils
+
+
+INSTANCE_FOLDER_PATH = utils.INSTANCE_FOLDER_PATH
 
 
 # For import *
@@ -38,17 +42,27 @@ def create_app(config=None, app_name=None, blueprints=None):
     if blueprints is None:
         blueprints = DEFAULT_BLUEPRINTS
 
+    # NOTE(termie): Flask has this new instance_path stuff that allows
+    # you to keep config and such in different places, but I don't really
+    # see how that is going to be very helpful, so we're going to stick
+    # to using config relative to the root unless we explicitly set such
+    # a path in the INSTANCE_FOLDER_PATH environment variable.
     app = Flask(app_name,
                 instance_path=INSTANCE_FOLDER_PATH,
                 instance_relative_config=True)
+
+
+
     configure_app(app, config)
     configure_hook(app)
     configure_blueprints(app, blueprints)
-    # NOTE(termie): commented out until we switch the web config to this
-    #configure_extensions(app)
+    configure_extensions(app)
     configure_logging(app)
     configure_template_filters(app)
     configure_error_handlers(app)
+
+    if app.debug:
+        print utils.dump_config(app)
 
     return app
 
@@ -59,8 +73,10 @@ def configure_app(app, config=None):
     # http://flask.pocoo.org/docs/api/#configuration
     app.config.from_object(DefaultConfig)
 
-    # http://flask.pocoo.org/docs/config/#instance-folders
-    app.config.from_pyfile('production.cfg', silent=True)
+    # If we've set the INSTANCE_FOLDER_PATH environment var, this may be
+    # loaded from an instance folder, otherwise relative to flask.root_path.
+    #   http://flask.pocoo.org/docs/config/#instance-folders
+    app.config.from_pyfile('refstack.cfg', silent=True)
 
     if config:
         app.config.from_object(config)
@@ -73,31 +89,31 @@ def configure_extensions(app):
     # flask-sqlalchemy
     db.init_app(app)
 
-    # flask-mail
-    mail.init_app(app)
+    ## flask-mail
+    #mail.init_app(app)
 
-    # flask-cache
-    cache.init_app(app)
+    ## flask-cache
+    #cache.init_app(app)
 
-    # flask-babel
-    babel = Babel(app)
+    ## flask-babel
+    #babel = Babel(app)
 
-    @babel.localeselector
-    def get_locale():
-        accept_languages = app.config.get('ACCEPT_LANGUAGES')
-        return request.accept_languages.best_match(accept_languages)
+    #@babel.localeselector
+    #def get_locale():
+    #    accept_languages = app.config.get('ACCEPT_LANGUAGES')
+    #    return request.accept_languages.best_match(accept_languages)
 
-    # flask-login
-    login_manager.login_view = 'frontend.login'
-    login_manager.refresh_view = 'frontend.reauth'
+    ## flask-login
+    #login_manager.login_view = 'frontend.login'
+    #login_manager.refresh_view = 'frontend.reauth'
 
-    @login_manager.user_loader
-    def load_user(id):
-        return User.query.get(id)
-    login_manager.setup_app(app)
+    #@login_manager.user_loader
+    #def load_user(id):
+    #    return User.query.get(id)
+    #login_manager.setup_app(app)
 
-    # flask-openid
-    oid.init_app(app)
+    ## flask-openid
+    #oid.init_app(app)
 
 
 def configure_blueprints(app, blueprints):
@@ -128,7 +144,7 @@ def configure_logging(app):
     import logging
     from logging.handlers import SMTPHandler
 
-    # Set info level on logger, which might be overwritten by handers.
+    # Set info level on logger, which might be overwritten by handlers.
     # Suppress DEBUG messages.
     app.logger.setLevel(logging.INFO)
 

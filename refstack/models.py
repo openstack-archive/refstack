@@ -13,44 +13,25 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-"""striaght up sqlalchemy declarative_base model structure.
 
-    *I created this because i was having a problem getting
-    the cli to use the models that were generated for the flask
-    webapp. The plan is to use this for both. But I have not
-    started my serious efforts on the web interface.  dl 10.2013
-
-    *For now in dev I have this database in /tmp we can talk
-    about someplace else for it by default.
-"""
 from datetime import datetime
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker,relationship, backref
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Binary, Boolean
 
-engine = create_engine('sqlite:////tmp/refstack.db', convert_unicode=True)
-db = scoped_session(sessionmaker(autocommit=False,
-                                 autoflush=False,
-                                 bind=engine))
-
-Base = declarative_base()
-Base.query = db.query_property()
+from .extensions import db
 
 
-class User(Base):
+class User(db.Model):
     __tablename__ = 'user'
-    id = Column(Integer, primary_key=True)
-    vendor_id = Column(Integer, ForeignKey('vendor.id'))
-    vendor = relationship('Vendor',
-                             backref=backref('clouds',
+    id = db.Column(db.Integer, primary_key=True)
+    vendor_id = db.Column(db.Integer, db.ForeignKey('vendor.id'))
+    vendor = db.relationship('Vendor',
+                             backref=db.backref('clouds',
                                                 lazy='dynamic'))
-    name = Column(String(60))
-    email = Column(String(200), unique=True)
-    email_verified = Column(Boolean)
-    openid = Column(String(200), unique=True)
-    authorized = Column(Boolean, default=False)
-    su = Column(Boolean, default=False)
+    name = db.Column(db.String(60))
+    email = db.Column(db.String(200), unique=True)
+    email_verified = db.Column(db.Boolean)
+    openid = db.Column(db.String(200), unique=True)
+    authorized = db.Column(db.Boolean, default=False)
+    su = db.Column(db.Boolean, default=False)
 
     def __init__(self, name, email, openid):
         self.name = name
@@ -60,64 +41,63 @@ class User(Base):
     def __str__(self):
         return self.name
 
-
 """
 Note: The vendor list will be pre-populated from the sponsoring company database.
 TODO: better define the vendor object and its relationship with user
 it needs the ability to facilitate a login.
 """
-class Vendor(Base):
+class Vendor(db.Model):
     __tablename__ = 'vendor'
-    id = Column(Integer, primary_key=True)
-    vendor_name = Column(String(80), unique=True)
-    contact_email = Column(String(120), unique=True)
-    contact_name = Column(String(120), unique=False)
+    id = db.Column(db.Integer, primary_key=True)
+    vendor_name = db.Column(db.String(80), unique=True)
+    contact_email = db.Column(db.String(120), unique=True)
+    contact_name = db.Column(db.String(120), unique=False)
 
     def __str__(self):
         return self.vendor_name
 
 
-class Cloud(Base):
+class Cloud(db.Model):
     """*need to take the time to descibe this stuff in detail.
     """
     __tablename__ = 'cloud'
-    id = Column(Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
 
-    label = Column(String(60), unique=False)
-    endpoint = Column(String(120), unique=True)
-    test_user = Column(String(80), unique=False)
-    test_key = Column(String(80), unique=False)
-    admin_endpoint = Column(String(120), unique=False)
-    admin_user = Column(String(80), unique=False)
-    admin_key = Column(String(80), unique=False)
+    label = db.Column(db.String(60), unique=False)
+    endpoint = db.Column(db.String(120), unique=True)
+    test_user = db.Column(db.String(80), unique=False)
+    test_key = db.Column(db.String(80), unique=False)
+    admin_endpoint = db.Column(db.String(120), unique=False)
+    admin_user = db.Column(db.String(80), unique=False)
+    admin_key = db.Column(db.String(80), unique=False)
 
-    user_id = Column(Integer, ForeignKey('user.id'))
-    user = relationship('User',
-                          backref=backref('clouds',lazy='dynamic'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship('User',
+                           backref=db.backref('clouds',lazy='dynamic'))
 
 
-class Test(Base):
+class Test(db.Model):
     __tablename__ = 'test'
-    id = Column(Integer, primary_key=True)
-    cloud_id = Column(Integer, ForeignKey('cloud.id'))
-    cloud = relationship('Cloud',
-                          backref=backref('tests',lazy='dynamic'))
-    config = Column(String(4096))
+    id = db.Column(db.Integer, primary_key=True)
+    cloud_id = db.Column(db.Integer, db.ForeignKey('cloud.id'))
+    cloud = db.relationship('Cloud',
+                            backref=db.backref('tests',lazy='dynamic'))
+    config = db.Column(db.String(4096))
 
 
     def __init__(self, cloud_id):
         self.cloud_id = cloud_id
 
 
-class TestStatus(Base):
+class TestStatus(db.Model):
     __tablename__ = 'test_status'
-    id = Column(Integer, primary_key=True)
-    test_id = Column(Integer, ForeignKey('test.id'))
-    test = relationship('Test',
-                          backref=backref('status',lazy='dynamic'))
-    message = Column(String(1024))
-    finished = Column(Boolean, default=False)
-    timestamp = Column(DateTime, default=datetime.now)
+    id = db.Column(db.Integer, primary_key=True)
+    test_id = db.Column(db.Integer, db.ForeignKey('test.id'))
+    test = db.relationship('Test',
+                           backref=db.backref('status',lazy='dynamic'))
+    message = db.Column(db.String(1024))
+    finished = db.Column(db.Boolean, default=False)
+    timestamp = db.Column(db.DateTime, default=datetime.now)
 
 
     def __init__(self,test_id, message, finished=False):
@@ -126,14 +106,14 @@ class TestStatus(Base):
         self.finished = finished
 
 
-class TestResults(Base):
+class TestResults(db.Model):
     __tablename__ = 'test_results'
-    id = Column(Integer, primary_key=True)
-    test_id = Column(Integer, ForeignKey('test.id'))
-    test = relationship('Test',
-                          backref=backref('results',lazy='dynamic'))
-    timestamp = Column(DateTime, default=datetime.now)
-    subunit = Column(String(8192))
-    blob = Column(Binary)
+    id = db.Column(db.Integer, primary_key=True)
+    test_id = db.Column(db.Integer, db.ForeignKey('test.id'))
+    test = db.relationship('Test',
+                           backref=db.backref('results',lazy='dynamic'))
+    timestamp = db.Column(db.DateTime, default=datetime.now)
+    subunit = db.Column(db.String(8192))
+    blob = db.Column(db.Binary)
 
 

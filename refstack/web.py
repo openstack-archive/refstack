@@ -33,9 +33,6 @@ from refstack import utils
 from refstack.models import *
 
 
-# TODO(termie): temporary hack for first-run experience
-utils.make_dir(utils.INSTANCE_FOLDER_PATH)
-
 # TODO(termie): transition all the routes below to blueprints
 # TODO(termie): use extensions setup from the create_app() call
 
