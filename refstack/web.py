@@ -30,7 +30,12 @@ from flask_mail import Mail
 
 from refstack import app as base_app
 from refstack import utils
-from refstack.models import *
+from refstack.extensions import oid
+from refstack.models import Cloud
+from refstack.models import Test
+from refstack.models import TestResults
+from refstack.models import TestStatus
+from refstack.models import Vendor
 
 
 # TODO(termie): transition all the routes below to blueprints
@@ -39,19 +44,6 @@ from refstack.models import *
 app = base_app.create_app()
 
 mail = Mail(app)
-# setup flask-openid
-oid = OpenID(app)
-admin = Admin(app, base_template='admin/master.html')
-
-
-class SecureView(ModelView):
-    def is_accessible(self):
-        return g.user.su is not False
-
-
-admin.add_view(SecureView(Vendor, db))
-admin.add_view(SecureView(Cloud, db))
-admin.add_view(SecureView(User, db))
 
 
 @app.before_request

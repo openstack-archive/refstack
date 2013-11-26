@@ -14,7 +14,10 @@ from .config import DefaultConfig
 #from .api import api
 #from .admin import admin
 #from .extensions import db, mail, cache, login_manager, oid
-from .extensions import db, mail, login_manager, oid
+from refstack import admin
+from .extensions import db
+from .extensions import oid
+
 
 from refstack import utils
 
@@ -89,6 +92,10 @@ def configure_extensions(app):
     # flask-sqlalchemy
     db.init_app(app)
 
+    # flask-admin
+    admin.init_app(app)
+    admin.configure_admin()
+
     ## flask-mail
     #mail.init_app(app)
 
@@ -112,8 +119,8 @@ def configure_extensions(app):
     #    return User.query.get(id)
     #login_manager.setup_app(app)
 
-    ## flask-openid
-    #oid.init_app(app)
+    # flask-openid
+    oid.init_app(app)
 
 
 def configure_blueprints(app, blueprints):
