@@ -41,6 +41,20 @@ class User(db.Model):
     def __str__(self):
         return self.name
 
+
+class ApiKey(db.Model):
+    __tablename__ = 'apikey'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(60))
+    key = db.Column(db.String(200))
+    openid = db.Column(db.String(200))
+    timestamp = db.Column(db.DateTime, default=datetime.now)
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship('User',
+                           backref=db.backref('apikeys', lazy='dynamic'))
+
+
 """
 Note: The vendor list will be pre-populated from the sponsoring company database.
 TODO: better define the vendor object and its relationship with user

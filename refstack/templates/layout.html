@@ -5,19 +5,19 @@
     <script src="{{ url_for('static', filename='jquery-1.10.1.min.js') }}"></script>
     <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
     <!-- refstack specific js-->
-    
+
 
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" />
     <link rel="stylesheet" type="text/css" href="/static/toast.css">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='refstack.css') }}">
     <!-- compiled and minified bootstrap JavaScript -->
-    
+
     {% block head_css %}{% endblock %}
   </head>
-  <body>	
+  <body>
   	<div class="container">
-  	  <div class="header">	
+  	  <div class="header">
         <a href="/" class="logo">
           <span class="glyphicon glyphicon-check"></span>
           Refstack
@@ -32,7 +32,7 @@
               <li class="dropdown">
                 <span class="glyphicon glyphicon-cog"></span>
                 <a data-toggle="dropdown" href="#">
-                  
+
                   Admin
                   <span class="caret"></span>
                 </a>
@@ -46,7 +46,7 @@
                   <li >
                       <a href="/admin/userview/">Users</a>
                   </li>
-                  
+
                 </ul>
               </li>
               <li>

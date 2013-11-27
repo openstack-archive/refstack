@@ -2,6 +2,12 @@
 
 # This file based on MIT licensed code at: https://github.com/imwilsonxu/fbone
 
+from flask.ext.admin import Admin
+admin = Admin()
+
+from flask.ext.restless import APIManager
+api = APIManager()
+
 from flask.ext.sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
