@@ -22,6 +22,7 @@ def init_app(app):
 
 
 def configure_admin(app):
+    admin.add_view(SecureView(models.ApiKey, db.session))
     admin.add_view(SecureView(models.Cloud, db.session))
     admin.add_view(SecureView(models.User, db.session))
     admin.add_view(SecureView(models.Vendor, db.session))
