@@ -5,6 +5,9 @@
 from flask.ext.admin import Admin
 admin = Admin()
 
+from flask.ext.restless import APIManager
+api = APIManager()
+
 from flask.ext.sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 

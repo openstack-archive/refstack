@@ -15,6 +15,7 @@ from .config import DefaultConfig
 #from .admin import admin
 #from .extensions import db, mail, cache, login_manager, oid
 from refstack import admin
+from refstack import api
 from .extensions import db
 from .extensions import oid
 
@@ -94,7 +95,11 @@ def configure_extensions(app):
 
     # flask-admin
     admin.init_app(app)
-    admin.configure_admin()
+    admin.configure_admin(app)
+
+    # flask-restless
+    api.init_app(app, flask_sqlalchemy_db=db)
+    api.configure_api(app)
 
     ## flask-mail
     #mail.init_app(app)

@@ -31,6 +31,8 @@ from flask_mail import Mail
 from refstack import app as base_app
 from refstack.extensions import db
 from refstack.extensions import oid
+from refstack import api
+from refstack.models import ApiKey
 from refstack.models import Cloud
 from refstack.models import Test
 from refstack.models import TestResults
@@ -50,9 +52,9 @@ mail = Mail(app)
 @app.before_request
 def before_request():
     """Runs before the request itself."""
-    g.user = None
+    flask.g.user = None
     if 'openid' in session:
-        g.user = User.query.filter_by(openid=session['openid']).first()
+        flask.g.user = User.query.filter_by(openid=session['openid']).first()
 
 
 @app.route('/', methods=['POST', 'GET'])
