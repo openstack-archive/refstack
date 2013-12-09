@@ -13,6 +13,10 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import os
+import logging
+
+import flask
 from flask import Flask, abort, flash, request, redirect, url_for, \
     render_template, g, session
 from flask_openid import OpenID
@@ -24,32 +28,33 @@ from wtforms import Form, BooleanField, TextField, \
     PasswordField, validators
 from flask_mail import Mail
 
-from refstack.app import app
-from refstack.models import *
+from refstack import app as base_app
+from refstack.extensions import db
+from refstack.extensions import oid
+from refstack import api
+from refstack.models import ApiKey
+from refstack.models import Cloud
+from refstack.models import Test
+from refstack.models import TestResults
+from refstack.models import TestStatus
+from refstack.models import User
+from refstack.models import Vendor
+
+
+# TODO(termie): transition all the routes below to blueprints
+# TODO(termie): use extensions setup from the create_app() call
+
+app = base_app.create_app()
 
 mail = Mail(app)
-
-# setup flask-openid
-oid = OpenID(app)
-admin = Admin(app, base_template='admin/master.html')
-
-
-class SecureView(ModelView):
-    def is_accessible(self):
-        return g.user.su is not False
-
-
-admin.add_view(SecureView(Vendor, db))
-admin.add_view(SecureView(Cloud, db))
-admin.add_view(SecureView(User, db))
 
 
 @app.before_request
 def before_request():
     """Runs before the request itself."""
-    g.user = None
+    flask.g.user = None
     if 'openid' in session:
-        g.user = User.query.filter_by(openid=session['openid']).first()
+        flask.g.user = User.query.filter_by(openid=session['openid']).first()
 
 
 @app.route('/', methods=['POST', 'GET'])
@@ -112,8 +117,8 @@ def create_profile():
             flash(u'Error: you have to enter a valid email address')
         else:
             flash(u'Profile successfully created')
-            db.add(User(name, email, session['openid']))
-            db.commit()
+            db.session.add(User(name, email, session['openid']))
+            db.session.commit()
             return redirect(oid.get_next_url())
     return render_template(
         'create_profile.html', next_url=oid.get_next_url())
@@ -129,8 +134,8 @@ def delete_cloud(cloud_id):
     elif not c.user_id == g.user.id:
         flash(u"This isn't your cloud!")
     else:
-        db.delete(c)
-        db.commit()
+        db.session.delete(c)
+        db.session.commit()
 
     return redirect('/')
 
@@ -170,7 +175,7 @@ def edit_cloud(cloud_id):
             c.admin_user = request.form['admin_user']
             c.admin_key = request.form['admin_key']
 
-            db.commit()
+            db.session.commit()
 
             flash(u'Cloud Saved!')
             return redirect('/')
@@ -220,8 +225,8 @@ def create_cloud():
             c.admin_user = request.form['admin_user']
             c.admin_key = request.form['admin_key']
 
-            db.add(c)
-            db.commit()
+            db.session.add(c)
+            db.session.commit()
             return redirect('/')
 
     return render_template('create_cloud.html', next_url='/')
@@ -235,8 +240,8 @@ def edit_profile():
     form = dict(name=g.user.name, email=g.user.email)
     if request.method == 'POST':
         if 'delete' in request.form:
-            db.delete(g.user)
-            db.commit()
+            db.session.delete(g.user)
+            db.session.commit()
             session['openid'] = None
             flash(u'Profile deleted')
             return redirect(url_for('index'))
@@ -250,7 +255,7 @@ def edit_profile():
             flash(u'Profile successfully created')
             g.user.name = form['name']
             g.user.email = form['email']
-            db.commit()
+            db.session.commit()
             return redirect(url_for('edit_profile'))
     return render_template('edit_profile.html', form=form)
 
@@ -270,6 +275,3 @@ def logout():
     session.pop('openid', None)
     flash(u'You have been signed out')
     return redirect(oid.get_next_url())
-
-
-
