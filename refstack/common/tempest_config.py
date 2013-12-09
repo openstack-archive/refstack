@@ -166,7 +166,7 @@ class TempestConfig(object):
         self.config['image'] = {
             'catalog_type': 'image',
             'api_version': 1,
-            'http_image': 'ttp://download.cirros-cloud.net/0.3.1/cirros-0.3.1-x86_64-uec.tar.gz'}
+            'http_image': 'http://download.cirros-cloud.net/0.3.1/cirros-0.3.1-x86_64-uec.tar.gz'}
 
         self.config['network'] = {
             'catalog_type': 'network',
