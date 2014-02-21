@@ -1,0 +1,142 @@
+<!doctype html>
+<html>
+  <head>
+    <title>{% block title %}Welcome{% endblock %} | RefStack</title>
+    <script src="{{ url_for('static', filename='jquery-1.10.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+    <!-- refstack specific js-->
+    
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" />
+    <link rel="stylesheet" type="text/css" href="/static/toast.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='refstack.css') }}">
+    <!-- compiled and minified bootstrap JavaScript -->
+    
+    {% block head_css %}{% endblock %}
+  </head>
+  <body>    
+    <div class="container">
+        <div class="header">  
+            <a href="/" class="logo">
+                <span class="glyphicon glyphicon-check"></span>
+                Refstack
+            </a>
+        </div>
+        <div class="inner_container">
+            
+            <div class="panel panel-default unit one-of-two">
+                <div class="panel-heading">
+                    <span class="glyphicon glyphicon-cloud"></span> Forced Results
+                </div>
+                <ul class="list-group">
+                    <li class="heading list-group-item">compute</li>
+                    <li class="list-group-item">aggregates<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">availability zone<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">fixed ips<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">flavors access<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">flavors extra specs<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">flavors<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">hosts<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">hypervisor<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">quotas<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">servers<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">services<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">simple tenant usage<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="heading list-group-item">flavors</li>
+                    <li class="list-group-item">floating ips<span class="glyphicon glyphicon-remove-circle"></span></li>
+                    <li class="list-group-item">floating ips actions<span class="glyphicon glyphicon-remove-circle"></span></li>
+                    <li class="list-group-item">list floating ips<span class="glyphicon glyphicon-remove-circle"></span></li>
+                    <li class="heading list-group-item">images</li>
+                    <li class="list-group-item">image metadata<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">images oneserver<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">images<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">list image filters<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">list images<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="heading list-group-item">keypairs</li>
+                    <li class="list-group-item">keypairs<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="heading list-group-item">limits</li>
+                    <li class="list-group-item">absolute limits<span class="glyphicon glyphicon-remove-circle"></span></li>
+                    <li class="heading list-group-item">security groups</li>
+                    <li class="list-group-item">security group rules<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">security groups<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="heading list-group-item">servers</li>
+                    <li class="list-group-item">attach interfaces<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">create server<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">disk config<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">instance actions<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">list server filters<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">list servers negative<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">multiple create<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">server actions<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">server addresses<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">server metadata<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">server personality<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">server rescue<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">servers negative<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">servers<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">virtual interfaces<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">authorization<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">auth token<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">extensions<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">live block migration<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">quotas<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="heading list-group-item">volumes</li>
+                    <li class="list-group-item">attach volume<span class="glyphicon glyphicon-remove-circle"></span></li>
+                    <li class="list-group-item">volumes get<span class="glyphicon glyphicon-remove-circle"></span></li>
+                    <li class="list-group-item">volumes list<span class="glyphicon glyphicon-remove-circle"></span></li>
+                    <li class="list-group-item">volumes negative<span class="glyphicon glyphicon-remove-circle"></span></li>
+                    <li class="heading list-group-item">identity</li>
+                    <li class="list-group-item">admin<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">roles<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">services<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">tenants<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">users<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="heading list-group-item">image</li>
+                    <li class="sub-heading list-group-item">v1</li>
+                    <li class="list-group-item">image members<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">images<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="sub-heading list-group-item">v2</li>
+                    <li class="list-group-item">images<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="heading list-group-item">network</li>
+                    <li class="list-group-item">floating ips<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">load balancer<span class="glyphicon glyphicon-remove-circle"></span></li>
+                    <li class="list-group-item">networks<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">quotas<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">routers<span class="glyphicon glyphicon-remove-circle"></span></li>
+                    <li class="list-group-item">security groups<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="heading list-group-item">object storage</li>
+                    <li class="list-group-item">account quotas<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">account services<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">container acl<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">container services<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">container staticweb<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">container sync<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">object expiry<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">object services<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">object version<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="heading list-group-item">orchestration</li>
+                    <li class="list-group-item">neutron resources<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">non empty stack<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">server cfn init<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">stacks<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="list-group-item">templates<span class="glyphicon glyphicon-ok-circle"></span></li>
+                    <li class="heading list-group-item">volume</li>
+                    <li class="list-group-item">multi backend<span class="glyphicon glyphicon-remove-circle"></span></li>
+                    <li class="list-group-item">volume types extra specs negative<span class="glyphicon glyphicon-remove-circle"></span></li>
+                    <li class="list-group-item">volume types extra specs<span class="glyphicon glyphicon-remove-circle"></span></li>
+                    <li class="list-group-item">volume types negative<span class="glyphicon glyphicon-remove-circle"></span></li>
+                    <li class="list-group-item">volume types<span class="glyphicon glyphicon-remove-circle"></span></li>
+                    <li class="list-group-item">volumes actions<span class="glyphicon glyphicon-remove-circle"></span></li>
+                    <li class="list-group-item">volumes get<span class="glyphicon glyphicon-remove-circle"></span></li>
+                    <li class="list-group-item">volumes list<span class="glyphicon glyphicon-remove-circle"></span></li>
+                    <li class="list-group-item">volumes negative<span class="glyphicon glyphicon-remove-circle"></span></li>
+                    <li class="list-group-item">volumes snapshots<span class="glyphicon glyphicon-remove-circle"></span></li>
+                </ul>
+                {% block body %}{% endblock %}
+            </div>
+        </div>
+    </div>
+   
+  </body>
+</html>
