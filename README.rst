@@ -43,3 +43,17 @@ Configuration
 -------------
 
 Coming soon!
+
+TODO:
+=====
+
+Metadata gathering:
+ - Number of nodes
+ - vCPUs
+ - Distro
+ - Deployment approach
+ - RAM
+
+Plugins:
+ - Cinder
+ - Neutron
