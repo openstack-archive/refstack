@@ -55,12 +55,11 @@ class ApiKey(db.Model):
                            backref=db.backref('apikeys', lazy='dynamic'))
 
 
-"""
-Note: The vendor list will be pre-populated from the sponsoring company database.
-TODO: better define the vendor object and its relationship with user
-it needs the ability to facilitate a login.
-"""
 class Vendor(db.Model):
+    """Note: The vendor list will be pre-populated from the
+    sponsoring company database.
+    TODO: better define the vendor object and its relationship with user
+    it needs the ability to facilitate a login."""
     __tablename__ = 'vendor'
     id = db.Column(db.Integer, primary_key=True)
     vendor_name = db.Column(db.String(80), unique=True)
@@ -87,7 +86,7 @@ class Cloud(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     user = db.relationship('User',
-                           backref=db.backref('clouds',lazy='dynamic'))
+                           backref=db.backref('clouds', lazy='dynamic'))
 
 
 class Test(db.Model):
@@ -95,9 +94,8 @@ class Test(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cloud_id = db.Column(db.Integer, db.ForeignKey('cloud.id'))
     cloud = db.relationship('Cloud',
-                            backref=db.backref('tests',lazy='dynamic'))
+                            backref=db.backref('tests', lazy='dynamic'))
     config = db.Column(db.String(4096))
-
 
     def __init__(self, cloud_id):
         self.cloud_id = cloud_id
@@ -108,13 +106,12 @@ class TestStatus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     test_id = db.Column(db.Integer, db.ForeignKey('test.id'))
     test = db.relationship('Test',
-                           backref=db.backref('status',lazy='dynamic'))
+                           backref=db.backref('status', lazy='dynamic'))
     message = db.Column(db.String(1024))
     finished = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, default=datetime.now)
 
-
-    def __init__(self,test_id, message, finished=False):
+    def __init__(self, test_id, message, finished=False):
         self.test_id = test_id
         self.message = message
         self.finished = finished
@@ -125,9 +122,7 @@ class TestResults(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     test_id = db.Column(db.Integer, db.ForeignKey('test.id'))
     test = db.relationship('Test',
-                           backref=db.backref('results',lazy='dynamic'))
+                           backref=db.backref('results', lazy='dynamic'))
     timestamp = db.Column(db.DateTime, default=datetime.now)
     subunit = db.Column(db.String(8192))
     blob = db.Column(db.Binary)
-
-

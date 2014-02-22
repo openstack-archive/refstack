@@ -32,7 +32,7 @@ class Default(object):
     MAILGUN_DOMAIN = 'refstack.org'
     SECRET_KEY = '#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@'
     SQLALCHEMY_DATABASE_URI = os.environ.get(
-              'DATABASE_URL', 'sqlite:///%s/refstack.db' % (db_path))
+        'DATABASE_URL', 'sqlite:///%s/refstack.db' % (db_path))
     DEBUG = True
     SECURITY_PASSWORD_HASH = 'sha512_crypt'
     SECURITY_PASSWORD_SALT = SECRET_KEY

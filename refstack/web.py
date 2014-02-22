@@ -1,6 +1,5 @@
 #
-# Copyright (c) 2013 Piston Cloud Computing, Inc.
-# All Rights Reserved.
+# Copyright (c) 2013 Piston Cloud Computing, Inc. All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -13,30 +12,26 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import os
-import logging
-
-import flask
-from flask import Flask, abort, flash, request, redirect, url_for, \
-    render_template, g, session
-from flask_openid import OpenID
-from flask.ext.admin import Admin, BaseView, expose, AdminIndexView
-from flask.ext.admin.contrib.sqlamodel import ModelView
-from flask.ext.security import Security, SQLAlchemyUserDatastore, \
-    UserMixin, RoleMixin, login_required
-from wtforms import Form, BooleanField, TextField, \
-    PasswordField, validators
+#
+from flask import abort, flash, request, redirect, url_for, \
+    render_template, g, session, flask
+#from flask_openid import OpenID
+#from flask.ext.admin import Admin, BaseView, expose, AdminIndexView
+#from flask.ext.admin.contrib.sqlamodel import ModelView
+#from flask.ext.security import Security, \
+#    UserMixin, login_required
+#from wtforms import TextField
 from flask_mail import Mail
 
 from refstack import app as base_app
 from refstack.extensions import db
 from refstack.extensions import oid
-from refstack import api
-from refstack.models import ApiKey
-from refstack.models import Cloud
-from refstack.models import Test
-from refstack.models import TestResults
-from refstack.models import TestStatus
+#from refstack import api
+#from refstack.models import ApiKey
+#from refstack.models import Cloud
+#from refstack.models import Test
+#from refstack.models import TestResults
+#from refstack.models import TestStatus
 from refstack.models import User
 from refstack.models import Vendor
 
@@ -62,7 +57,7 @@ def index():
     """Index view."""
     if g.user is not None:
         # something else
-        clouds = Cloud.query.filter_by(user_id=g.user.id).all()
+        clouds = db.Cloud.query.filter_by(user_id=g.user.id).all()
         return render_template('home.html', clouds=clouds)
     else:
         vendors = Vendor.query.all()
@@ -79,8 +74,9 @@ def login():
     # if we are already logged in, go back to were we came from
     if g.user is not None:
         return redirect(oid.get_next_url())
-    return oid.try_login("https://login.launchpad.net/",
-                          ask_for=['email', 'nickname'])
+    return oid.try_login(
+        "https://login.launchpad.net/",
+        ask_for=['email', 'nickname'])
 
 
 @oid.after_login
@@ -127,7 +123,7 @@ def create_profile():
 @app.route('/delete-cloud/<int:cloud_id>', methods=['GET', 'POST'])
 def delete_cloud(cloud_id):
     """Delete function for clouds."""
-    c = Cloud.query.filter_by(id=cloud_id).first()
+    c = db.Cloud.query.filter_by(id=cloud_id).first()
 
     if not c:
         flash(u'Not a valid Cloud ID!')
@@ -142,7 +138,7 @@ def delete_cloud(cloud_id):
 
 @app.route('/edit-cloud/<int:cloud_id>', methods=['GET', 'POST'])
 def edit_cloud(cloud_id):
-    c = Cloud.query.filter_by(id=cloud_id).first()
+    c = db.Cloud.query.filter_by(id=cloud_id).first()
 
     if not c:
         flash(u'Not a valid Cloud ID!')
@@ -188,9 +184,7 @@ def edit_cloud(cloud_id):
                 admin_user=c.admin_user,
                 admin_key=c.admin_key)
 
-
-
-    return render_template('edit_cloud.html',form=form)
+    return render_template('edit_cloud.html', form=form)
 
 
 @app.route('/create-cloud', methods=['GET', 'POST'])
@@ -215,7 +209,7 @@ def create_cloud():
         elif not request.form['admin_key']:
             flash(u'Error: All fields are required')
         else:
-            c = Cloud()
+            c = db.Cloud()
             c.user_id = g.user.id
             c.label = request.form['label']
             c.endpoint = request.form['endpoint']

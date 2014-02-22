@@ -15,7 +15,8 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.create_table('apikey',
+    op.create_table(
+        'apikey',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('name', sa.String(length=60), nullable=True),
         sa.Column('key', sa.String(length=200), nullable=True),
@@ -24,7 +25,7 @@ def upgrade():
         sa.Column('timestamp', sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
         sa.PrimaryKeyConstraint('id'),
-        )
+    )
 
 
 def downgrade():

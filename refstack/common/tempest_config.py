@@ -14,7 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 from keystoneclient.v2_0 import client
-from refstack.models import *
+from refstack.models import db, Cloud
 
 
 class TempestConfig(object):
@@ -24,13 +24,12 @@ class TempestConfig(object):
     def output(self):
         """outputs config in propper format"""
         output = ''
-        for k,v in self.config.items():
+        for k, v in self.config.items():
             output += '[%s] \n' % k
-            for sk,sv in v.items():
-                output += '%s = %s \n' % (sk,sv)
+            for sk, sv in v.items():
+                output += '%s = %s \n' % (sk, sv)
             output += '\n'
         return output
-
 
     def build_config_from_keystone(self):
         """uses the keystoneclient libs to query a clouds endpoint and
@@ -65,9 +64,11 @@ class TempestConfig(object):
 
         self._keystone.management_url = self._cloud.admin_endpoint
 
-        # make sure this keystone server can list services using has_service_catalog
+        # make sure this keystone server can list services
+        # using has_service_catalog
         if not self._keystone.has_service_catalog():
-            # we have no service catelog all tests are fail because we can't build a config
+            # we have no service catelog all tests are fail
+            # because we can't build a config
             print "fail "
         #else:
         #    print "has service catalog"
@@ -76,13 +77,12 @@ class TempestConfig(object):
 
         # make a local dict of the service catalog
         for item in self._keystone.service_catalog.catalog['serviceCatalog']:
-            self.service_catalog[item['name']]=item['endpoints'][0]['publicURL']
-
-            #print  "%s : %s" % (item['name'],item['endpoints'][0]['publicURL'])
+            self.service_catalog[item['name']] = \
+                item['endpoints'][0]['publicURL']
 
         # setup output service_available
         for service in self.config['service_available'].keys():
-            if self.service_catalog.has_key(service):
+            if service in self.service_catalog:
                 self.config['service_available'][service] = True
 
         # boto settings
@@ -92,17 +92,16 @@ class TempestConfig(object):
         # return the actual config
         return self.output()
 
-
     def __init__(self, cloud_id):
         """ sets up the default configs"""
         self.cloud_id = cloud_id
 
         self.config['DEFAULT'] = {
-            'debug':True,
-            'use_stderr':False,
-            'log_file':'output',
+            'debug': True,
+            'use_stderr': False,
+            'log_file': 'output',
             'lock_path': '/tmp/'+str(cloud_id)+'/',
-            'default_log_levels':"""tempest.stress=INFO,amqplib=WARN,
+            'default_log_levels': """tempest.stress=INFO,amqplib=WARN,
                 sqlalchemy=WARN,boto=WARN,suds=INFO,keystone=INFO,
                 eventlet.wsgi.server=WARN"""}
 
@@ -122,7 +121,6 @@ class TempestConfig(object):
             'admin_password': '',
             'admin_tenant_name': '',
             'admin_role': ''}
-
 
         self.config['compute'] = {
             'catalog_type': 'compute',
@@ -166,7 +164,7 @@ class TempestConfig(object):
         self.config['image'] = {
             'catalog_type': 'image',
             'api_version': 1,
-            'http_image': 'ttp://download.cirros-cloud.net/0.3.1/cirros-0.3.1-x86_64-uec.tar.gz'}
+            'http_image': ''}
 
         self.config['network'] = {
             'catalog_type': 'network',
@@ -175,7 +173,7 @@ class TempestConfig(object):
             'tenant_network_mask_bits': 28,
             'tenant_networks_reachable': False,
             'public_network_id': '',
-            'public_router_id': '' }
+            'public_router_id': ''}
 
         self.config['volume'] = {
             'catalog_type': 'volume',
@@ -186,14 +184,14 @@ class TempestConfig(object):
             'backend1_name': 'BACKEND_1',
             'backend2_name': 'BACKEND_2',
             'storage_protocol': 'iSCSI',
-            'vendor_name': 'Open Source' }
+            'vendor_name': 'Open Source'}
 
         self.config['object-storage'] = {
             'catalog_type': 'object-store',
             'container_sync_timeout': 120,
             'container_sync_interval': 5,
             'accounts_quotas_available': True,
-            'operator_role': 'Member' }
+            'operator_role': 'Member'}
 
         self.config['boto'] = {
             'ssh_user': 'cirros',
@@ -209,7 +207,7 @@ class TempestConfig(object):
             'http_socket_timeout': 30,
             'num_retries': 1,
             'build_timeout': 400,
-            'build_interval': 1 }
+            'build_interval': 1}
 
         self.config['orchestration'] = {
             'catalog_type': 'orchestration',
@@ -229,12 +227,12 @@ class TempestConfig(object):
             'ari_img_file': 'cirros-0.3.1-x86_64-initrd',
             'aki_img_file': 'cirros-0.3.1-x86_64-vmlinuz',
             'ssh_user': 'cirros',
-            'large_ops_number': 0 }
+            'large_ops_number': 0}
 
         self.config['cli'] = {
             'enabled': True,
             'cli_dir': '/usr/local/bin',
-            'timeout': 15 }
+            'timeout': 15}
 
         self.config['service_available'] = {
             'cinder': False,
@@ -243,9 +241,9 @@ class TempestConfig(object):
             'swift': False,
             'nova': False,
             'heat': False,
-            'horizon': False }
+            'horizon': False}
 
         self.config['stress'] = {
             'max_instances': 32,
             'log_check_interval': 60,
-            'default_thread_number_per_action': 4 }
+            'default_thread_number_per_action': 4}

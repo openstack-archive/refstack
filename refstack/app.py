@@ -1,19 +1,21 @@
-# -*- coding: utf-8 -*-
-
-# This file based on MIT licensed code at: https://github.com/imwilsonxu/fbone
-
+#
+# Copyright (c) 2013 Piston Cloud Computing, Inc. All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+#
 import os
-
-from flask import Flask, request, render_template
-#from flask.ext.babel import Babel
-
+from flask import Flask, render_template
 from .config import DefaultConfig
-#from .user import User, user
-#from .settings import settings
-#from .frontend import frontend
-#from .api import api
-#from .admin import admin
-#from .extensions import db, mail, cache, login_manager, oid
 from refstack import admin
 from refstack import api
 from .extensions import db
@@ -55,8 +57,6 @@ def create_app(config=None, app_name=None, blueprints=None):
                 instance_path=INSTANCE_FOLDER_PATH,
                 instance_relative_config=True)
 
-
-
     configure_app(app, config)
     configure_hook(app)
     configure_blueprints(app, blueprints)
@@ -84,9 +84,6 @@ def configure_app(app, config=None):
 
     if config:
         app.config.from_object(config)
-
-    # Use instance folder instead of env variables to make deployment easier.
-    #app.config.from_envvar('%s_APP_CONFIG' % DefaultConfig.PROJECT.upper(), silent=True)
 
 
 def configure_extensions(app):
@@ -161,7 +158,8 @@ def configure_logging(app):
     app.logger.setLevel(logging.INFO)
 
     info_log = os.path.join(app.config['LOG_FOLDER'], 'info.log')
-    info_file_handler = logging.handlers.RotatingFileHandler(info_log, maxBytes=100000, backupCount=10)
+    info_file_handler = logging.handlers.RotatingFileHandler(
+        info_log, maxBytes=100000, backupCount=10)
     info_file_handler.setLevel(logging.INFO)
     info_file_handler.setFormatter(logging.Formatter(
         '%(asctime)s %(levelname)s: %(message)s '

@@ -14,9 +14,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 #
-"""Simple script for importing the vendor 
+"""Simple script for importing the vendor
 list csv file provided by the foundation"""
-from refstack.models import *
+from refstack.models import db, Vendor
 import csv
 
 _file = 'members_sponsors_20131030.csv'
