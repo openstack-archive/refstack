@@ -100,7 +100,7 @@ class TempestConfig(object):
             'debug': True,
             'use_stderr': False,
             'log_file': 'output',
-            'lock_path': '/tmp/'+str(cloud_id)+'/',
+            'lock_path': '/tmp/' + str(cloud_id) + '/',
             'default_log_levels': """tempest.stress=INFO,amqplib=WARN,
                 sqlalchemy=WARN,boto=WARN,suds=INFO,keystone=INFO,
                 eventlet.wsgi.server=WARN"""}

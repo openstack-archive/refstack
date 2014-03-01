@@ -31,4 +31,4 @@ with open(_file, 'rb') as csvfile:
             db.add(vendor)
             db.commit()
         except:
-            print 'vendor skipped:'+row[1]
+            print 'vendor skipped:' + row[1]

@@ -85,7 +85,7 @@ class TestRepositorySource(object):
     def run(self):
         os.getcwd()
         os.chdir(self.testr_directory)
-        self._ui.c = self.testr_directory+'tempest.conf'
+        self._ui.c = self.testr_directory + 'tempest.conf'
 
         cmd = run.run(self._ui)
 
@@ -151,7 +151,7 @@ class Tester(object):
         """
 
         print "starting test"
-        call([self.test_path+'runtests.sh'])  # replace this
+        call([self.test_path + 'runtests.sh'])  # replace this
         print "finished with tests"
 
         # get back the results
@@ -184,15 +184,15 @@ test_id_option=--load-list $IDFILE
 test_list_option=--list
 group_regex=([^\.]*\.)*"""
 
-        with open(path+"runtests.sh", "w") as runtests_script_file:
+        with open(path + "runtests.sh", "w") as runtests_script_file:
             runtests_script_file.write(runtests_script)
 
-        os.chmod(path+"runtests.sh", 0744)
+        os.chmod(path + "runtests.sh", 0744)
 
-        with open(path+"tempest.conf", "w") as config_file:
+        with open(path + "tempest.conf", "w") as config_file:
             config_file.write(self._config)
 
-        with open(path+".testr.conf", "w") as testr_config_file:
+        with open(path + ".testr.conf", "w") as testr_config_file:
             testr_config_file.write(testr_output)
 
     def cancel(self):
