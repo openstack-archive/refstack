@@ -51,4 +51,6 @@ scripts/members_sponsors_20131030.csv
 
 refstack/client/.smbdeleteAAA9ef44.4
 
+openid/*
+
 db.sqlite

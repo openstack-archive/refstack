@@ -13,41 +13,27 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 #
-from flask import abort, flash, request, redirect, url_for, \
-    render_template, g, session, flask
-#from flask_openid import OpenID
-#from flask.ext.admin import Admin, BaseView, expose, AdminIndexView
-#from flask.ext.admin.contrib.sqlamodel import ModelView
-#from flask.ext.security import Security, \
-#    UserMixin, login_required
-#from wtforms import TextField
-from flask_mail import Mail
 
+import flask
+from flask import abort, flash, request, redirect, url_for, \
+    render_template, g, session
+from flask_mail import Mail
 from refstack import app as base_app
 from refstack.extensions import db
 from refstack.extensions import oid
-#from refstack import api
-#from refstack.models import ApiKey
-#from refstack.models import Cloud
-#from refstack.models import Test
-#from refstack.models import TestResults
-#from refstack.models import TestStatus
 from refstack.models import User
 from refstack.models import Vendor
+from refstack.models import Cloud
 
-
-# TODO(termie): transition all the routes below to blueprints
-# TODO(termie): use extensions setup from the create_app() call
 
 app = base_app.create_app()
-
 mail = Mail(app)
 
 
 @app.before_request
 def before_request():
     """Runs before the request itself."""
-    flask.g.user = None
+    g.user = None
     if 'openid' in session:
         flask.g.user = User.query.filter_by(openid=session['openid']).first()
 
@@ -57,7 +43,7 @@ def index():
     """Index view."""
     if g.user is not None:
         # something else
-        clouds = db.Cloud.query.filter_by(user_id=g.user.id).all()
+        clouds = Cloud.query.filter_by(user_id=g.user.id).all()
         return render_template('home.html', clouds=clouds)
     else:
         vendors = Vendor.query.all()
@@ -123,7 +109,7 @@ def create_profile():
 @app.route('/delete-cloud/<int:cloud_id>', methods=['GET', 'POST'])
 def delete_cloud(cloud_id):
     """Delete function for clouds."""
-    c = db.Cloud.query.filter_by(id=cloud_id).first()
+    c = Cloud.query.filter_by(id=cloud_id).first()
 
     if not c:
         flash(u'Not a valid Cloud ID!')
@@ -138,7 +124,7 @@ def delete_cloud(cloud_id):
 
 @app.route('/edit-cloud/<int:cloud_id>', methods=['GET', 'POST'])
 def edit_cloud(cloud_id):
-    c = db.Cloud.query.filter_by(id=cloud_id).first()
+    c = Cloud.query.filter_by(id=cloud_id).first()
 
     if not c:
         flash(u'Not a valid Cloud ID!')
@@ -209,7 +195,7 @@ def create_cloud():
         elif not request.form['admin_key']:
             flash(u'Error: All fields are required')
         else:
-            c = db.Cloud()
+            c = Cloud()
             c.user_id = g.user.id
             c.label = request.form['label']
             c.endpoint = request.form['endpoint']
