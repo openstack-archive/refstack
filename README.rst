@@ -3,7 +3,6 @@ RefStack
 
 Vendor-facing API for registration of interop-compliance endpoints and credentials for on-demand testing.
 
-Running at http://refstack.org
 See (living) documentation at https://etherpad.openstack.org/RefStackBlueprint
 
 
@@ -13,7 +12,7 @@ Okay, I'm Sold, How Do I Run This Myself?
 This is our documentation for how we get this set up::
 
   # Git you clonin'
-  git clone http://github.com/openstack-ops/refstack
+  git clone http://github.com/stackforge/refstack
 
   cd refstack
 
