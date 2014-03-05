@@ -1,0 +1,48 @@
+{
+    "app_address": "x.x.x.x:8000",
+
+    "test_mode": "DOCKER",
+
+    "tempest_url":
+    "https://github.com/openstack/tempest/archive/stable/havana.zip",
+
+    "tempest_config":
+    {
+        "identity":
+        {
+            "uri": "http://x.x.x.x:5000/v2.0/",
+            "uri_v3": "http://x.x.x.x:5000/v3/",
+            "region": "RegionOne",
+            "username": "demo",
+            "tenant_name": "demo",
+            "alt_username": "alt_demo",
+            "alt_tenant_name": "alt_demo",
+            "admin_username": "admin",
+            "admin_tenant_name": "admin"
+        },
+        "compute":
+        {
+            "image_ref": "a8d70acb-f1c4-4171-b0ce-d73e5de21a9d",
+            "image_ref_alt": "6182b1da-e64d-4440-b0ef-c0afa4d77abb",
+            "flavor_ref": "1",
+            "flavor_ref_alt": "1",
+            "image_ssh_user": "root",
+            "image_ssh_password": "password",
+            "image_alt_ssh_user": "root",
+            "image_alt_ssh_password": "password"
+        },
+        "cli":
+        {
+            "enable": "False"
+        }
+    },
+
+    "tempest_testcases":
+    {
+        "testcases":
+        [
+        "tempest.api.compute.admin.test_flavors",
+        "tempest.api.compute.admin.test_availability_zone"
+        ]
+    }
+}
