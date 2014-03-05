@@ -16,14 +16,16 @@
 
 import flask
 from flask import abort, flash, request, redirect, url_for, \
-    render_template, g, session
+    render_template, g, session, make_response, send_file
 from flask_mail import Mail
 from refstack import app as base_app
 from refstack.extensions import db
 from refstack.extensions import oid
+from refstack.models import Cloud
 from refstack.models import User
 from refstack.models import Vendor
-from refstack.models import Cloud
+from refstack.refstack_config import RefStackConfig
+from refstack.tools.tempest_tester import TempestTester
 
 
 app = base_app.create_app()
@@ -255,3 +257,79 @@ def logout():
     session.pop('openid', None)
     flash(u'You have been signed out')
     return redirect(oid.get_next_url())
+
+
+@app.route('/test-cloud/<int:cloud_id>', methods=['GET', 'POST'])
+def test_cloud(cloud_id):
+    """Handler for creating a new test."""
+
+    c = Cloud.query.filter_by(id=cloud_id).first()
+
+    if not c:
+        flash(u'Not a valid Cloud ID!')
+        return redirect('/')
+    elif not c.user_id == g.user.id:
+        flash(u"This isn't your cloud!")
+
+    if request.method == 'POST':
+        REQUIRED_FIELDS = ('label', 'pw_admin', 'pw_user', 'pw_alter_user')
+        if not all(field in request.form for field in REQUIRED_FIELDS):
+            flash(u'Error: All fields are required')
+        else:
+            ''' Construct confJSON with the passwords provided '''
+            pw_admin = request.form['pw_admin']
+            pw_user = request.form['pw_user']
+            pw_alt = request.form['pw_alter_user']
+            jstr = '{"identity":{"password":"%s","admin_password":"%s",\
+"alt_password":"%s"}}' % (pw_user, pw_admin, pw_alt)
+            TempestTester().test_cloud(cloud_id, jstr)
+
+            flash(u'Test Started!')
+            return redirect('/')
+
+    return render_template('test_cloud.html', next_url='/')
+
+
+@app.route('/get-script', methods=['GET'])
+def get_script():
+    """Return a generic python script to be run in the docker container."""
+
+    return send_file('tools/execute_test.py', mimetype='text/plain')
+
+
+@app.route('/get-miniconf', methods=['GET'])
+def get_miniconf():
+    """Return a JSON of mini tempest conf to the docker container."""
+
+    test_id = request.args.get('test_id', '')
+    response = make_response(TempestTester(test_id).generate_miniconf())
+    response.headers["Content-Disposition"] = \
+        "attachment; filename=miniconf.json"
+    return response
+
+
+@app.route('/get-testcases', methods=['GET'])
+def get_testcases():
+    """Return a JSON of tempest test cases to the docker container."""
+
+    test_id = request.args.get('test_id', '')
+    response = make_response(TempestTester(test_id).generate_testcases())
+    response.headers["Content-Disposition"] = \
+        "attachment; filename=testcases.json"
+    return response
+
+
+@app.route('/post-result', methods=['POST'])
+def post_result():
+    """Receive tempest test result from the docker container."""
+
+    f = request.files['file']
+    if f:
+        test_id = request.args.get('test_id', '')
+        filename = '%s/test_%s.result' % (RefStackConfig().get_working_dir(),
+                                          test_id)
+        f.save(filename)
+        TempestTester(test_id).process_resultfile(filename)
+        ''' TODO: Remove the uploaded file after processing '''
+        # os.remove(filename)
+    return make_response('')

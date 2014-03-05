@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block title %}Test Cloud{% endblock %}
+{% block body %}
+  <h2>Test Cloud</h2>
+  <form action = "" method = 'post'>
+    <dl>
+      <dt>Label:</dt>
+      <dd><input type = 'text' name = 'label' size = '30' value = "{{ request.values.label }}"></dd>
+      <dt>Test User Password:</dt>
+      <dd><input type = 'password' name = 'pw_user' size = '30' value = "{{ request.values.pw_user }}"></dd>
+      <dt>Admin User Password:</dt>
+      <dd><input type = 'password' name = 'pw_admin' size = '30' value = "{{ request.values.pw_admin }}"></dd>
+      <dt>Alternate User Password:</dt>
+      <dd><input type = 'password' name = 'pw_alter_user' size = '30' value = "{{ request.values.pw_alter_user }}"></dd>
+    </dl>
+    <p>
+      <input type = 'button' value = "Cancel" onclick = "location.href = '/'">
+      <input type = 'submit' value = "Run">
+      <input type = 'hidden' name = 'next' value = "{{ next }}">
+  </form>
+{% endblock %}
