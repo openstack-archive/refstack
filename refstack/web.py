@@ -135,29 +135,26 @@ def edit_cloud(cloud_id):
         flash(u"This isn't your cloud!")
 
     if request.method == 'POST':
-        #validate this biotch
+        # some validation
+        # todo: do this smarter
         if not request.form['label']:
             flash(u'Error: All fields are required')
         elif not request.form['endpoint']:
             flash(u'Error: All fields are required')
         elif not request.form['test_user']:
             flash(u'Error: All fields are required')
-        elif not request.form['test_key']:
-            flash(u'Error: All fields are required')
         elif not request.form['admin_endpoint']:
             flash(u'Error: All fields are required')
         elif not request.form['admin_user']:
-            flash(u'Error: All fields are required')
-        elif not request.form['admin_key']:
             flash(u'Error: All fields are required')
         else:
             c.label = request.form['label']
             c.endpoint = request.form['endpoint']
             c.test_user = request.form['test_user']
-            c.test_key = request.form['test_key']
             c.admin_endpoint = request.form['admin_endpoint']
+            c.endpoint_v3 = request.form['endpoint_v3']
+            c.version = request.form['version']
             c.admin_user = request.form['admin_user']
-            c.admin_key = request.form['admin_key']
 
             db.session.commit()
 
@@ -166,11 +163,11 @@ def edit_cloud(cloud_id):
 
     form = dict(label=c.label,
                 endpoint=c.endpoint,
-                test_user=c.test_user,
-                test_key=c.test_key,
+                endpoint_v3=c.endpoint_v3,
                 admin_endpoint=c.admin_endpoint,
                 admin_user=c.admin_user,
-                admin_key=c.admin_key)
+                version=c.version,
+                test_user=c.test_user)
 
     return render_template('edit_cloud.html', form=form)
 
@@ -179,8 +176,8 @@ def edit_cloud(cloud_id):
 def create_cloud():
     """This is the handler for creating a new cloud."""
 
-    #if g.user is None:
-    #    abort(401)
+    if g.user is None:
+        abort(401)
     if request.method == 'POST':
         if not request.form['label']:
             flash(u'Error: All fields are required')
@@ -188,13 +185,9 @@ def create_cloud():
             flash(u'Error: All fields are required')
         elif not request.form['test_user']:
             flash(u'Error: All fields are required')
-        elif not request.form['test_key']:
-            flash(u'Error: All fields are required')
         elif not request.form['admin_endpoint']:
             flash(u'Error: All fields are required')
         elif not request.form['admin_user']:
-            flash(u'Error: All fields are required')
-        elif not request.form['admin_key']:
             flash(u'Error: All fields are required')
         else:
             c = Cloud()
@@ -202,10 +195,10 @@ def create_cloud():
             c.label = request.form['label']
             c.endpoint = request.form['endpoint']
             c.test_user = request.form['test_user']
-            c.test_key = request.form['test_key']
             c.admin_endpoint = request.form['admin_endpoint']
+            c.endpoint_v3 = request.form['endpoint_v3']
+            c.version = request.form['version']
             c.admin_user = request.form['admin_user']
-            c.admin_key = request.form['admin_key']
 
             db.session.add(c)
             db.session.commit()

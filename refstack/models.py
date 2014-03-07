@@ -75,14 +75,15 @@ class Cloud(db.Model):
     """
     __tablename__ = 'cloud'
     id = db.Column(db.Integer, primary_key=True)
-
     label = db.Column(db.String(60), unique=False)
-    endpoint = db.Column(db.String(120), unique=True)
+    endpoint = db.Column(db.String(512), unique=False)
+    endpoint_v3 = db.Column(db.String(512), unique=False)
+    admin_endpoint = db.Column(db.String(512), unique=False)
     test_user = db.Column(db.String(80), unique=False)
-    test_key = db.Column(db.String(80), unique=False)
-    admin_endpoint = db.Column(db.String(120), unique=False)
     admin_user = db.Column(db.String(80), unique=False)
-    admin_key = db.Column(db.String(80), unique=False)
+    version = db.Column(db.String(80), unique=False)
+    tempest_sha = db.Column(db.String(128), unique=False)
+    architecture = db.Column(db.String(40), unique=False)
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     user = db.relationship('User',
@@ -95,7 +96,9 @@ class Test(db.Model):
     cloud_id = db.Column(db.Integer, db.ForeignKey('cloud.id'))
     cloud = db.relationship('Cloud',
                             backref=db.backref('tests', lazy='dynamic'))
-    config = db.Column(db.String(4096))
+    finished = db.Column(db.Boolean, default=False)
+    subunit = db.Column(db.String(4096))
+    parsed = db.Column(db.String(4096))
 
     def __init__(self, cloud_id):
         self.cloud_id = cloud_id
@@ -108,21 +111,9 @@ class TestStatus(db.Model):
     test = db.relationship('Test',
                            backref=db.backref('status', lazy='dynamic'))
     message = db.Column(db.String(1024))
-    finished = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, default=datetime.now)
 
     def __init__(self, test_id, message, finished=False):
         self.test_id = test_id
         self.message = message
         self.finished = finished
-
-
-class TestResults(db.Model):
-    __tablename__ = 'test_results'
-    id = db.Column(db.Integer, primary_key=True)
-    test_id = db.Column(db.Integer, db.ForeignKey('test.id'))
-    test = db.relationship('Test',
-                           backref=db.backref('results', lazy='dynamic'))
-    timestamp = db.Column(db.DateTime, default=datetime.now)
-    subunit = db.Column(db.String(8192))
-    blob = db.Column(db.Binary)
