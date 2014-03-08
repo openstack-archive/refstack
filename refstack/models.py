@@ -100,9 +100,6 @@ class Test(db.Model):
     subunit = db.Column(db.String(4096))
     parsed = db.Column(db.String(4096))
 
-    def __init__(self, cloud_id):
-        self.cloud_id = cloud_id
-
 
 class TestStatus(db.Model):
     __tablename__ = 'test_status'

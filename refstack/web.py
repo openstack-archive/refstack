@@ -24,20 +24,22 @@ from refstack.extensions import oid
 from refstack.models import Cloud
 from refstack.models import User
 from refstack.models import Vendor
-from refstack.refstack_config import RefStackConfig
+from refstack.models import Test
 from refstack.tools.tempest_tester import TempestTester
-
 
 app = base_app.create_app()
 mail = Mail(app)
+public_routes = ['/post-result', '/get-miniconf']
 
 
 @app.before_request
 def before_request():
     """Runs before the request itself."""
-    g.user = None
-    if 'openid' in session:
-        flask.g.user = User.query.filter_by(openid=session['openid']).first()
+    if not request.path in public_routes:
+        g.user = None
+        if 'openid' in session:
+            flask.g.user = User.query.\
+                filter_by(openid=session['openid']).first()
 
 
 @app.route('/', methods=['POST', 'GET'])
@@ -285,14 +287,14 @@ def test_cloud(cloud_id):
 
 @app.route('/get-script', methods=['GET'])
 def get_script():
-    """Return a generic python script to be run in the docker container."""
+    """Return a generic python script to be run a remote test runner."""
 
     return send_file('tools/execute_test.py', mimetype='text/plain')
 
 
 @app.route('/get-miniconf', methods=['GET'])
 def get_miniconf():
-    """Return a JSON of mini tempest conf to the docker container."""
+    """Return a JSON of mini tempest conf to a remote test runner."""
 
     test_id = request.args.get('test_id', '')
     response = make_response(TempestTester(test_id).generate_miniconf())
@@ -303,7 +305,7 @@ def get_miniconf():
 
 @app.route('/get-testcases', methods=['GET'])
 def get_testcases():
-    """Return a JSON of tempest test cases to the docker container."""
+    """Return a JSON of tempest test cases to a remote test runner."""
 
     test_id = request.args.get('test_id', '')
     response = make_response(TempestTester(test_id).generate_testcases())
@@ -314,15 +316,27 @@ def get_testcases():
 
 @app.route('/post-result', methods=['POST'])
 def post_result():
-    """Receive tempest test result from the docker container."""
-
+    """Receive tempest test result from a remote test runner."""
+    # todo: come up with some form of authentication
+    # Im sure we can come with something more elegant than this
+    # but it should work for now.
+    #print request.files
     f = request.files['file']
     if f:
-        test_id = request.args.get('test_id', '')
-        filename = '%s/test_%s.result' % (RefStackConfig().get_working_dir(),
-                                          test_id)
-        f.save(filename)
-        TempestTester(test_id).process_resultfile(filename)
-        ''' TODO: Remove the uploaded file after processing '''
-        # os.remove(filename)
+        if request.args.get('test_id', ''):
+            # this data is for a specific test triggered by the gui and we
+            # want to relate it
+            _test = Test.query.\
+                filter_by(id=request.args.get('test_id', '')).first()
+            _test.subunit = f.read()
+
+        else:
+            # anonymous data .. we still want to capture it
+            _test = Test()
+            _test.subunit = f.read()
+            db.session.add(_test)
+
+        db.session.commit()
+
+    # todo .. set up error handling with correct response codes
     return make_response('')
