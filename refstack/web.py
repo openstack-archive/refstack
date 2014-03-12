@@ -265,24 +265,27 @@ def test_cloud(cloud_id):
         return redirect('/')
     elif not c.user_id == g.user.id:
         flash(u"This isn't your cloud!")
+        return redirect('/')
 
     if request.method == 'POST':
-        REQUIRED_FIELDS = ('label', 'pw_admin', 'pw_user', 'pw_alter_user')
-        if not all(field in request.form for field in REQUIRED_FIELDS):
+        REQUIRED_FIELDS = ('label', 'pw_admin', 'pw_user')
+        if not all(request.form[field] for field in REQUIRED_FIELDS):
             flash(u'Error: All fields are required')
         else:
             ''' Construct confJSON with the passwords provided '''
             pw_admin = request.form['pw_admin']
             pw_user = request.form['pw_user']
-            pw_alt = request.form['pw_alter_user']
+            # Using the same user for alt_user
+            pw_alt = request.form['pw_user']
             jstr = '{"identity":{"password":"%s","admin_password":"%s",\
 "alt_password":"%s"}}' % (pw_user, pw_admin, pw_alt)
             TempestTester().test_cloud(cloud_id, jstr)
-
             flash(u'Test Started!')
             return redirect('/')
 
-    return render_template('test_cloud.html', next_url='/')
+    names = dict(user=c.test_user, admin=c.admin_user)
+
+    return render_template('test_cloud.html', next_url='/', names=names)
 
 
 @app.route('/get-script', methods=['GET'])
