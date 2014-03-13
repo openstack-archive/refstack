@@ -43,20 +43,24 @@ class RefStackConfig(object):
 
     def get_app_address(self):
         '''Return address of the Web App server.'''
-        return self.refstack_config["app_address"]
+        return self.get_data_for_key("app_address")
 
     def get_tempest_url(self):
         '''Return the URL for tempest test code download.'''
-        return self.refstack_config["tempest_url"]
+        return self.get_data_for_key("tempest_url")
 
     def get_tempest_config(self):
         '''Return customized tempest config parameters.'''
-        return self.refstack_config["tempest_config"]
+        return self.get_data_for_key("tempest_config")
 
     def get_tempest_testcases(self):
         '''Return a JSON of tempest testcase.'''
-        return self.refstack_config["tempest_testcases"]
+        return self.get_data_for_key("tempest_testcases")
 
     def get_test_mode(self):
         '''Return the tempest test mode.'''
-        return self.refstack_config["test_mode"]
+        return self.get_data_for_key("test_mode")
+
+    def get_data_for_key(self, key):
+        '''Return the value for the key specified.'''
+        return self.refstack_config.get(key, None)

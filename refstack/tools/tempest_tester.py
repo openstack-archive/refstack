@@ -17,10 +17,30 @@
 from docker_buildfile import DockerBuildFile
 import json
 import os
+from refstack.extensions import db
+from refstack.models import Cloud
+from refstack.models import Test
 from refstack.refstack_config import RefStackConfig
-import time
 
 configData = RefStackConfig()
+
+# Common tempest conf values to be used for all tests
+# - Image user and password can be set to any value for testing purpose
+# - We do not test OpenStack CLI
+# Vendors running their own Refstack can override these using config file.
+common_tempest_conf = {
+    "compute":
+    {
+        "image_ssh_user": "root",
+        "image_ssh_password": "password",
+        "image_alt_ssh_user": "root",
+        "image_alt_ssh_password": "password"
+    },
+    "cli":
+    {
+        "enabled": "False"
+    }
+}
 
 
 class TempestTester(object):
@@ -31,34 +51,72 @@ class TempestTester(object):
     cloudObj = None
 
     def __init__(self, test_id=None):
-        '''Init method loads specified id.'''
+        '''Init method loads specified id.
 
-        ''' If test_id exists, this is an existing test. Else this is a new
-            test. Test_id wll be created later in an other module.
+            If test_id exists, this is an existing test.
+            Otherwise, this is a new test, and test_id will be created later.
         '''
         if test_id:
             self.test_id = test_id
-            ''' TODO: Retrieve testObj and cloudObj '''
+            self.testObj = Test.query.filter_by(id=test_id).first()
+            if self.testObj is not None:
+                self.cloudObj = Cloud.query.filter_by(
+                    id=self.testObj.cloud_id).first()
 
     def generate_miniconf(self):
         '''Return a JSON object representing the mini tempest conf.'''
 
-        ''' TODO: Construct the JSON from cloud db obj '''
-        ''' ForNow: Return the JSON in vendor config '''
-        conf = configData.get_tempest_config()
+        # Get custom tempest config from config file
+        custom_tempest_conf = configData.get_tempest_config()
 
-        return json.dumps(conf)
+        # Construct cloud specific tempest config from db
+        if self.cloudObj:
+            cloud_tempest_conf = {
+                "identity":
+                {
+                    "uri": self.cloudObj.endpoint,
+                    "uri_v3": self.cloudObj.endpoint_v3,
+                    "username": self.cloudObj.test_user,
+                    "alt_username": self.cloudObj.test_user,
+                    "admin_username": self.cloudObj.admin_user
+                }
+            }
+        else:
+            cloud_tempest_conf = dict()
+
+        # Merge all the config data together
+        # - Start with common config
+        # - Insert/Overwrite with values from custom config
+        # - Insert/Overwrite with values from cloud DB
+        tempest_conf = common_tempest_conf
+        self._merge_config(tempest_conf, custom_tempest_conf)
+        self._merge_config(tempest_conf, cloud_tempest_conf)
+
+        return json.dumps(tempest_conf)
+
+    def _merge_config(self, dic1, dic2):
+        '''Insert data from dictionary dic2 into dictionary dic1.
+
+            dic1 and dic2 are in the format of section, key, value.
+        '''
+        if not all([dic1, dic2]):
+            return
+
+        for section, data in dic2.items():
+            if section in dic1:
+                dic1[section].update(data)
+            else:
+                dic1.update({section: data})
 
     def generate_testcases(self):
         '''Return a JSON array of the tempest testcases to be executed.'''
 
-        ''' TODO: Depends on DefCore's decision, either do the full test or
-                  allow users to specify what to test
-        '''
-        ''' ForNow: Return the JSON in vendor config '''
-        conf = configData.get_tempest_testcases()
+        # Set to full tempest test unless it is specified in the config file
+        testcases = configData.get_tempest_testcases()
+        if not testcases:
+            testcases = {"testcases": ["tempest"]}
 
-        return json.dumps(conf)
+        return json.dumps(testcases)
 
     def process_resultfile(self, filename):
         '''Process the tempest result file.'''
@@ -72,13 +130,22 @@ class TempestTester(object):
     def test_cloud(self, cloud_id, extraConfJSON=None):
         '''Create and execute a new test with the provided extraConfJSON.'''
 
-        ''' TODO: Retrieve the cloud obj from DB '''
+        # Retrieve the cloud obj from DB
+        self.cloudObj = Cloud.query.filter_by(id=cloud_id).first()
 
-        ''' TODO: Create new test obj in DB and get the real unique test_id'''
-        ''' ForNow: use timestamp as the test_id '''
-        self.test_id = time.strftime("%m%d%H%M")
+        if not self.cloudObj:
+            return
 
-        ''' invoke execute_test '''
+        # Create new test object in DB and get the real unique test_id
+        self.testObj = Test()
+        self.testObj.cloud_id = self.cloudObj.id
+        self.testObj.cloud = self.cloudObj
+        db.session.add(self.testObj)
+        db.session.commit()
+
+        self.test_id = self.testObj.id
+
+        # Invoke execute_test
         self.execute_test(extraConfJSON)
 
     def execute_test(self, extraConfJSON=None):
@@ -90,8 +157,14 @@ class TempestTester(object):
 
         ''' TODO: Initial test status in DB '''
 
+        if configData.get_test_mode():
+            test_mode = configData.get_test_mode().upper()
+        else:
+            # Default to use docker if not specified in the config file
+            test_mode = 'DOCKER'
+
         try:
-            options[configData.get_test_mode()](extraConfJSON)
+            options[test_mode](extraConfJSON)
         except KeyError:
             print 'Error: Invalid test mode in config file'
 
