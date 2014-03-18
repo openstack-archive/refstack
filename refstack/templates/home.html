@@ -4,18 +4,16 @@
     <div class="panel panel-default unit one-of-two">
         <div class="panel-heading">
             <span class="glyphicon glyphicon-cloud"></span> Clouds
-             <button type="button"
-                     class="btn btn-default btn-xs" 
-                     onclick="location.href='/create-cloud'" 
-                     style="float: right;">
+                <button type="button"
+                        class="btn btn-default btn-xs"
+                        onclick="location.href='/create-cloud'"
+                        style="float: right;">
                 <span class="glyphicon glyphicon-plus-sign"></span> add cloud
             </button>
-
         </div>
         <table class="table">
             {% for cloud in clouds %}
                 <tr>
-
                     <td>
                         {{ cloud.label }}
                     </td>
@@ -23,11 +21,11 @@
                         <div class="btn-group">
                             <button type="button"
                                     class="btn btn-default btn-xs"
-                                    rel="tooltip" 
+                                    rel="tooltip"
                                     title="Test Cloud"
                                     data-placement="top"
                                     onclick="window.location='/test-cloud/{{ cloud.id }}'">
-                                <span class="glyphicon glyphicon-play"></span> 
+                                <span class="glyphicon glyphicon-play"></span>
                             </button>
                             <button type="button"
                                     class="btn btn-default btn-xs"
@@ -48,7 +46,7 @@
                         </div>
                     </td>
                 </tr>
-                {% endfor %}
+            {% endfor %}
         </table>     
     </div>
 
@@ -57,35 +55,68 @@
             <span class="glyphicon glyphicon-list"></span> Tests
         </div>
         <table class="table">
-            {% for test in tests %}
-                <tr>
-                    <td>
-                        <button type="button" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-pencil"></span></button>
-                    </td>
-                    <td>
-                        {{ test.cloud.label }}
-                    </td>
-                </tr>
+            {% for cloud in clouds %}
+                {% for test in cloud.tests %}
+                    <tr>
+                        <td>
+                            {{ cloud.label }} (Test ID: {{ test.id }} )
+                        </td>
+                        <td align="right">
+                            <div class="btn-group">
+                                {% if test.finished %}
+                                    <button type="button"
+                                            class="btn btn-default btn-xs"
+                                            rel="tooltip" 
+                                            title="Show Report"
+                                            data-placement="top"
+                                            onclick="window.location='/show-report/{{ test.id }}'">
+                                        <span class="glyphicon glyphicon-file"></span> 
+                                    </button>
+                                {% else %}
+                                    <button type="button"
+                                            class="btn btn-default btn-xs"
+                                            rel="tooltip" 
+                                            title="Test In Progress..."
+                                            data-placement="top"
+                                            onclick="window.location='/show-status/{{ test.id }}'">
+                                        <span class="glyphicon glyphicon-refresh"></span> 
+                                    </button>
+                                {% endif %}
+                                <button type="button" 
+                                        class="btn btn-default btn-xs"
+                                        rel="tooltip" 
+                                        title="Delete Test"
+                                        data-placement="top"
+                                        onclick="confirm_delete_test('{{ test.id }}','{{ cloud.label}}')">
+                                    <span class="glyphicon glyphicon-trash"></span> 
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
                 {% endfor %}
+            {% endfor %}
         </table>
     </div>
 
     <script type="text/javascript">
         $(function () {
             $("[rel='tooltip']").tooltip({container:'body'});
-
-            
-
         }
-
-        
         );
         function confirm_delete_cloud(cloud_id,label)
         {
             var r=confirm("Are you sure you want to delete " + label + "?");
             if (r==true)
             {
-                window.location='/delete-cloud/'+cloud_id;
+                window.location='/delete-cloud/' + cloud_id;
+            }
+        }
+        function confirm_delete_test(test_id,label)
+        {
+            var r=confirm("Are you sure you want to delete test " + test_id + " of " + label + "?");
+            if (r==true)
+            {
+                window.location='/delete-test/' + test_id;
             }
         }
     </script>
