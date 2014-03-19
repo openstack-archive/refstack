@@ -29,25 +29,25 @@
                             </button>
                             <button type="button"
                                     class="btn btn-default btn-xs"
-                                    rel="tooltip" 
+                                    rel="tooltip"
                                     title="Edit Cloud"
                                     data-placement="top"
                                     onclick="window.location='/edit-cloud/{{ cloud.id }}'">
-                                <span class="glyphicon glyphicon-pencil"></span> 
+                                <span class="glyphicon glyphicon-pencil"></span>
                             </button>
-                            <button type="button" 
+                            <button type="button"
                                     class="btn btn-default btn-xs"
-                                    rel="tooltip" 
+                                    rel="tooltip"
                                     title="Delete Cloud"
                                     data-placement="top"
                                     onclick="confirm_delete_cloud('{{ cloud.id }}','{{ cloud.label}}')">
-                                <span class="glyphicon glyphicon-trash"></span> 
+                                <span class="glyphicon glyphicon-trash"></span>
                             </button>
                         </div>
                     </td>
                 </tr>
             {% endfor %}
-        </table>     
+        </table>
     </div>
 
     <div class="panel panel-default unit one-of-two">
@@ -66,29 +66,29 @@
                                 {% if test.finished %}
                                     <button type="button"
                                             class="btn btn-default btn-xs"
-                                            rel="tooltip" 
+                                            rel="tooltip"
                                             title="Show Report"
                                             data-placement="top"
                                             onclick="window.location='/show-report/{{ test.id }}'">
-                                        <span class="glyphicon glyphicon-file"></span> 
+                                        <span class="glyphicon glyphicon-file"></span>
                                     </button>
                                 {% else %}
                                     <button type="button"
                                             class="btn btn-default btn-xs"
-                                            rel="tooltip" 
+                                            rel="tooltip"
                                             title="Test In Progress..."
                                             data-placement="top"
                                             onclick="window.location='/show-status/{{ test.id }}'">
-                                        <span class="glyphicon glyphicon-refresh"></span> 
+                                        <span class="glyphicon glyphicon-refresh"></span>
                                     </button>
                                 {% endif %}
-                                <button type="button" 
+                                <button type="button"
                                         class="btn btn-default btn-xs"
-                                        rel="tooltip" 
+                                        rel="tooltip"
                                         title="Delete Test"
                                         data-placement="top"
                                         onclick="confirm_delete_test('{{ test.id }}','{{ cloud.label}}')">
-                                    <span class="glyphicon glyphicon-trash"></span> 
+                                    <span class="glyphicon glyphicon-trash"></span>
                                 </button>
                             </div>
                         </td>

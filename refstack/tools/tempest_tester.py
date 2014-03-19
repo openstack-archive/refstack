@@ -17,12 +17,10 @@
 from docker_buildfile import DockerBuildFile
 import json
 import os
-from refstack.extensions import db
-from refstack.models import Cloud
 from refstack.models import Test
 from refstack.refstack_config import RefStackConfig
 
-configData = RefStackConfig()
+config_data = RefStackConfig()
 
 # Common tempest conf values to be used for all tests
 # - Image user and password can be set to any value for testing purpose
@@ -47,38 +45,33 @@ class TempestTester(object):
     '''Utility class to handle tempest test.'''
 
     test_id = None
-    testObj = None
-    cloudObj = None
+    test_obj = None
 
-    def __init__(self, test_id=None):
-        '''Init method loads specified id.
-
-            If test_id exists, this is an existing test.
-            Otherwise, this is a new test, and test_id will be created later.
-        '''
+    def __init__(self, test_id):
+        '''Extract the corresponding test object from the db.'''
         if test_id:
-            self.test_id = test_id
-            self.testObj = Test.query.filter_by(id=test_id).first()
-            if self.testObj is not None:
-                self.cloudObj = Cloud.query.filter_by(
-                    id=self.testObj.cloud_id).first()
+            self.test_obj = Test.query.filter_by(id=test_id).first()
+            if self.test_obj:
+                self.test_id = test_id
+                return
+        raise ValueError('Invalid test id %s' % (test_id))
 
     def generate_miniconf(self):
         '''Return a JSON object representing the mini tempest conf.'''
 
         # Get custom tempest config from config file
-        custom_tempest_conf = configData.get_tempest_config()
+        custom_tempest_conf = config_data.get_tempest_config()
 
         # Construct cloud specific tempest config from db
-        if self.cloudObj:
+        if self.test_obj.cloud:
             cloud_tempest_conf = {
                 "identity":
                 {
-                    "uri": self.cloudObj.endpoint,
-                    "uri_v3": self.cloudObj.endpoint_v3,
-                    "username": self.cloudObj.test_user,
-                    "alt_username": self.cloudObj.test_user,
-                    "admin_username": self.cloudObj.admin_user
+                    "uri": self.test_obj.cloud.endpoint,
+                    "uri_v3": self.test_obj.cloud.endpoint_v3,
+                    "username": self.test_obj.cloud.test_user,
+                    "alt_username": self.test_obj.cloud.test_user,
+                    "admin_username": self.test_obj.cloud.admin_user
                 }
             }
         else:
@@ -112,7 +105,7 @@ class TempestTester(object):
         '''Return a JSON array of the tempest testcases to be executed.'''
 
         # Set to full tempest test unless it is specified in the config file
-        testcases = configData.get_tempest_testcases()
+        testcases = config_data.get_tempest_testcases()
         if not testcases:
             testcases = {"testcases": ["tempest"]}
 
@@ -127,27 +120,6 @@ class TempestTester(object):
             print f.read()
             f.close()
 
-    def test_cloud(self, cloud_id, extraConfJSON=None):
-        '''Create and execute a new test with the provided extraConfJSON.'''
-
-        # Retrieve the cloud obj from DB
-        self.cloudObj = Cloud.query.filter_by(id=cloud_id).first()
-
-        if not self.cloudObj:
-            return
-
-        # Create new test object in DB and get the real unique test_id
-        self.testObj = Test()
-        self.testObj.cloud_id = self.cloudObj.id
-        self.testObj.cloud = self.cloudObj
-        db.session.add(self.testObj)
-        db.session.commit()
-
-        self.test_id = self.testObj.id
-
-        # Invoke execute_test
-        self.execute_test(extraConfJSON)
-
     def execute_test(self, extraConfJSON=None):
         '''Execute the tempest test with the provided extraConfJSON.'''
 
@@ -157,8 +129,8 @@ class TempestTester(object):
 
         ''' TODO: Initial test status in DB '''
 
-        if configData.get_test_mode():
-            test_mode = configData.get_test_mode().upper()
+        if config_data.get_test_mode():
+            test_mode = config_data.get_test_mode().upper()
         else:
             # Default to use docker if not specified in the config file
             test_mode = 'DOCKER'
@@ -174,19 +146,19 @@ class TempestTester(object):
         '''Execute the tempest test in a docker container.'''
 
         ''' Create the docker build file '''
-        dockerFile = os.path.join(configData.get_working_dir(),
+        dockerFile = os.path.join(config_data.get_working_dir(),
                                   'test_%s.dockerFile' % self.test_id)
         fileBuilder = DockerBuildFile()
         fileBuilder.test_id = self.test_id
-        fileBuilder.api_server_address = configData.get_app_address()
+        fileBuilder.api_server_address = config_data.get_app_address()
         ''' TODO: Determine tempest URL based on the cloud version '''
         ''' ForNow: Use the Tempest URL in the config file '''
-        fileBuilder.tempest_code_url = configData.get_tempest_url()
+        fileBuilder.tempest_code_url = config_data.get_tempest_url()
         fileBuilder.confJSON = extraConfJSON
         fileBuilder.build_docker_buildfile(dockerFile)
 
         ''' Execute the docker build file '''
-        outFile = os.path.join(configData.get_working_dir(),
+        outFile = os.path.join(config_data.get_working_dir(),
                                'test_%s.dockerOutput' % self.test_id)
 
         cmd = 'nohup docker build - < %s > %s &' % (dockerFile, outFile)

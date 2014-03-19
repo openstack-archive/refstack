@@ -1,0 +1,8 @@
+{% extends "layout.html" %}
+{% block title %}Test Status{% endblock %}
+{% block body %}
+<h2>Test Status</h2>
+    Test ID: {{ test.id }}
+    <br>
+    <input type='button' value="Back" onclick="location.href='{{ next_url }}'">
+{% endblock %}
