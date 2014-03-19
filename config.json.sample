@@ -8,13 +8,6 @@
 
     "tempest_config":
     {
-        "identity":
-        {
-            "region": "RegionOne",
-            "tenant_name": "demo",
-            "alt_tenant_name": "alt_demo",
-            "admin_tenant_name": "admin"
-        },
         "compute":
         {
             "image_ref": "a8d70acb-f1c4-4171-b0ce-d73e5de21a9d",
