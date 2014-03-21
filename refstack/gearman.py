@@ -13,8 +13,9 @@
 # under the License.
 
 import gear
-import logging
+from gear import GearmanError, TimeoutError
 import json
+import logging
 import time
 from uuid import uuid4
 
@@ -61,7 +62,7 @@ class Gearman(object):
 
         try:
             self.gearman.submitJob(gearman_job)
-        except Exception:
+        except GearmanError:
             self.log.exception("Unable to submit job to Gearman")
             self.on_build_completed(gearman_job, 'EXCEPTION')
             #return build
@@ -78,10 +79,13 @@ class Gearman(object):
         """called when test is completed"""
         if job.unique in self.meta_jobs:
             del self.meta_jobs[job.unique]
-            return
+            return result
 
-    def is_job_registered(self, name):
+    def is_job_registered(self, name=None):
         """ checks to see if job registered with gearman or not"""
+        if not name:
+            return False
+
         if self.function_cache_time:
             for connection in self.gearman.active_connections:
                 if connection.connect_time > self.function_cache_time:
@@ -101,7 +105,7 @@ class Gearman(object):
             try:
                 req = gear.StatusAdminRequest()
                 connection.sendAdminRequest(req)
-            except Exception:
+            except TimeoutError:
                 self.log.exception("Exception while checking functions")
                 continue
             for line in req.response.split('\n'):
