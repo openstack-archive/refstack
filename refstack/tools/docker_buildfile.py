@@ -16,6 +16,7 @@
 
 from jinja2 import FileSystemLoader, Environment
 import os
+from refstack.utils import get_current_time
 
 
 class DockerBuildFile(object):
@@ -42,7 +43,8 @@ class DockerBuildFile(object):
         template_file_with_path = os.path.join(docker_template_dir,
                                                "docker_buildfile.template")
 
-        values = {"THE_TEST_ID": self.test_id,
+        values = {"THE_TIME_STAMP": get_current_time(),
+                  "THE_TEST_ID": self.test_id,
                   "THE_API_SERVER_ADDRESS": self.api_server_address,
                   "THE_TEMPEST_CODE_URL": self.tempest_code_url,
                   "THE_CONF_JSON": self.confJSON
