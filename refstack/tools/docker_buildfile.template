@@ -18,22 +18,23 @@ RUN wget {{ THE_TEMPEST_CODE_URL }} -O tempest.zip
 RUN unzip -d /tmp/tempest tempest.zip
 RUN mv /tmp/tempest/* /tempest
 
+#Upgrade pip before install Tempest requirement
+RUN pip install --upgrade pip>=1.4
 #Tempest dependencies
-RUN pip install -r /tempest/requirements.txt
-RUN pip install -r /tempest/test-requirements.txt
+RUN /usr/local/bin/pip install -r /tempest/requirements.txt
+RUN /usr/local/bin/pip install -r /tempest/test-requirements.txt
 
 #THE_API_SERVER_ADDRESS should be replaced with the real IP address of the RefStack engine (local or public).
 #The format of THE_API_SERVER_ADDRESS is x.x.x.x:port
 ENV API_SERVER_ADDRESS {{ THE_API_SERVER_ADDRESS }}
 
-#THE_TEST_ID should be replaced with an unique ID associated with this test,
+#THE_TIME_STAMP should be replaced with the time stamp associated with this test,
 #so that the following commands will always be executed.
-ENV TEST_ID {{ THE_TEST_ID }}
+ENV TIME_STAMP '{{ THE_TIME_STAMP }}'
 
 #Download the Python script to the container. This script will be used to prepare
 #the test environment, run tempest tests and upload the test results to RefStack.
 RUN wget http://${API_SERVER_ADDRESS}/get-script -O execute_test.py
 
 # Run the script
-RUN python execute_test.py --callback ${API_SERVER_ADDRESS} ${TEST_ID} --conf-json '{{ THE_CONF_JSON }}' --tempest-home /tempest -v
-RUN echo "done"
+CMD python execute_test.py --callback ${API_SERVER_ADDRESS} {{ THE_TEST_ID }} --conf-json '{{ THE_CONF_JSON }}' --tempest-home /tempest -v

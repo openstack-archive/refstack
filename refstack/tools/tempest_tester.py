@@ -146,22 +146,25 @@ class TempestTester(object):
         '''Execute the tempest test in a docker container.'''
 
         ''' Create the docker build file '''
-        dockerFile = os.path.join(config_data.get_working_dir(),
-                                  'test_%s.dockerFile' % self.test_id)
-        fileBuilder = DockerBuildFile()
-        fileBuilder.test_id = self.test_id
-        fileBuilder.api_server_address = config_data.get_app_address()
+        docker_file = os.path.join(config_data.get_working_dir(),
+                                   'test_%s.docker_file' % self.test_id)
+        docker_builder = DockerBuildFile()
+        docker_builder.test_id = self.test_id
+        docker_builder.api_server_address = config_data.get_app_address()
         ''' TODO: Determine tempest URL based on the cloud version '''
         ''' ForNow: Use the Tempest URL in the config file '''
-        fileBuilder.tempest_code_url = config_data.get_tempest_url()
-        fileBuilder.confJSON = extraConfJSON
-        fileBuilder.build_docker_buildfile(dockerFile)
+        docker_builder.tempest_code_url = config_data.get_tempest_url()
+        docker_builder.confJSON = extraConfJSON
+        docker_builder.build_docker_buildfile(docker_file)
 
         ''' Execute the docker build file '''
-        outFile = os.path.join(config_data.get_working_dir(),
-                               'test_%s.dockerOutput' % self.test_id)
+        out_file = os.path.join(config_data.get_working_dir(),
+                                'test_%s.dockerOutput' % self.test_id)
+        docker_tag = 'refstack_%s' % (self.test_id)
 
-        cmd = 'nohup docker build - < %s > %s &' % (dockerFile, outFile)
+        cmd = 'nohup sh -c "docker build -t %s - < %s ' \
+              '&& docker run -t %s" > %s &' % (docker_tag, docker_file,
+                                               docker_tag, out_file)
         os.system(cmd)
         print cmd
 
