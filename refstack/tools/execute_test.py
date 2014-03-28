@@ -33,11 +33,14 @@ class Test:
         '''Prepare a tempest test against a cloud.'''
 
         log_format = "%(asctime)s %(name)s %(levelname)s %(message)s"
-        if args.verbose:
-            logging.basicConfig(level=logging.INFO, format=log_format)
-        else:
-            logging.basicConfig(level=logging.CRITICAL, format=log_format)
         self.logger = logging.getLogger("execute_test")
+        console_log_handle = logging.StreamHandler()
+        console_log_handle.setFormatter(logging.Formatter(log_format))
+        self.logger.addHandler(console_log_handle)
+        if args.verbose:
+            self.logger.setLevel(logging.INFO)
+        else:
+            self.logger.setLevel(logging.CRITICAL)
 
         self.app_server_address = None
         self.test_id = None
@@ -160,6 +163,7 @@ class Test:
             files = {'file': open(self.result, 'rb')}
             try:
                 requests.post(url, files=files)
+                self.logger.info('Result posted successfully')
             except:
                 self.logger.critical('failed to post result to %s' % url)
                 raise
@@ -194,8 +198,8 @@ class Test:
         for section, data in discovered_conf_dict.items():
             for key in data.keys():
                 if section in conf_dict and key in conf_dict[section]:
-                    self.logger.info("will not discover [%s] %s because caller"
-                                     " chose to overwrite." % (section, key))
+                    self.logger.info("Will not discover [%s] %s because caller"
+                                     " chose to overwrite" % (section, key))
                     del discovered_conf_dict[section][key]
 
     def _build_discovered_dict_conf(self):
@@ -236,10 +240,15 @@ class Test:
         try:
             req = requests.post(url, data=json.dumps(parameter),
                                 headers=header)
+            if req.status_code is not requests.codes.ok:
+                req.raise_for_status()
         except:
-            self.logger.critical("failed to get a Keystone token for"
-                                 "url: %s user: %s tenant: %s"
-                                 (url, user, tenant))
+            self.logger.critical("Failed to get a Keystone token. "
+                                 "Please verify your keystone endpoint url,"
+                                 "username or password.\n"
+                                 "url: \"%s\"\nheader: %s\nparameter: %s\n"
+                                 "response %s" %
+                                 (url, header, parameter, req.content))
             raise
 
         return req.content
