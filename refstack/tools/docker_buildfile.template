@@ -1,40 +1,66 @@
+# Copyright 2014 IBM Corp.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
+# This template file is designed to be used with the RefStack app server.
+# The RefStack app server will generate different docker build file by
+# replacing THE_TEMPEST_CODE_URL with the actual URL corresponding to the
+# Tempest version specified by the user for the target cloud.
+
 FROM ubuntu
 RUN apt-get update
 
-#Downloading tools
+# Download tools
+
 RUN apt-get install -y git python-pip wget unzip
 
-#Downloading dependencies
-RUN apt-get install -y libxml2-dev libxslt-dev lib32z1-dev python2.7-dev libssl-dev
+# Download dependencies
 
-#other dependencies
+RUN apt-get install -y libxml2-dev libxslt-dev lib32z1-dev python2.7-dev libssl-dev
 RUN apt-get install -y python-dev libxslt1-dev libsasl2-dev libsqlite3-dev libldap2-dev libffi-dev
 RUN pip install ftp://xmlsoft.org/libxml2/python/libxml2-python-2.6.9.tar.gz
 
-#Get tempest code
-#THE_TEMPEST_CODE_URL should be replaced with an appropriate address. For example:
-#replace THE_TEMPEST_CODE_URL with https://github.com/openstack/tempest/archive/stable/havana.zip
+# Upgrade pip before installing Tempest
+
+RUN pip install --upgrade pip>=1.4
+
+# Get Tempest code
+#
+# THE_TEMPEST_CODE_URL should be replaced with an appropriate address.
+# For example:
+# https://github.com/openstack/tempest/archive/stable/havana.zip for Havana.
+
 RUN wget {{ THE_TEMPEST_CODE_URL }} -O tempest.zip
 RUN unzip -d /tmp/tempest tempest.zip
 RUN mv /tmp/tempest/* /tempest
 
-#Upgrade pip before install Tempest requirement
-RUN pip install --upgrade pip>=1.4
-#Tempest dependencies
+# Install Tempest requirements
+
 RUN /usr/local/bin/pip install -r /tempest/requirements.txt
 RUN /usr/local/bin/pip install -r /tempest/test-requirements.txt
 
-#THE_API_SERVER_ADDRESS should be replaced with the real IP address of the RefStack engine (local or public).
-#The format of THE_API_SERVER_ADDRESS is x.x.x.x:port
-ENV API_SERVER_ADDRESS {{ THE_API_SERVER_ADDRESS }}
+# Download the test execution script from the RefStack server
+# and execute the script
+#
+# The script will generate the Tempest config file, run Tempest tests
+# and upload the test results back to the RefStack app server.
+#
+# This CMD command uses values from the following environment variables:
+#   APP_SERVER_ADDRESS - The IP address & port that the RefStack app server
+#                        is listening at.
+#   TEST_ID            - The unique ID for this test run assigned by the
+#                        RefStack app server.
+#   CONF_JSON          - JSON string that contains portion of the Tempest
+#                        config. For example, the passwords of the users.
 
-#THE_TIME_STAMP should be replaced with the time stamp associated with this test,
-#so that the following commands will always be executed.
-ENV TIME_STAMP '{{ THE_TIME_STAMP }}'
-
-#Download the Python script to the container. This script will be used to prepare
-#the test environment, run tempest tests and upload the test results to RefStack.
-RUN wget http://${API_SERVER_ADDRESS}/get-script -O execute_test.py
-
-# Run the script
-CMD python execute_test.py --callback ${API_SERVER_ADDRESS} {{ THE_TEST_ID }} --conf-json '{{ THE_CONF_JSON }}' --tempest-home /tempest -v
+CMD wget http://${APP_SERVER_ADDRESS}/get-script -O execute_test.py && python execute_test.py --callback ${APP_SERVER_ADDRESS} ${TEST_ID} --conf-json ${CONF_JSON} --tempest-home /tempest -v

@@ -120,8 +120,11 @@ class TempestTester(object):
             print f.read()
             f.close()
 
-    def execute_test(self, extraConfJSON=None):
-        '''Execute the tempest test with the provided extraConfJSON.'''
+    def execute_test(self, extra_conf_json=None):
+        '''Execute the tempest test with the provided extra_conf_json.'''
+
+        if not extra_conf_json:
+            extra_conf_json = '{}'
 
         options = {'DOCKER': self._execute_test_docker,
                    'LOCAL': self._execute_test_local,
@@ -136,44 +139,52 @@ class TempestTester(object):
             test_mode = 'DOCKER'
 
         try:
-            options[test_mode](extraConfJSON)
+            options[test_mode](extra_conf_json)
         except KeyError:
             print 'Error: Invalid test mode in config file'
 
         ''' TODO: Update test status in DB'''
 
-    def _execute_test_docker(self, extraConfJSON=None):
+    def _execute_test_docker(self, extra_conf_json):
         '''Execute the tempest test in a docker container.'''
 
-        ''' Create the docker build file '''
+        # Generate the docker file
         docker_file = os.path.join(config_data.get_working_dir(),
                                    'test_%s.docker_file' % self.test_id)
         docker_builder = DockerBuildFile()
-        docker_builder.test_id = self.test_id
-        docker_builder.api_server_address = config_data.get_app_address()
         ''' TODO: Determine tempest URL based on the cloud version '''
         ''' ForNow: Use the Tempest URL in the config file '''
         docker_builder.tempest_code_url = config_data.get_tempest_url()
-        docker_builder.confJSON = extraConfJSON
         docker_builder.build_docker_buildfile(docker_file)
 
-        ''' Execute the docker build file '''
+        # Generate the docker commands
+        docker_tag = 'refstack_%s' % (self.test_id)
+        docker_build_command = 'docker build -t %s - < %s' % \
+            (docker_tag, docker_file)
+        docker_run_env = '-e APP_SERVER_ADDRESS=%s ' \
+                         '-e TEST_ID=%s ' \
+                         '-e CONF_JSON=\'%s\'' % \
+            (config_data.get_app_address(),
+             self.test_id,
+             extra_conf_json.replace('"', '\\"'))
+        docker_run_command = 'docker run %s -t %s' % \
+            (docker_run_env, docker_tag)
         out_file = os.path.join(config_data.get_working_dir(),
                                 'test_%s.dockerOutput' % self.test_id)
-        docker_tag = 'refstack_%s' % (self.test_id)
 
-        cmd = 'nohup sh -c "docker build -t %s - < %s ' \
-              '&& docker run -t %s" > %s &' % (docker_tag, docker_file,
-                                               docker_tag, out_file)
+        cmd = 'nohup sh -c "%s && %s" > %s &' % (docker_build_command,
+                                                 docker_run_command,
+                                                 out_file)
+
+        # Build and execute the docker file
         os.system(cmd)
-        print cmd
 
         ''' TODO: Clean up the temporary docker build and output file '''
 
-    def _execute_test_local(self, extraConfJSON=None):
+    def _execute_test_local(self, extra_conf_json):
         '''Execute the tempest test locally.'''
         pass
 
-    def _execute_test_gearman(self, extraConfJSON=None):
+    def _execute_test_gearman(self, extra_conf_json):
         '''Execute the tempest test with gearman.'''
         pass
