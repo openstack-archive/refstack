@@ -1,53 +1,49 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2014 OpenStack Foundation, All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+#
+# This file creates and runs Tempest in a Docker Container
 
-FROM ubuntu 
+FROM ubuntu:13.10
+MAINTAINER OpenStack RefStack Project
+
 RUN apt-get update
 
-# Downloading git
-
-RUN apt-get install -y git python-setuptools
-
+# Install git, python and essential tools
+RUN apt-get install -y git python-setuptools curl ftp
 RUN easy_install pip
 
-#Downloading dependencies
-RUN apt-get install -y libxml2-dev libxslt-dev lib32z1-dev python2.7-dev libssl-dev
+# Install dependencies (small bites are easier to troubleshoot)
+RUN apt-get install -y libxml2-dev libxslt-dev lib32z1-dev 
+RUN apt-get install -y python2.7-dev python-dev libssl-dev
+RUN apt-get install -y python-libxml2 libxslt1-dev libsasl2-dev
+RUN apt-get install -y libsqlite3-dev libldap2-dev libffi-dev
 
-#other dependencies
-RUN apt-get install -y python-dev libxslt1-dev libsasl2-dev libsqlite3-dev libldap2-dev libffi-dev ftp
-# RUN pip install ftplib
-RUN pip install http://gd.tuwien.ac.at/pub/libxml/python/libxml2-python-2.6.9.tar.gz
-# http://gd.tuwien.ac.at/pub/libxml/python/libxml2-python-2.4.16.tar.gz
-# RUN pip install ftplib libxml2-python
-
-# Cloning keystone? 
-
-
-# Cloning tempest
-
-RUN git clone https://github.com/openstack/tempest
-
-#running setup
-RUN cd tempest && python setup.py install
-
-#making file to add exterior files
-
+# Setup Environment by Cloning refstack & tempest (choose right branch)
 RUN mkdir temp
+RUN git clone https://github.com/stackforge/refstack.git
+RUN git clone https://github.com/openstack/tempest.git 
 
-#Tempest config creator
-ADD https://raw.github.com/dlenwell/refstack/master/refstack/common/tempest_config.py /temp/
+# Version of TCUP 
+# Changing REBUILDs the container from this point forward
+ENV TCUP 0.1.0
 
-#MORE DEPENDENCIES (for tempest config builder)
-ADD https://raw.github.com/openstack/keystone/master/requirements.txt /temp/
-ADD https://raw.github.com/openstack/keystone/master/test-requirements.txt /temp/
+# Using refstack & tempest dependencies
+RUN pip install -r /refstack/requirements.txt
+RUN pip install -r /refstack/test-requirements.txt
 
-#using dependencies
-RUN pip install -r /temp/requirements.txt
-RUN pip install -r /temp/test-requirements.txt
-
-#Running tempest config creator
-
-
-#Publishing to refstack
-#ADD <url> /temp/
-
-#rest of file
-
+# Running tempest setup
+RUN cd tempest && git checkout stable/havana
+RUN cd tempest && python setup.py install
