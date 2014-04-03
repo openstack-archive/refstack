@@ -2,20 +2,16 @@
 Refstack Specifications
 ==================================
 
-This folder in this repo is used to hold approved design specifications for additions
-to the Refstack project.  Reviews of the specs are done in gerrit, using a similar
+This folder is used to hold design specifications for additions
+to the Refstack project. Reviews of the specs are done in gerrit, using a similar
 workflow to how we review and merge changes to the code itself.
 
-The layout of this repository is::
+Specifications are proposed by adding an .rst file to the `specs/proposed` directory and posting it for review. Not all approved blueprints will get fully implemented. You can find an example spec in `/specs/template.rst`.
 
-  specs/specification_name.rst
+When a spec has passed the review process and discussions in our weekly meetings it will 
+be moved to 'specs/approved/'. At that time the blueprint will be marked as approved and assigned to someone.
 
-You can find an example spec in `/specs/template.rst`.
-
-Specifications are proposed for a given release by adding them to the
-`specs/` directory and posting it for review. The implementation
-status of a blueprint for a given release can be found by looking at the
-blueprint in launchpad. Not all approved blueprints will get fully implemented.
+Once a spec has been fully implemented, meaning a patch has landed that references the blueprint, it will be moved again to 'specs/completed'.
 
 Prior to April 2014, this method was not used for spec
 reviews. Prior reviews were completed entirely through Launchpad
