@@ -72,6 +72,14 @@
                                             onclick="window.location='/show-report/{{ test.id }}'">
                                         <span class="glyphicon glyphicon-file"></span>
                                     </button>
+                                    <button type="button"
+                                            class="btn btn-default btn-xs"
+                                            rel="tooltip"
+                                            title="Download Result"
+                                            data-placement="top"
+                                            onclick="window.location='/download-result/{{ test.id }}'">
+                                        <span class="glyphicon glyphicon-cloud-download"></span>
+                                    </button>
                                 {% else %}
                                     <button type="button"
                                             class="btn btn-default btn-xs"

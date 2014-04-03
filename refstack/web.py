@@ -416,18 +416,36 @@ def show_report(test_id):
     if not test:
         flash(u'Not a valid Test ID!')
         return redirect('/')
+
+    # Users can see report of all tests (including other people's tests)
+
+    test_result = TempestTester(test_id).get_result()
+    if not test_result:
+        flash(u"No test result available!")
+        return redirect('/')
+
+    return render_template('show_report.html', next_url='/', test=test,
+                           test_result=test_result)
+
+
+@app.route('/download-result/<int:test_id>', methods=['GET', 'POST'])
+def download_result(test_id):
+    """Handler for downloading test results."""
+
+    test = Test.query.filter_by(id=test_id).first()
+
+    if not test:
+        flash(u'Not a valid Test ID!')
+        return redirect('/')
     elif not test.cloud.user_id == g.user.id:
+        # Users can only download result of their own tests
         flash(u"This isn't your test!")
         return redirect('/')
 
-    # This is a place holder for now
-    ''' TODO: Generate the appropriate report page '''
-    ''' ForNow: send back the subunit data stream for debugging '''
+    # Send back the subunit data stream
 
     response = make_response(test.subunit)
-    response.headers["Content-Disposition"] = \
-        "attachment; filename=subunit.txt"
+    response.headers['Content-Disposition'] = \
+        'attachment; filename=subunit_%s.txt' % (test_id)
     response.content_type = "text/plain"
     return response
-
-    # return render_template('show_report.html', next_url='/', test=test)

@@ -4,12 +4,15 @@ body {
     margin: 30px;
     padding: 0;
 }
+
 .container{
     width:  !important;
 }
+
 .grid{
     width: 1224px !important;
 }
+
 .inner_container{
     z-index: 100;
     position: relative;
@@ -47,9 +50,10 @@ p.error {
     z-index:10000;
     float: right;
     margin-top: 15px;
-    
+
 }
-.ref_nav li { 
+
+.ref_nav li {
     display: inline-block;
     padding-left: 5px;
 
@@ -68,7 +72,7 @@ input {
 }
 
 h1, h2, h3, h4 {
-    
+
     font-family: helvetica, san-serif;
     margin:0px;
     padding: 0px;
@@ -87,10 +91,12 @@ h2{
     font-size: 30px;
     font-weight: bold;
 }
+
 a.logo:hover{
     text-decoration: none;
     color: #274F7D;
 }
+
 .logo span{
     color: #329000;
 }
@@ -109,9 +115,11 @@ input[name="openid"] {
 .index_left{
     background-color: #5FD4B1;
 }
+
 .index_center{
     background-color: #689AD3;
 }
+
 .index_right{
     background-color: #99EE6B;
 }
@@ -123,6 +131,7 @@ input[name="openid"] {
     height: 110px;
     font-size: 20px;
 }
+
 .option p{
     display: block;
     width: 215px;
@@ -132,11 +141,11 @@ input[name="openid"] {
 .panel-heading{
     font-weight: bold;
 }
+
 .panel-heading span{
     color: #274F7D;
     margin-right: 6px;
 }
-
 
 .red{
     color: red;
@@ -145,12 +154,56 @@ input[name="openid"] {
 .green{
     color: #329000;
 }
+
 .vendors{
     text-align: center;
     color: #274F7D;
-    
 }
+
 .vendors li{
     display: inline-block;
     padding: 0px 5px;
+}
+
+.report_text_table,
+.report_data_table{
+    width: auto;
+}
+
+.report_text_table tbody > tr > td,
+.report_text_table tbody > tr > th{
+    border-top: 0px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.report_text_table tbody > tr > th{
+    text-align: right;
+}
+
+.report_data_table{
+    border: 1px solid rgb(200, 200, 200);
+    border-collapse: initial;
+    border-radius: 5px;
+}
+
+.report_data_table tbody > tr > td,
+.report_data_table tbody > tr > th{
+    padding-right: 15px;
+    padding-left: 15px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.report_data_table tbody > tr > th{
+    background-color: rgb(245, 245, 245);
+}
+
+.report_data_path{
+    background-color: rgb(250, 250, 250);
+    font-style: italic;
+}
+
+.blue{
+    color: blue;
 }

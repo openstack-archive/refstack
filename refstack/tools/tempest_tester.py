@@ -14,11 +14,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import cStringIO
 from docker_buildfile import DockerBuildFile
 import json
 import os
 from refstack.models import Test
 from refstack.refstack_config import RefStackConfig
+from tempest_subunit_test_result import ProcessSubunitData
+from tempest_subunit_test_result import TempestSubunitTestResultTuples
 
 config_data = RefStackConfig()
 
@@ -110,6 +113,23 @@ class TempestTester(object):
             testcases = {"testcases": ["tempest"]}
 
         return json.dumps(testcases)
+
+    def get_result(self):
+        '''Return the test result objects.'''
+
+        if not self.test_obj.finished:
+            return None
+
+        try:
+            test_result = ProcessSubunitData(cStringIO.StringIO(
+                self.test_obj.subunit),
+                TempestSubunitTestResultTuples).get_result()
+
+            return {"summary": test_result.summary,
+                    "data": test_result.results}
+
+        except Exception:
+            return None
 
     def process_resultfile(self, filename):
         '''Process the tempest result file.'''
