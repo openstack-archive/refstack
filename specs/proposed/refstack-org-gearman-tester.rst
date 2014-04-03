@@ -5,11 +5,15 @@ launchpad blueprint:
 https://blueprints.launchpad.net/refstack/+spec/refstack-org-gearman-tester
 
 Set up gearman worker/client for triggering official test runs from refstack.org
-Some notes about using this template:
 
 * build gearman client / job monitor
 
 * stand alone worker script that does not need refstack installed.
+
+* api methods
+
+* package installer for test runner with dependency and version coverage.
+
 
 Problem description
 ===================
@@ -31,11 +35,12 @@ This spec covers the following deliverables;
  *  gearman client side code. (https://review.openstack.org/#/c/84270/)
  *  gearman worker code (wip)
  *  api method for reporting failure
+ *  installer with dependency coverage for the worker
 
 Alternatives
 ------------
 
-There are a lot of other job queue type things .. I happen to love gearman and the infra team has a gearman based system in place already.. they know how to trouble shoot it and tweak it for performance.
+There are a lot of other job queue type things .. I happen to love gearman and the infra team has a gearman based system in place already.. they know how to troubleshoot it and tweak it for performance.
 
 Data model impact
 -----------------
@@ -54,7 +59,7 @@ REST API impact
 
   * Expected error http response code(s)
 
-    * 400 bad requst.. payload was missing?
+    * 400 bad request.. payload was missing?
 
     * 405 not authorized, this method should only allow failure reports from known gearman hosts
 
@@ -69,34 +74,34 @@ REST API impact
 Security impact
 ---------------
 
-* Does this change touch sensitive data such as tokens, keys, or user data? NO
+* Does this change touch sensitive data such as tokens, keys, or user data? **NO**
 
 * Does this change alter the API in a way that may impact security, such as
-  a new way to access sensitive information or a new way to login? NO
+  a new way to access sensitive information or a new way to login? **NO**
 
-* Does this change involve cryptography or hashing? NO
+* Does this change involve cryptography or hashing? **NO**
 
-* Does this change require the use of sudo or any elevated privileges? NO
+* Does this change require the use of sudo or any elevated privileges? **NO**
 
 * Does this change involve using or parsing user-provided data? This could
-  be directly at the API level or indirectly such as changes to a cache layer. YES
+  be directly at the API level or indirectly such as changes to a cache layer. **YES**
 
 * Can this change enable a resource exhaustion attack, such as allowing a
   single API interaction to consume significant server resources? Some examples
   of this include launching subprocesses for each connection, or entity
-  expansion attacks in XML.  NO (thats why we use gearman)
+  expansion attacks in XML.  **NO** (thats why we use gearman)
 
 Notifications impact
 --------------------
 
-None
+The gearman client should be able to feed back its status updates to the webui through the 'TestStatus' model. 
 
 Other end user impact
 ---------------------
 
-Aside from the API, are there other ways a user will interact with this feature?
+Aside from the API, are there other ways a user will interact with this feature? 
 
-NO
+Users will be able to trigger, cancel, and, receive status updates. 
 
 Performance Impact
 ------------------
@@ -110,12 +115,12 @@ Other deployer impact
 
 * using the gearman testing option will require two settings in `refstack.cfg` GEARMAN_SERVER and GEARMAN_PORT will need to be set with the location and port of the gearmand server. 
 
-* This change will require being enabled in the same file with the TEST_METHOD value set to "gearman". 
+* This change will require being enabled in the same file with the TEST_METHOD value set to "gearman".
 
 Developer impact
 ----------------
 
-none
+TDB
 
 Implementation
 ==============
@@ -127,14 +132,16 @@ Primary assignee:
   dlenwell
 
 Other contributors:
-  rockyg (documentation)
+  rockyg (documentation) * these documents are ripe with raw material for docs :)
 
 Work Items
 ----------
 
 * gearman client side code. (https://review.openstack.org/#/c/84270/)
+   * starts/stops/handle the gearman job queue
 * gearman worker code (wip)
 * report failure api call
+* package installer for test runner with dependency coverage.
 
 Dependencies
 ============
