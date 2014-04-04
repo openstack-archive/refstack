@@ -20,6 +20,7 @@ import commands
 import logging
 import os
 import re
+import sys
 
 if __name__ == "__main__":
 
@@ -32,14 +33,19 @@ if __name__ == "__main__":
                         "LESSCLOSE", "SSH_CONNECTION"}
     REQUIRED_ENV_VARS = {'OS_PASSWORD', 'OS_USERNAME', 'OS_AUTH_URL'}
 
+    # debugging?
+    debug = ((len(sys.argv) > 1 and sys.argv[1] == "--debug")
+             or os.environ.get("DEBUG"))
+
     # Setup the logger
     LOG_FORMAT = "%(asctime)s %(name)s %(levelname)s %(message)s"
     logger = logging.getLogger("TCUP")
     console_log_handle = logging.StreamHandler()
     console_log_handle.setFormatter(logging.Formatter(LOG_FORMAT))
     logger.addHandler(console_log_handle)
-    if os.environ.get("DEBUG"):
+    if debug:
         logger.setLevel(logging.DEBUG)
+        logger.info("Starting in DEBUG mode.")
     else:
         logger.setLevel(logging.INFO)
 
@@ -84,19 +90,19 @@ if __name__ == "__main__":
     docker_run = "docker run -d -i"
     for env_var in user_env_vars:
         docker_run += ' -e "%s=%s"' % (env_var, user_env_vars[env_var])
-    if "DEBUG" in user_env_vars:
+    if debug:
         docker_run += " -v `pwd`:/dev"
     docker_run += ' -t %s' % (image)
-    if "DEBUG" in user_env_vars:
+    if debug:
         docker_run += " /bin/bash"
-        logger.info("""Debug mode does not start tests!
-                    You must run `refstack/tools/execute_test.py \
-                    --tempest-home /tempest` to complete processing""")
+        logger.info("Debug mode does not start tests! \
+                    You must run `refstack/refstack/tools/execute_test.py \
+                    --tempest-home /tempest` to complete processing")
     else:
         docker_run += " cd refstack; refstack/tools/execute_test.py" \
                       " --tempest-home /tempest" \
                       " --callback ${api_addr} ${test_id}"
-    if "DEBUG" in user_env_vars:
+    if debug:
         docker_run_log_output = docker_run
     else:
         # normally we redact the password
@@ -109,6 +115,6 @@ if __name__ == "__main__":
     docker_output = commands.getoutput(docker_run)
     logger.debug(docker_output)
     logger.info("""You can monitor the TCUP results using the command
-                'sudo docker attach %s'
+                'docker attach %s'
                 (hint: you may need to press [enter])"""
                 % docker_output[0:12])
