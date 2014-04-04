@@ -79,8 +79,8 @@ class Test:
         self.logger.info('Generating tempest.config')
         self.merge_to_sample_conf(self.mini_conf_dict)
         self.merge_to_sample_conf(self.extra_conf_dict)
-        #discovered config will not overwrite the value in the
-        #mini_conf_dict and extra_conf_dict
+        # discovered config will not overwrite the value in the
+        # mini_conf_dict and extra_conf_dict
         discovered_conf_dict = self._build_discovered_dict_conf()
         self.merge_to_sample_conf(discovered_conf_dict)
         self.sample_conf_parser.write(open(self.tempest_conf_file, 'w'))
@@ -128,7 +128,7 @@ class Test:
     def run_test_cases(self):
         '''Executes each test case in the testcase list.'''
 
-        #Make a backup in case previous data exists in the the directory
+        # Make a backup in case previous data exists in the the directory
         if os.path.exists(self.result_dir):
             date = time.strftime("%m%d%H%M%S")
             backup_path = os.path.join(os.path.dirname(self.result_dir),
@@ -139,15 +139,15 @@ class Test:
                              (self.result_dir, backup_path))
             os.rename(self.result_dir, backup_path)
 
-        #Execute each testcase.
+        # Execute each testcase.
         testcases = json.loads(self.get_test_cases())['testcases']
         self.logger.info('Running test cases')
         for case in testcases:
             cmd = ('%s -C %s -N -- %s' %
                    (self.tempest_script, self.tempest_conf_file, case))
-            #When a testcase fails
-            #continue execute all remaining cases so any partial result can be
-            #reserved and posted later.
+            # When a testcase fails
+            # continue execute all remaining cases so any partial result can be
+            # reserved and posted later.
             try:
                 subprocess.check_output(cmd, shell=True)
             except subprocess.CalledProcessError as e:
@@ -206,8 +206,8 @@ class Test:
         '''Return discovered tempest configs in a json string.'''
         self.logger.info("Starting tempest config discovery")
 
-        #This is the default discovery items
-        #in which the tempest.sample.conf will be discovered.
+        # This is the default discovery items
+        # in which the tempest.sample.conf will be discovered.
         discovery_conf_dict =\
             {"identity": {"region": self.get_identity_region,
                           "admin_tenant_name": self.get_admin_tenant_name,
@@ -215,12 +215,12 @@ class Test:
                           "alt_tenant_name": self.get_alt_tenant_name}
              }
 
-        #Remove the configs from the default discovery
-        #for those that caller choose to overwrite.
+        # Remove the configs from the default discovery
+        # for those that caller choose to overwrite.
         self._subtract_dictionaries(discovery_conf_dict, self.mini_conf_dict)
         self._subtract_dictionaries(discovery_conf_dict, self.extra_conf_dict)
 
-        #populate configs
+        # populate configs
         for section, data in discovery_conf_dict.items():
                 for key in data.keys():
                     discovery_conf_dict[section][key] =\
@@ -348,10 +348,10 @@ class Test:
         the admin_token will be used to for image discovery
         '''
         admin_token = json.loads(self.get_keystone_token
-                                (url=keystone_url + "/tokens",
-                                 user=admin_user,
-                                 password=admin_pw,
-                                 tenant=admin_tenant))
+                                 (url=keystone_url + "/tokens",
+                                  user=admin_user,
+                                  password=admin_pw,
+                                  tenant=admin_tenant))
         '''TODO: assume there is only one identity endpoint'''
         identity_region =\
             [service["endpoints"][0]["region"]
@@ -395,7 +395,7 @@ if __name__ == '__main__':
     parser.add_argument("--tempest-home",
                         help="tempest directory path")
 
-    #with nargs, arguments are returned as a list
+    # with nargs, arguments are returned as a list
     conflict_group.add_argument("--testcases",
                                 nargs='+',
                                 help="tempest test cases. Use space to\
