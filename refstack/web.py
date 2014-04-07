@@ -374,7 +374,9 @@ def post_result():
     # but it should work for now.
     #print request.files
     f = request.files['file']
-    if f:
+    if not f:
+        return 'only valid with file post', 400
+    else:
         if request.args.get('test_id', ''):
             # this data is for a specific test triggered by the gui and we
             # want to relate it
@@ -391,9 +393,7 @@ def post_result():
             db.session.add(new_test)
 
         db.session.commit()
-
-    # todo .. set up error handling with correct response codes
-    return make_response('')
+        return 'thank you', 201
 
 
 @app.route('/update-test-status/<int:test_id>', methods=['POST'])
