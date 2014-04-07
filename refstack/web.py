@@ -23,6 +23,7 @@ from refstack.extensions import db
 from refstack.extensions import oid
 from refstack.models import Cloud
 from refstack.models import Test
+from refstack.models import TestStatus
 from refstack.models import User
 from refstack.models import Vendor
 from refstack.tools.tempest_tester import TempestTester
@@ -393,6 +394,24 @@ def post_result():
 
     # todo .. set up error handling with correct response codes
     return make_response('')
+
+
+@app.route('/update-test-status/<int:test_id>', methods=['POST'])
+def update_test_status(test_id):
+    """updates the test status."""
+
+    test = Test.query.filter_by(id=test_id).first()
+
+    if not test or request.args.get('status', ''):
+        return 'bad request', 400
+
+    message = request.args.get('status', '')
+    status = TestStatus(test_id, message)
+
+    db.session.add(status)
+    db.session.commit()
+
+    return 'thank you', 201
 
 
 @app.route('/show-status/<int:test_id>', methods=['GET', 'POST'])
