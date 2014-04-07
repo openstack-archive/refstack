@@ -29,6 +29,12 @@ import urllib2
 
 
 class Test:
+    app_server_address = None
+    test_id = None
+    extra_conf_dict = dict()
+    mini_conf_dict = dict()
+    testcases = {"testcases": ["tempest"]}
+
     def __init__(self, args):
         '''Prepare a tempest test against a cloud.'''
 
@@ -37,6 +43,7 @@ class Test:
         console_log_handle = logging.StreamHandler()
         console_log_handle.setFormatter(logging.Formatter(log_format))
         self.logger.addHandler(console_log_handle)
+
         if os.environ.get("DEBUG"):
             self.logger.setLevel(logging.DEBUG)
         elif args.verbose:
@@ -44,17 +51,17 @@ class Test:
         else:
             self.logger.setLevel(logging.CRITICAL)
 
-        self.app_server_address = None
-        self.test_id = None
         if args.callback:
-            self.app_server_address, self.test_id = args.callback
+            self.app_server_address = args.callback
+
+        if args.test_id:
+            self.test_id = args.test_id
 
         self.mini_conf_dict = json.loads(self.get_mini_config())
-        self.extra_conf_dict = dict()
+
         if args.conf_json:
             self.extra_conf_dict = args.conf_json
 
-        self.testcases = {"testcases": ["tempest"]}
         if args.testcases:
             self.testcases = {"testcases": args.testcases}
 
@@ -410,12 +417,18 @@ if __name__ == '__main__':
     conflict_group = parser.add_mutually_exclusive_group()
 
     conflict_group.add_argument("--callback",
-                                nargs=2,
-                                metavar=("APP_SERVER_ADDRESS", "TEST_ID"),
                                 type=str,
-                                help="refstack API IP address and test ID to\
+                                action='store',
+                                help="refstack API IP address \
                                        retrieve configurations. i.e.:\
-                                       --callback 127.0.0.1:8000 1234")
+                                       --callback 127.0.0.1:8000")
+
+    conflict_group.add_argument("--test-id",
+                                action='store',
+                                dest='test_id',
+                                type=str,
+                                help="refstack test ID i.e.:\
+                                       --test-id 1234 ")
 
     parser.add_argument("--tempest-home",
                         help="tempest directory path")
