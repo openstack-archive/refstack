@@ -165,6 +165,8 @@ def edit_cloud(cloud_id):
             flash(u'Error: All fields are required')
         elif not request.form['test_user']:
             flash(u'Error: All fields are required')
+        elif not request.form['alt_user']:
+            flash(u'Error: All fields are required')
         elif not request.form['admin_endpoint']:
             flash(u'Error: All fields are required')
         elif not request.form['admin_user']:
@@ -173,6 +175,7 @@ def edit_cloud(cloud_id):
             cloud.label = request.form['label']
             cloud.endpoint = request.form['endpoint']
             cloud.test_user = request.form['test_user']
+            cloud.alt_user = request.form['alt_user']
             cloud.admin_endpoint = request.form['admin_endpoint']
             cloud.endpoint_v3 = request.form['endpoint_v3']
             cloud.version = request.form['version']
@@ -189,7 +192,8 @@ def edit_cloud(cloud_id):
                 admin_endpoint=cloud.admin_endpoint,
                 admin_user=cloud.admin_user,
                 version=cloud.version,
-                test_user=cloud.test_user)
+                test_user=cloud.test_user,
+                alt_user=cloud.alt_user)
 
     return render_template('edit_cloud.html', form=form)
 
@@ -207,6 +211,8 @@ def create_cloud():
             flash(u'Error: All fields are required')
         elif not request.form['test_user']:
             flash(u'Error: All fields are required')
+        elif not request.form['alt_user']:
+            flash(u'Error: All fields are required')
         elif not request.form['admin_endpoint']:
             flash(u'Error: All fields are required')
         elif not request.form['admin_user']:
@@ -217,6 +223,7 @@ def create_cloud():
             new_cloud.label = request.form['label']
             new_cloud.endpoint = request.form['endpoint']
             new_cloud.test_user = request.form['test_user']
+            new_cloud.alt_user = request.form['alt_user']
             new_cloud.admin_endpoint = request.form['admin_endpoint']
             new_cloud.endpoint_v3 = request.form['endpoint_v3']
             new_cloud.version = request.form['version']

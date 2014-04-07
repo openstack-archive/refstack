@@ -59,7 +59,8 @@ class Vendor(db.Model):
     """Note: The vendor list will be pre-populated from the
     sponsoring company database.
     TODO: better define the vendor object and its relationship with user
-    it needs the ability to facilitate a login."""
+    it needs the ability to facilitate a login.
+    """
     __tablename__ = 'vendor'
     id = db.Column(db.Integer, primary_key=True)
     vendor_name = db.Column(db.String(80), unique=True)
@@ -80,6 +81,7 @@ class Cloud(db.Model):
     endpoint_v3 = db.Column(db.String(512), unique=False)
     admin_endpoint = db.Column(db.String(512), unique=False)
     test_user = db.Column(db.String(80), unique=False)
+    alt_user = db.Column(db.String(80), unique=False)
     admin_user = db.Column(db.String(80), unique=False)
     version = db.Column(db.String(80), unique=False)
     tempest_sha = db.Column(db.String(128), unique=False)

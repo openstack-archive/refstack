@@ -10,8 +10,10 @@
       <dd><input type='text' name='endpoint_v3' size='30' value="{{ request.values.endpoint_v3 }}"></dd>
       <dt>Non-Admin Keystone Endpoint:</dt>
       <dd><input type='text' name='endpoint' size='30' value="{{ request.values.endpoint }}"></dd>
-      <dt>Non-Admin User:</dt>
+      <dt>Non-Admin Test User:</dt>
       <dd><input type='text' name='test_user' size='30' value="{{ request.values.test_user }}"></dd>
+      <dt>Alternate Non-Admin Test User:</dt>
+      <dd><input type='text' name='alt_user' size='30' value="{{ request.values.alt_user }}"></dd>
       <dt>Admin Keystone Endpoint:</dt>
       <dd><input type='text' name='admin_endpoint' size='30' value="{{ request.values.admin_endpoint }}"></dd>
       <dt>Admin User:</dt>
@@ -24,6 +26,5 @@
       <input type='submit' value="Create">
       <input type='hidden' name='next' value="{{ next }}">
   </form>
-  
-{% endblock %}
 
+{% endblock %}
