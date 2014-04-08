@@ -96,17 +96,40 @@ class Test:
 
     def get_mini_config(self):
         '''Return a mini config in JSON string.'''
-        if self.app_server_address and self.test_id:
-            url = "http://%s/get-miniconf?test_id=%s" % \
-                (self.app_server_address, self.test_id)
-            try:
-                req = urllib2.urlopen(url=url, timeout=10)
-                return req.readlines()[0]
-            except:
-                self.logger.critical('Failed to get mini config from %s' % url)
-                raise
+        # create config from environment variables if set
+        url = os.environ.get("OS_AUTH_URL")
+        if url:
+            user = os.environ.get("OS_USERNAME")
+            self.logger.info('Using Config ENV variables for %s@%s'
+                             % (url, user))
+            # for now, very limited configuration.  refactor as we add vars
+            env_config = {"identity":
+                          {"uri": url,
+                           "username": user,
+                           "password": os.environ.get("OS_PASSWORD"),
+                           "tenant_name": os.environ.get("OS_TENANT_NAME"),
+                           "region": os.environ.get("OS_REGION_NAME")},
+                          "compute":
+                          {"image_ref": os.environ.get("TEMPEST_IMAGE_REF",
+                                                       "cirros")}}
+            json_config = json.dumps(env_config, separators=(',', ':'))
+            self.logger.debug("ENV config: %s" % (json_config))
+            return json_config
+        # otherwise get them from the app server
         else:
-            return json.dumps(dict())
+            if self.app_server_address and self.test_id:
+                url = "http://%s/get-miniconf?test_id=%s" % \
+                    (self.app_server_address, self.test_id)
+                try:
+                    req = urllib2.urlopen(url=url, timeout=10)
+                    self.logger.info('Using App Server Config from %s' % (url))
+                    return req.readlines()[0]
+                except:
+                    self.logger.critical('Failed to get mini config from %s'
+                                         % url)
+                    raise
+            else:
+                return json.dumps(dict())
 
     def get_test_cases(self):
         '''Return list of tempest testcases in JSON string.
