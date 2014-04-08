@@ -37,7 +37,9 @@ class Test:
         console_log_handle = logging.StreamHandler()
         console_log_handle.setFormatter(logging.Formatter(log_format))
         self.logger.addHandler(console_log_handle)
-        if args.verbose:
+        if os.environ.get("DEBUG"):
+            self.logger.setLevel(logging.DEBUG)
+        elif args.verbose:
             self.logger.setLevel(logging.INFO)
         else:
             self.logger.setLevel(logging.CRITICAL)
