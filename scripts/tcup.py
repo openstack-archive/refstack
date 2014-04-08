@@ -89,8 +89,11 @@ if __name__ == "__main__":
     docker_run += ' -t %s' % (image)
     if "DEBUG" in user_env_vars:
         docker_run += " /bin/bash"
+        logger.info("""Debug mode does not start tests!
+                    You must run `refstack/tools/execute_test.py \
+                    --tempest-home /tempest` to complete processing""")
     else:
-        docker_run += " cd refstack; python refstack/tools/execute_test.py" \
+        docker_run += " cd refstack; refstack/tools/execute_test.py" \
                       " --tempest-home /tempest" \
                       " --callback ${api_addr} ${test_id}"
     if "DEBUG" in user_env_vars:

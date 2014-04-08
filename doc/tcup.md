@@ -29,6 +29,7 @@ There are several ways to trouble shoot, TCUP.
 1. Check your environment variables include the OS_* values using `export`
 1. Make sure you can access Keystone using `curl $OS_AUTH_URL`
 1. Make sure your credentials are working using `keystone catalog`
+1. `Export DEBUG=true` to turn on additional logging and force TCUP into manual run mode
 
 ## Docker Tips 
 1. You can run Docker without sudo!
@@ -44,3 +45,9 @@ There are several ways to trouble shoot, TCUP.
 1. Orphaned Containers: Over time, you may end up with [orphaned contaniers](http://jimhoskins.com/2013/07/27/remove-untagged-docker-images.html), use the following to clean them up
   1. `sudo docker rm $(docker ps -a -q)`
   1. `sudo docker rmi $(docker images | grep "^<none>" | awk "{print $3}")`
+
+## For Developers
+
+If you run TCUP in debug mode (`export DEBUG=true`) then TCUP will automatically mount your PWD as /dev.
+If you run TCUP from your Refstack clone, then you can work directly in Refstack code from inside
+a TCUP container from the /dev directory.
