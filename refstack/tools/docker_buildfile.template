@@ -63,4 +63,4 @@ RUN /usr/local/bin/pip install -r /tempest/test-requirements.txt
 #   CONF_JSON          - JSON string that contains portion of the Tempest
 #                        config. For example, the passwords of the users.
 
-CMD wget http://${APP_SERVER_ADDRESS}/get-script -O execute_test.py && python execute_test.py --callback ${APP_SERVER_ADDRESS} --test-id ${TEST_ID} --conf-json ${CONF_JSON} --tempest-home /tempest -v
+CMD wget http://${APP_SERVER_ADDRESS}/get-script -O execute_test.py && python execute_test.py --url ${APP_SERVER_ADDRESS} --test-id ${TEST_ID} --conf-json ${CONF_JSON} --tempest-dir /tempest -v

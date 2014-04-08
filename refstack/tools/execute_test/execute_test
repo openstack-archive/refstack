@@ -14,7 +14,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
 import argparse
 import ConfigParser
 import fnmatch
@@ -23,7 +22,6 @@ import logging
 import os
 import requests
 import subprocess
-import sys
 import time
 import urllib2
 
@@ -51,47 +49,73 @@ class Test:
         else:
             self.logger.setLevel(logging.CRITICAL)
 
-        if args.callback:
-            self.app_server_address = args.callback
+        # assign local vars to match args
+        # things not passed in right will be set as None
+        self.app_server_address = args.app_server_address
+        self.test_id = args.test_id
+        self.tempest_dir = args.tempest_dir
+        self.extra_conf_dict = args.extra_conf_dict
 
-        if args.test_id:
-            self.test_id = args.test_id
-
-        self.mini_conf_dict = json.loads(self.get_mini_config())
-
-        if args.conf_json:
-            self.extra_conf_dict = args.conf_json
+        # if --env is used then import from env vars and don't call home
+        if args.env:
+            self.mini_conf_dict = self.import_config_from_env()
+        else:
+            self.mini_conf_dict = self.get_mini_config()
 
         if args.testcases:
             self.testcases = {"testcases": args.testcases}
 
-        self.tempest_home =\
-            os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tempest')
-
-        if args.tempest_home:
-            self.tempest_home = args.tempest_home
-
-        self.sample_conf_file = os.path.join(self.tempest_home, 'etc',
+        self.sample_conf_file = os.path.join(self.tempest_dir, 'etc',
                                              'tempest.conf.sample')
-        self.tempest_conf_file = os.path.join(self.tempest_home,
+        self.tempest_conf_file = os.path.join(self.tempest_dir,
                                               'tempest.config')
-        self.result_dir = os.path.join(self.tempest_home, '.testrepository')
+        self.result_dir = os.path.join(self.tempest_dir, '.testrepository')
         self.result = os.path.join(self.result_dir, 'result')
-        self.tempest_script = os.path.join(self.tempest_home, 'run_tests.sh')
+        self.tempest_script = os.path.join(self.tempest_dir, 'run_tests.sh')
         self.sample_conf_parser = ConfigParser.SafeConfigParser()
         self.sample_conf_parser.read(self.sample_conf_file)
 
-    def gen_config(self):
-        '''Merge mini config, extra config, tempest.conf.sample
-           and write to tempest.config.
-        '''
+    def import_config_from_env(self):
+        """create config from environment variables if set"""
+        if not os.environ.get("OS_AUTH_URL"):
+            # TODO: add better argument parsing for this input..
+            # failure needs to give a more detailed response.
+            print """Missing env variables did you source your localrc?"""
+        else:
+            self.logger.info('Using Config ENV variables for %s@%s'
+                             % (os.environ.get("OS_USERNAME"),
+                                os.environ.get("OS_AUTH_URL")))
+
+            env_config = {"identity":
+                         {"uri": os.environ.get("OS_AUTH_URL"),
+                          "username": os.environ.get("OS_USERNAME"),
+                          "password": os.environ.get("OS_PASSWORD"),
+                          "tenant_name": os.environ.get("OS_TENANT_NAME")},
+                          "compute": {"image_ref":
+                                      os.environ.get("TEMPEST_IMAGE_REF",
+                                                     "cirros")}}
+
+            self.logger.debug("ENV config: %s" % (env_config))
+
+            return env_config
+
+    def generate_config(self):
+        '''Merge passed in config with tempest.conf.sample
+           and write to $tempest/tempest.config'''
         self.logger.info('Generating tempest.config')
+
+        # merge in config from env or api
         self.merge_to_sample_conf(self.mini_conf_dict)
+
+        # merge in extra config
         self.merge_to_sample_conf(self.extra_conf_dict)
+
         # discovered config will not overwrite the value in the
         # mini_conf_dict and extra_conf_dict
         discovered_conf_dict = self._build_discovered_dict_conf()
         self.merge_to_sample_conf(discovered_conf_dict)
+
+        # write the config file
         self.sample_conf_parser.write(open(self.tempest_conf_file, 'w'))
 
     def merge_to_sample_conf(self, dic):
@@ -102,41 +126,20 @@ class Test:
                     self.sample_conf_parser.set(section, key, value)
 
     def get_mini_config(self):
-        '''Return a mini config in JSON string.'''
-        # create config from environment variables if set
-        url = os.environ.get("OS_AUTH_URL")
-        if url:
-            user = os.environ.get("OS_USERNAME")
-            self.logger.info('Using Config ENV variables for %s@%s'
-                             % (url, user))
-            # for now, very limited configuration.  refactor as we add vars
-            env_config = {"identity":
-                          {"uri": url,
-                           "username": user,
-                           "password": os.environ.get("OS_PASSWORD"),
-                           "tenant_name": os.environ.get("OS_TENANT_NAME"),
-                           "region": os.environ.get("OS_REGION_NAME")},
-                          "compute":
-                          {"image_ref": os.environ.get("TEMPEST_IMAGE_REF",
-                                                       "cirros")}}
-            json_config = json.dumps(env_config, separators=(',', ':'))
-            self.logger.debug("ENV config: %s" % (json_config))
-            return json_config
-        # otherwise get them from the app server
+        '''Return a mini config in from the remote server.'''
+        if self.app_server_address and self.test_id:
+            url = "http://%s/get-miniconf?test_id=%s" % \
+                (self.app_server_address, self.test_id)
+            try:
+                req = urllib2.urlopen(url=url, timeout=10)
+                self.logger.info('Using App Server Config from %s' % (url))
+                return json.loads(req.readlines()[0])
+            except:
+                self.logger.critical('Failed to get mini config from %s'
+                                     % url)
+                raise
         else:
-            if self.app_server_address and self.test_id:
-                url = "http://%s/get-miniconf?test_id=%s" % \
-                    (self.app_server_address, self.test_id)
-                try:
-                    req = urllib2.urlopen(url=url, timeout=10)
-                    self.logger.info('Using App Server Config from %s' % (url))
-                    return req.readlines()[0]
-                except:
-                    self.logger.critical('Failed to get mini config from %s'
-                                         % url)
-                    raise
-            else:
-                return json.dumps(dict())
+            return dict()
 
     def get_test_cases(self):
         '''Return list of tempest testcases in JSON string.
@@ -216,7 +219,7 @@ class Test:
     def run(self):
         '''Execute tempest test against the cloud.'''
 
-        self.gen_config()
+        self.generate_config()
 
         self.run_test_cases()
 
@@ -414,45 +417,60 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Starts a tempest test',
                                      formatter_class=argparse.
                                      ArgumentDefaultsHelpFormatter)
-    conflict_group = parser.add_mutually_exclusive_group()
 
-    conflict_group.add_argument("--callback",
-                                type=str,
-                                action='store',
-                                help="refstack API IP address \
-                                       retrieve configurations. i.e.:\
-                                       --callback 127.0.0.1:8000")
-
-    conflict_group.add_argument("--test-id",
-                                action='store',
-                                dest='test_id',
-                                type=str,
-                                help="refstack test ID i.e.:\
-                                       --test-id 1234 ")
-
-    parser.add_argument("--tempest-home",
-                        help="tempest directory path")
-
-    # with nargs, arguments are returned as a list
-    conflict_group.add_argument("--testcases",
-                                nargs='+',
-                                help="tempest test cases. Use space to\
-                                separate each testcase")
-    '''
-    TODO: May need to decrypt/encrypt password in args.JSON_CONF
-    '''
-    parser.add_argument("--conf-json",
-                        type=json.loads,
-                        help="tempest configurations in JSON string")
+    parser.add_argument('-s', '--silent',
+                        action='store_true',
+                        help='rigged for silent running')
 
     parser.add_argument("-v", "--verbose",
-                        action="store_true",
+                        action="count",
                         help="show verbose output")
+
+    parser.add_argument('-e', '--env',
+                        action='store_true',
+                        required=False,
+                        dest='env',
+                        help='uses env variables.. and does not\
+                        pull mini config from server')
+
+    parser.add_argument("--url",
+                        action='store',
+                        required=True,
+                        type=str,
+                        dest='app_server_address',
+                        help="refstack API url \
+                               retrieve configurations. i.e.:\
+                               --url 127.0.0.1:8000")
+
+    parser.add_argument("--test-id",
+                        action='store',
+                        required=False,
+                        dest='test_id',
+                        type=int,
+                        help="refstack test ID i.e.:\
+                                       --test-id 1234 ")
+
+    parser.add_argument("--tempest-dir",
+                        action='store',
+                        required=True,
+                        dest='tempest_dir',
+                        help="tempest directory path")
+
+    parser.add_argument("--testcases",
+                        action='store',
+                        required=False,
+                        nargs='+',
+                        help="tempest test cases. Use space to\
+                              separate each testcase")
+
+    parser.add_argument("--conf-json",
+                        action='store',
+                        required=False,
+                        type=json.loads,
+                        dest='extra_conf_dict',
+                        help="tempest configurations in JSON string")
 
     args = parser.parse_args()
 
-    if len(sys.argv) == 1:
-        parser.print_help()
-    else:
-        test = Test(args)
-        test.run()
+    test = Test(args)
+    test.run()
