@@ -43,7 +43,7 @@
         </tr>
         {% for classname, testcases in test_result['data'].items() %}
             <tr>
-                <td class="report_data_path" colspan=3 style="text-align:left"><b>Test class:</b> {{ classname }}</td>
+                <td class="report_data_path" colspan=3 style="text-align:left"><b>Test Group:</b> {{ classname }}</td>
             </tr>
             {% for testcase in testcases %}
                 <tr>

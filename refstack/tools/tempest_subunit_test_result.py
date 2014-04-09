@@ -15,6 +15,7 @@
 #    under the License.
 
 
+import re
 import subunit
 import testtools
 import unittest
@@ -108,16 +109,22 @@ class TempestSubunitTestResult(TempestSubunitTestResultBase):
 
     def _process_result(self, result_type, testcase, *arg):
         """Process and append data to dictionary objects."""
+
         testcase_id = testcase.id()
         elapsed = (self._now() - self.start_time).total_seconds()
+        status = result_type
 
         # Convert "SUCCESS" to "PASS"
         # Separate "FAILURE" into "FAIL" and "FAIL_SETUP"
-        status = result_type
         if status == self.result_type[0]:
             status = self.status[0]
-        if (status == self.status[1]) and ("setUpClass" in testcase_id):
-            status = self.status[3]
+        elif status == self.result_type[1]:
+            if "setUpClass" in testcase_id:
+                status = self.status[2]
+                testcase_id = '%s.setUpClass' % \
+                    (re.search('\((.*)\)', testcase_id).group(1))
+            else:
+                status = self.status[1]
 
         self.results.setdefault(testcase_id, [])
         self.results[testcase_id] = [status, elapsed]
@@ -146,16 +153,22 @@ class TempestSubunitTestResultTuples(TempestSubunitTestResult):
 
     def _process_result(self, result_type, testcase, *arg):
         """Process and append data to dictionary objects."""
+
         testcase_id = testcase.id()
         elapsed = round((self._now() - self.start_time).total_seconds(), 2)
+        status = result_type
 
         # Convert "SUCCESS" to "PASS"
         # Separate "FAILURE" into "FAIL" and "FAIL_SETUP"
-        status = result_type
         if status == self.result_type[0]:
             status = self.status[0]
-        if (status == self.status[1]) and ("setUpClass" in testcase_id):
-            status = self.status[3]
+        elif status == self.result_type[1]:
+            if "setUpClass" in testcase_id:
+                status = self.status[2]
+                testcase_id = '%s.setUpClass' % \
+                    (re.search('\((.*)\)', testcase_id).group(1))
+            else:
+                status = self.status[1]
 
         classname, testname = testcase_id.rsplit('.', 1)
 
