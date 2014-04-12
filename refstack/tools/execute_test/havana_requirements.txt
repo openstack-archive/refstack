@@ -1,0 +1,1 @@
+-e git+https://github.com/openstack/tempest.git@stable/havana#egg=tempest

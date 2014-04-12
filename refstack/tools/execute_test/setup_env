@@ -1,0 +1,12 @@
+# !/bin/bash
+
+virtualenv test_runner
+
+source test_runner/bin/activate
+
+pip install -r havana_requirements.txt
+
+#cd /test_runner/src/tempest
+
+
+
