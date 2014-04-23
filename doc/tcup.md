@@ -29,14 +29,19 @@ The following instructions are designs run Refstack/Tempest in a container with 
 
 ## Troubleshooting TCUP
 
+Before troubleshooting TCUP, make sure that you have network connectivity to our target cloud from the host system (the one you run TCUP on).   
+1. ping the IP or FQDN from `echo $OS_AUTH_URL` 
+1. get a "HTTP/1.1 200 OK" response from `curl -I $OS_AUTH_URL` 
+
 There are several ways to trouble shoot, TCUP. 
 
 1. Run TCUP using the debug flag: `tcup.py --debug`
 1. Attach to the container as instructed at the end of the TCUP script
 1. Inside the container:
-  1. Check your environment variables include the OS_* values using `export`
-  1. Make sure you can access Keystone using `curl $OS_AUTH_URL`
-  1. Make sure your credentials are working using `keystone catalog`
+  1. check your environment variables include the OS_* values using `export | grep OS_`
+  1. ping the IP or FQDN from `echo $OS_AUTH_URL` 
+  1. get "200 OK" from Keystone using `curl -I $OS_AUTH_URL`
+  1. confirm your credentials are working using `keystone catalog`
 
 ## Docker Tips 
 
