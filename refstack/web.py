@@ -15,6 +15,7 @@
 #
 
 import flask
+import os
 from flask import abort, flash, request, redirect, url_for, \
     render_template, g, session, make_response, send_file
 from flask_mail import Mail
@@ -335,7 +336,8 @@ def test_cloud(cloud_id):
 def get_script():
     """Return a generic python script to be run a remote test runner."""
 
-    return send_file('tools/execute_test.py', mimetype='text/plain')
+    filepath = os.path.join('tools', 'execute_test', 'execute_test')
+    return send_file(filepath, mimetype='text/plain')
 
 
 @app.route('/get-miniconf', methods=['GET'])
