@@ -1,0 +1,438 @@
+[DEFAULT]
+#log_config = /opt/stack/tempest/etc/logging.conf.sample
+
+# disable logging to the stderr
+use_stderr = False
+
+# log file
+log_file = tempest.log
+
+# lock/semaphore base directory
+lock_path=/tmp
+
+default_log_levels=tempest.stress=INFO,amqplib=WARN,sqlalchemy=WARN,boto=WARN,suds=INFO,keystone=INFO,eventlet.wsgi.server=WARN
+
+[identity]
+# This section contains configuration options that a variety of Tempest
+# test clients use when authenticating with different user/tenant
+# combinations
+
+# The type of endpoint for a Identity service. Unless you have a
+# custom Keystone service catalog implementation, you probably want to leave
+# this value as "identity"
+catalog_type = identity
+# Ignore SSL certificate validation failures? Use when in testing
+# environments that have self-signed SSL certs.
+disable_ssl_certificate_validation = False
+# URL for where to find the OpenStack Identity API endpoint (Keystone)
+uri = http://127.0.0.1:5000/v2.0/
+# URL for where to find the OpenStack V3 Identity API endpoint (Keystone)
+uri_v3 = http://127.0.0.1:5000/v3/
+# The identity region. Also used as the other services' region name unless
+# they are set explicitly.
+region = RegionOne
+
+# This should be the username of a user WITHOUT administrative privileges
+username = demo
+# The above non-administrative user's password
+password = secret
+# The above non-administrative user's tenant name
+tenant_name = demo
+
+# This should be the username of an alternate user WITHOUT
+# administrative privileges
+alt_username = alt_demo
+# The above non-administrative user's password
+alt_password = secret
+# The above non-administrative user's tenant name
+alt_tenant_name = alt_demo
+
+# This should be the username of a user WITH administrative privileges
+admin_username = admin
+# The above administrative user's password
+admin_password = secret
+# The above administrative user's tenant name
+admin_tenant_name = admin
+
+# The role that is required to administrate keystone.
+admin_role = admin
+
+[compute]
+# This section contains configuration options used when executing tests
+# against the OpenStack Compute API.
+
+# Allows test cases to create/destroy tenants and users. This option
+# enables isolated test cases and better parallel execution,
+# but also requires that OpenStack Identity API admin credentials
+# are known.
+allow_tenant_isolation = true
+
+# Allows test cases to create/destroy tenants and users. This option
+# enables isolated test cases and better parallel execution,
+# but also requires that OpenStack Identity API admin credentials
+# are known.
+allow_tenant_reuse = true
+
+# Reference data for tests. The ref and ref_alt should be
+# distinct images/flavors.
+image_ref = {$IMAGE_ID}
+image_ref_alt = {$IMAGE_ID_ALT}
+flavor_ref = 1
+flavor_ref_alt = 2
+
+# User name used to authenticate to an instance
+image_ssh_user = root
+
+# Password used to authenticate to an instance
+image_ssh_password = password
+
+# User name used to authenticate to an instance using the alternate image
+image_alt_ssh_user = root
+
+# Password used to authenticate to an instance using the alternate image
+image_alt_ssh_password = password
+
+# Number of seconds to wait while looping to check the status of an
+# instance that is building.
+build_interval = 10
+
+# Number of seconds to time out on waiting for an instance
+# to build or reach an expected status
+build_timeout = 600
+
+# Run additional tests that use SSH for instance validation?
+# This requires the instances be routable from the host
+#  executing the tests
+run_ssh = false
+
+# Name of a user used to authenticate to an instance.
+ssh_user = cirros
+
+# Visible fixed network name
+fixed_network_name = private
+
+# Network id used for SSH (public, private, etc)
+network_for_ssh = public
+
+# IP version of the address used for SSH
+ip_version_for_ssh = 4
+
+# Number of seconds to wait to ping to an instance
+ping_timeout = 60
+
+# Number of seconds to wait to authenticate to an instance
+ssh_timeout = 300
+
+# Additinal wait time for clean state, when there is
+# no OS-EXT-STS extension availiable
+ready_wait = 0
+
+# Number of seconds to wait for output from ssh channel
+ssh_channel_timeout = 60
+
+# Dose the SSH uses Floating IP?
+use_floatingip_for_ssh = True
+
+# The type of endpoint for a Compute API service. Unless you have a
+# custom Keystone service catalog implementation, you probably want to leave
+# this value as "compute"
+catalog_type = compute
+
+# The name of a region for compute. If empty or commented-out, the value of
+# identity.region is used instead. If no such region is found in the service
+# catalog, the first found one is used.
+#region = RegionOne
+
+# Does the Compute API support creation of images?
+create_image_enabled = true
+
+# For resize to work with libvirt/kvm, one of the following must be true:
+# Single node: allow_resize_to_same_host=True must be set in nova.conf
+# Cluster: the 'nova' user must have scp access between cluster nodes
+resize_available = true
+
+# Does the compute API support changing the admin password?
+change_password_available=true
+
+# Run live migration tests (requires 2 hosts)
+live_migration_available = false
+
+# Use block live migration (Otherwise, non-block migration will be
+# performed, which requires XenServer pools in case of using XS)
+use_block_migration_for_live_migration = false
+
+# Supports iSCSI block migration - depends on a XAPI supporting
+# relax-xsm-sr-check
+block_migrate_supports_cinder_iscsi = false
+
+# When set to false, disk config tests are forced to skip
+disk_config_enabled = true
+
+# When set to false, flavor extra data tests are forced to skip
+flavor_extra_enabled = true
+
+# Expected first device name when a volume is attached to an instance
+volume_device_name = vdb
+
+[compute-admin]
+# This should be the username of a user WITH administrative privileges
+# If not defined the admin user from the identity section will be used
+username =
+# The above administrative user's password
+password =
+# The above administrative user's tenant name
+tenant_name =
+
+[image]
+# This section contains configuration options used when executing tests
+# against the OpenStack Images API
+
+# The type of endpoint for an Image API service. Unless you have a
+# custom Keystone service catalog implementation, you probably want to leave
+# this value as "image"
+catalog_type = image
+
+# The name of a region for image. If empty or commented-out, the value of
+# identity.region is used instead. If no such region is found in the service
+# catalog, the first found one is used.
+#region = RegionOne
+
+# The version of the OpenStack Images API to use
+api_version = 1
+
+# HTTP image to use for glance http image testing
+http_image = http://download.cirros-cloud.net/0.3.1/cirros-0.3.1-x86_64-uec.tar.gz
+
+[network]
+# This section contains configuration options used when executing tests
+# against the OpenStack Network API.
+
+# Version of the Neutron API
+api_version = v1.1
+# Catalog type of the Neutron Service
+catalog_type = network
+
+# The name of a region for network. If empty or commented-out, the value of
+# identity.region is used instead. If no such region is found in the service
+# catalog, the first found one is used.
+#region = RegionOne
+
+# A large private cidr block from which to allocate smaller blocks for
+# tenant networks.
+tenant_network_cidr = 10.100.0.0/16
+
+# The mask bits used to partition the tenant block.
+tenant_network_mask_bits = 24
+
+# If tenant networks are reachable, connectivity checks will be
+# performed directly against addresses on those networks.
+tenant_networks_reachable = false
+
+# Id of the public network that provides external connectivity.
+public_network_id = {$PUBLIC_NETWORK_ID}
+
+# Id of a shared public router that provides external connectivity.
+# A shared public router would commonly be used where IP namespaces
+# were disabled.  If namespaces are enabled, it would be preferable
+# for each tenant to have their own router.
+public_router_id = {$PUBLIC_ROUTER_ID}
+
+
+[volume]
+# This section contains the configuration options used when executing tests
+# against the OpenStack Block Storage API service
+
+# The type of endpoint for a Cinder or Block Storage API service.
+# Unless you have a custom Keystone service catalog implementation, you
+# probably want to leave this value as "volume"
+catalog_type = volume
+# The name of a region for volume. If empty or commented-out, the value of
+# identity.region is used instead. If no such region is found in the service
+# catalog, the first found one is used.
+#region = RegionOne
+# The disk format to use when copying a volume to image
+disk_format = raw
+# Number of seconds to wait while looping to check the status of a
+# volume that is being made available
+build_interval = 10
+# Number of seconds to time out on waiting for a volume
+# to be available or reach an expected status
+build_timeout = 300
+# Runs Cinder multi-backend tests (requires 2 backends declared in cinder.conf)
+# They must have different volume_backend_name (backend1_name and backend2_name
+# have to be different)
+multi_backend_enabled = false
+backend1_name = BACKEND_1
+backend2_name = BACKEND_2
+# Protocol and vendor of volume backend to target when testing volume-types.
+# You should update to reflect those exported by configured backend driver.
+storage_protocol = iSCSI
+vendor_name = Open Source
+
+[object-storage]
+# This section contains configuration options used when executing tests
+# against the OpenStack Object Storage API.
+
+# You can configure the credentials in the compute section
+
+# The type of endpoint for an Object Storage API service. Unless you have a
+# custom Keystone service catalog implementation, you probably want to leave
+# this value as "object-store"
+catalog_type = object-store
+
+# The name of a region for object storage. If empty or commented-out, the
+# value of identity.region is used instead. If no such region is found in
+# the service catalog, the first found one is used.
+#region = RegionOne
+
+# Number of seconds to time on waiting for a container to container
+# synchronization complete
+container_sync_timeout = 120
+# Number of seconds to wait while looping to check the status of a
+# container to container synchronization
+container_sync_interval = 5
+# Set to True if the Account Quota middleware is enabled
+accounts_quotas_available = True
+# Set to True if the Container Quota middleware is enabled
+container_quotas_available = True
+
+# Set operator role for tests that require creating a container
+operator_role = Member
+
+[boto]
+# This section contains configuration options used when executing tests
+# with boto.
+
+# EC2 URL
+ec2_url = http://localhost:8773/services/Cloud
+# S3 URL
+s3_url = http://localhost:3333
+
+# Use keystone ec2-* command to get those values for your test user and tenant
+aws_access =
+aws_secret =
+
+# Image materials for S3 upload
+# ALL content of the specified directory will be uploaded to S3
+s3_materials_path = /opt/stack/devstack/files/images/s3-materials/cirros-0.3.1
+
+# The manifest.xml files, must be in the s3_materials_path directory
+# Subdirectories not allowed!
+# The filenames will be used as a Keys in the S3 Buckets
+
+# ARI Ramdisk manifest. Must be in the above s3_materials_path
+ari_manifest = cirros-0.3.1-x86_64-initrd.manifest.xml
+
+# AMI Machine Image manifest. Must be in the above s3_materials_path
+ami_manifest = cirros-0.3.1-x86_64-blank.img.manifest.xml
+
+# AKI Kernel Image manifest, Must be in the above s3_materials_path
+aki_manifest = cirros-0.3.1-x86_64-vmlinuz.manifest.xml
+
+# Instance type
+instance_type = m1.tiny
+
+# TCP/IP connection timeout
+http_socket_timeout = 5
+
+# Number of retries actions on connection or 5xx error
+num_retries = 1
+
+# Status change wait timout
+build_timeout = 120
+
+# Status change wait interval
+build_interval = 1
+
+[orchestration]
+# The type of endpoint for an Orchestration API service. Unless you have a
+# custom Keystone service catalog implementation, you probably want to leave
+# this value as "orchestration"
+catalog_type = orchestration
+
+# The name of a region for orchestration. If empty or commented-out, the value
+# of identity.region is used instead. If no such region is found in the service
+# catalog, the first found one is used.
+#region = RegionOne
+
+# Status change wait interval
+build_interval = 1
+
+# Status change wait timout. This may vary across environments as some some
+# tests spawn full VMs, which could be slow if the test is already in a VM.
+build_timeout = 300
+
+# Instance type for tests. Needs to be big enough for a
+# full OS plus the test workload
+instance_type = m1.micro
+
+# Name of heat-cfntools enabled image to use when launching test instances
+# If not specified, tests that spawn instances will not run
+#image_ref = ubuntu-vm-heat-cfntools
+
+# Name of existing keypair to launch servers with. The default is not to specify
+# any key, which will generate a keypair for each test class
+#keypair_name = heat_key
+
+[dashboard]
+# URL where to find the dashboard home page
+dashboard_url = 'http://localhost/'
+
+# URL where to submit the login form
+login_url = 'http://localhost/auth/login/'
+
+[scenario]
+# Directory containing image files
+img_dir = /opt/stack/new/devstack/files/images/cirros-0.3.1-x86_64-uec
+
+# AMI image file name
+ami_img_file = cirros-0.3.1-x86_64-blank.img
+
+# ARI image file name
+ari_img_file = cirros-0.3.1-x86_64-initrd
+
+# AKI image file name
+aki_img_file = cirros-0.3.1-x86_64-vmlinuz
+
+# ssh username for the image file
+ssh_user = cirros
+
+# specifies how many resources to request at once. Used for large operations
+# testing."
+large_ops_number = 0
+
+[cli]
+# Enable cli tests
+enabled = True
+# directory where python client binaries are located
+cli_dir = /usr/local/bin
+# Number of seconds to wait on a CLI timeout
+timeout = 15
+
+[service_available]
+# Whether or not cinder is expected to be available
+cinder = True
+# Whether or not neutron is expected to be available
+neutron = false
+# Whether or not glance is expected to be available
+glance = True
+# Whether or not swift is expected to be available
+swift = True
+# Whether or not nova is expected to be available
+nova = True
+# Whether or not Heat is expected to be available
+heat = false
+# Whether or not horizon is expected to be available
+horizon = True
+
+[stress]
+# Maximum number of instances to create during test
+max_instances = 32
+# Time (in seconds) between log file error checks
+log_check_interval = 60
+# The default number of threads created while stress test
+default_thread_number_per_action=4
+
+[debug]
+# Enable diagnostic commands
+enable = True
