@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>OpenStack DefCore Tracked Capabilities</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js" ></script>
+  <script>
+  function create_caps() {
+      $.ajax({
+        type: "GET",
+        dataType: 'json',
+        url: 'havana/capabilities.json',
+        success: function(data, status, xhr) {
+          for(var capability in data) {
+            var line = "<li>"+data[capability]["domain"] + "\\"
+            if (data[capability]["core_test_count"]>0)
+              line += "<strong>Core " + capability+ "</strong>";
+            else
+              line += capability;
+            line += ":" + data[capability]['description']
+            line += "<ul id='"+ capability +"'>"
+            for (var test in data[capability]["tests"]) {
+              line += "<li>" + data[capability]["tests"][test] + "</li>"
+            }
+            line += "</ul></ul>"
+            console.log(line);
+            $("ul#capabilities").append(line)
+          };
+        },
+      });
+  }
+  window.onload = create_caps();
+  </script>
+</head>
+
+<body>
+
+<h1>OpenStack DefCore Tracked Capabilities</h1>
+
+<ul id="capabilities"></ul>
+
+<div>Copyright OpenStack Foundation, 2014.  Apache 2 License.</div>
+</body>
+</html> 
