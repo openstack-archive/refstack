@@ -6,6 +6,8 @@
 # Packages
 *.egg
 *.egg-info
+ChangeLog
+AUTHORS
 dist
 build
 eggs
