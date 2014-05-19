@@ -3,7 +3,7 @@ TCUP Configuration
 
 The following instructions are designs run Refstack/Tempest in a container with minimal setup on your system.
 
-> These steps are _not_ do not install Refstack for contributions or development, they are intended for a user who wants to just run and report test results.
+> These steps are do not install Refstack for contributions or development, they are intended for a user who wants to just run and report test results.
 
 1. Make sure you have python and wget installed for your operating system.
 
@@ -12,10 +12,10 @@ The following instructions are designs run Refstack/Tempest in a container with 
   1. You may want to prep-the environment using `sudo docker pull ubuntu:13.10`
 
 1. Setup Docker to run without sudo
-  1. permanently (recommended): 
+  1. permanently (recommended):
     1. `sudo usermod -a -G docker <your-user>`
     1. you will need to reboot after this change
-  1. short term: `sudo chmod 666 /var/run/docker.sock` 
+  1. short term: `sudo chmod 666 /var/run/docker.sock`
 
 1. Get the code: `wget https://raw.githubusercontent.com/stackforge/refstack/master/scripts/tcup.py`
   1. note: you can also get the code by cloning the Refstack and running the code in `/scripts/tcup.py`
@@ -23,27 +23,37 @@ The following instructions are designs run Refstack/Tempest in a container with 
 1. Set your environment variables to access the test target cloud
   1. generally, you will `source openrc.sh` to load the cloud credentials and URLs
 
+Note : once you have loaded openrc.sh, type this command : ‘env | grep OS_’ then make sure values are assigned to each of the below:
+
+*OS_TENANT_ID
+*OS_PASSWORD
+*OS_AUTH_URL
+*OS_USERNAME
+*OS_TENANT_NAME
+
+If values are missing for any of the above, you could manually export for missing env variable (ex:‘export OS_PASSWORD=<YourPassword>’)
+
 1. Run TCUP: `python tcup.py`
   1. if you want to work on the code from Refstack, use `scripts/tcup.py'
 
 
 ## Troubleshooting TCUP
 
-Before troubleshooting TCUP, make sure that you have network connectivity to our target cloud from the host system (the one you run TCUP on).   
-1. ping the IP or FQDN from `echo $OS_AUTH_URL` 
-1. get a "HTTP/1.1 200 OK" response from `curl -I $OS_AUTH_URL` 
+Before troubleshooting TCUP, make sure that you have network connectivity to our target cloud from the host system (the one you run TCUP on).
+1. ping the IP or FQDN from `echo $OS_AUTH_URL`
+1. get a "HTTP/1.1 200 OK" response from `curl -I $OS_AUTH_URL`
 
-There are several ways to trouble shoot, TCUP. 
+There are several ways to trouble shoot, TCUP.
 
 1. Run TCUP using the debug flag: `tcup.py --debug`
 1. Attach to the container as instructed at the end of the TCUP script
 1. Inside the container:
   1. check your environment variables include the OS_* values using `export | grep OS_`
-  1. ping the IP or FQDN from `echo $OS_AUTH_URL` 
+  1. ping the IP or FQDN from `echo $OS_AUTH_URL`
   1. get "200 OK" from Keystone using `curl -I $OS_AUTH_URL`
   1. confirm your credentials are working using `keystone catalog`
 
-## Docker Tips 
+## Docker Tips
 
 1. You can inspect which containers are running!
   1. `docker ps` shows the running containers
