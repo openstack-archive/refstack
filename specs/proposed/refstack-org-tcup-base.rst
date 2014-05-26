@@ -1,12 +1,13 @@
 Base TCUP environment for refstack.org
 ==========================================
+https://blueprints.launchpad.net/refstack/+spec/standalone-tcup-driver
 
 TCUP (Tempest in a Container, Upload from Probe) is a self-contained, universal Tempest environment that can be widely used by the community with minimal effort AND minimal support effort by the Refstack team.
 
 Problem description
 ===================
 
-For DefStack and the core definition, we need to collect lots and lots of test runs against deployed OpenStack clouds.  Many of these clouds are behind firewalls and not accessible by 3rd parties.  So we need to make it super easy to make running Tempest and result uploads as accessible as possible.
+For DefCore and the core definition, we need to collect lots and lots of test runs against deployed OpenStack clouds.  Many of these clouds are behind firewalls and not accessible by 3rd parties.  So we need to make it super easy to make running Tempest and result uploads as accessible as possible.
 
 Community access is the goal of TCUP.  While the original and primary intent of Tempest was to test OpenStack code, having a large body of tests creates unique opportunities for us.  DefCore uses the tests as a way to define core capabilities.
 
