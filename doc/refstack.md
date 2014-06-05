@@ -12,6 +12,8 @@ Install dependencies (on ubuntu 13.x)..
 
 `apt-get install python-dev`
 
+`apt-get install libssl-dev`
+
 `apt-get install python-pip`
 
 `easy_install -U setuptools`
