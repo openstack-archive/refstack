@@ -1,0 +1,16 @@
+{
+    "app_address": "127.0.0.1:8000",
+
+    "test_mode": "docker",
+
+    "tempest_url":
+    "https://github.com/openstack/tempest/archive/stable/havana.zip",
+
+    "tempest_testcases":
+    {
+        "testcases":
+        [
+        "tempest.api.identity.admin.test_roles"
+        ]
+    }
+}

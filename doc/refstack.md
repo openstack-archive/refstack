@@ -1,4 +1,4 @@
-RefStack Quickstart
+Refstack Quickstart
 ===================
 To run refstack for development or to have a gui for running tests behind your firewall.
 
@@ -18,12 +18,15 @@ Install dependencies (on ubuntu 13.x)..
 
 `python setup.py install`
 
+`pip install -r test-requirements.txt`
+
+Update the "app_address" parameter in the config.json file to the correct address of your refstack server.
 
 Setup or update the database
 
 NOTE: you are going to have to modify the db connection string in `alembic.ini` to get this working
 
-PROTIP: if you just want to test this out, use `-n alembic_sqlite` to make a local sqlite db 
+PROTIP: if you just want to test this out, use `-n alembic_sqlite` to make a local sqlite db
 
 `alembic -n alembic_sqlite upgrade head`
 or
