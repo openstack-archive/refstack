@@ -89,7 +89,7 @@ if __name__ == "__main__":
     # create the docker run command line
     docker_run = "docker run -d -i"
     for env_var in user_env_vars:
-        docker_run += ' -e "%s=%s"' % (env_var, user_env_vars[env_var])
+        docker_run += ' -e "%s"' % (env_var,)
     if debug:
         docker_run += " -v `pwd`:/dev"
     docker_run += ' -t %s' % (image)
