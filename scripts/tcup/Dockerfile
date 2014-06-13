@@ -47,3 +47,9 @@ RUN pip install -r /refstack/test-requirements.txt
 # Running tempest setup
 RUN cd tempest && git checkout stable/havana
 RUN cd tempest && python setup.py install
+
+# The tcup.py frontend must be used to run this Docker image
+# The following CMD statement will run and print the documentation
+# to inform the user of the proper way of running tcup. This
+# CMD statement is overriden by tcup.py
+CMD cat refstack/doc/tcup.md
