@@ -32,7 +32,6 @@ RUN apt-get install -y python-libxml2 libxslt1-dev libsasl2-dev
 RUN apt-get install -y libsqlite3-dev libldap2-dev libffi-dev
 
 # Setup Environment by Cloning refstack & tempest (choose right branch)
-RUN mkdir temp
 RUN git clone https://github.com/stackforge/refstack.git
 RUN git clone https://github.com/openstack/tempest.git 
 
