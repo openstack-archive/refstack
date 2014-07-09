@@ -120,7 +120,7 @@ str:data - a string input containing json as shown in lower example.
      'cpid': '2fd4e1c67a2d28fced849ee1bb76e7391b93eb12',
      'duration_seconds': 23445234,
      'job_id': '3fd4e1c67a2d28fced849ee1bb76e7391b93eb13', /*optional*/
-     'results': {} /* to be defined */
+     'results': ['fully.qualified.test.path', 'another.test.path'] /* array of passes */
     }
 
 **normal response:** http:201 - the status has been saved
