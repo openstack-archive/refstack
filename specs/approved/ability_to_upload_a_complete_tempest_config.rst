@@ -18,16 +18,6 @@ for this into two tasks.
 * The CLI would require an extra argument for a path to a config file. As well
 as some logic that bypassed the internal config generation.
 
-* The Web UI will need some re-working to allow for this.
-
-Wireframes will be added to this spec before any ux is implemented on the front end.
-
-* web ui should be simple and clear.
-* user should select a radio button indicating wether the tester should attempt to
-generate a tempest config or upload a working on.
-* uploaded tempest files shouldn't be written to disk. rather they should be
-packaged into the workload for triggering the test run.
-
 **Alternatives**
 
 None off hand.
@@ -59,9 +49,6 @@ Primary assignee:
 **Work Items**
 
 * Implement CLI code
-* add hook for skipping config generation
-* design wireframes for ux changes and add to spec.
-* Update TCUP to enable this feature.
 
 **Dependencies**
 
