@@ -16,7 +16,7 @@
 
 from datetime import datetime
 
-from .extensions import db
+from refstack.extensions import db
 
 
 class User(db.Model):

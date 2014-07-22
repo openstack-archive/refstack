@@ -15,11 +15,11 @@
 #
 import os
 from flask import Flask, render_template
-from .config import DefaultConfig
-from refstack import admin
-from refstack import api
-from .extensions import db
-from .extensions import oid
+from refstack.config import DefaultConfig
+import admin
+import api
+from refstack.extensions import db
+from refstack.extensions import oid
 
 
 from refstack import utils
@@ -66,7 +66,7 @@ def create_app(config=None, app_name=None, blueprints=None):
     configure_error_handlers(app)
 
     if app.debug:
-        print utils.dump_config(app)
+        print(utils.dump_config(app))
 
     return app
 

@@ -2,11 +2,11 @@
 import flask
 from flask.ext.admin.contrib import sqla
 
-from refstack import models
+import models
 
 # Global admin object
-from .extensions import admin
-from .extensions import db
+from refstack.extensions import admin
+from refstack.extensions import db
 
 
 class SecureView(sqla.ModelView):

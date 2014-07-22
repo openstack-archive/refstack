@@ -23,7 +23,7 @@ Flask-Restful later on.
 import flask
 from flask.ext import restless
 
-from refstack import models
+import models
 from refstack.extensions import api
 
 

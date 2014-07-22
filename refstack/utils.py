@@ -115,7 +115,7 @@ def make_dir(dir_path):
     try:
         if not os.path.exists(dir_path):
             os.mkdir(dir_path)
-    except Exception, e:
+    except Exception as e:
         raise e
 
 
@@ -124,4 +124,4 @@ def make_dir(dir_path):
 
 def dump_config(app):
     """Useful to dump app config for debug purposes."""
-    return pprint.pformat(dict(app.config.iteritems()))
+    return pprint.pformat(dict(app.config.items()))
