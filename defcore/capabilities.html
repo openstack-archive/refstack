@@ -1,43 +1,82 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>OpenStack DefCore Tracked Capabilities</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js" ></script>
-  <script>
-  function create_caps() {
-      $.ajax({
-        type: "GET",
-        dataType: 'json',
-        url: 'havana/capabilities.json',
-        success: function(data, status, xhr) {
-          for(var capability in data) {
-            var line = "<li>"+data[capability]["domain"] + "\\"
-            if (data[capability]["core_test_count"]>0)
-              line += "<strong>Core " + capability+ "</strong>";
-            else
-              line += capability;
-            line += ":" + data[capability]['description']
-            line += "<ul id='"+ capability +"'>"
-            for (var test in data[capability]["tests"]) {
-              line += "<li>" + data[capability]["tests"][test] + "</li>"
-            }
-            line += "</ul></ul>"
-            console.log(line);
-            $("ul#capabilities").append(line)
-          };
-        },
-      });
-  }
-  window.onload = create_caps();
-  </script>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js" ></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/mustache.js/0.8.1/mustache.min.js"> </script>
+    <script id="header_template" type="x-tmpl-mustache">
+    <h1>OpenStack DefCore</h1>
+    <h2> {{release}} Tracked Capabilities</h2>
+    </script>
+    <script id="capabilities_template" type="x-tmpl-mustache">
+
+
+    {{#capabilities}}
+    <ul>
+        <li> <a onclick="$('#{{class}}_tests').toggle(500);return false;" href="#"> {{class}} capabilities ({{count}} of {{total}} total) </a>
+        <div id="{{class}}_tests" style="display:none;">
+        {{#items}}
+        <ul>
+            <li>
+            {{name}}
+            <ul>
+                <li>ID: {{id}}</li>
+                <li>Description: {{description}}</li>
+                <li>Achievements (met {{achievements_count}} of {{criteria_count}} total): {{#achievements}} <a href="#{{.}}">{{.}}</a> {{/achievements}}
+                {{#admin}}<li>Admin rights required</li>{{/admin}}
+                {{#core}}<li>Core test</li>{{/core}}</li>
+                <li> <a onclick="$('#{{name}}').toggle(500);return false;" href="#"> Tests ({{tests_count}}) </a>
+                <div id="{{name}}" style="display:none;">
+                <ul>
+                    {{#tests}} <li> {{.}} {{#code_url}} {{.}} {{/code_url}} </li> {{/tests}}
+                </ul>
+                <div>
+                </li>
+            </ul>
+            </li>
+        </ul>
+        {{/items}}
+        </div>
+        </li>
+    </ul>
+    {{/capabilities}}
+    {{^capabilities}}
+        No capabilities!
+    {{/capabilities}}
+    </script>
+    <script id="criteria_template" type="x-tmpl-mustache">
+    {{#criteria}}
+    <ul>
+        <li><a id="{{tag}}" onclick="$('#{{tag}}_ach').toggle(500);return false;" href="#"> {{name}} (tag : {{tag}}) </a> </li>
+        <div id="{{tag}}_ach" style="display:none;">
+        <ul>
+            <li>Description: {{Description}} </li>
+            <li>Weight: {{weight}} </li>
+        </ul>
+        </div>
+    </ul>
+    {{/criteria}}
+    </script>
+    <script src="/js/helpers.js"></script>
 </head>
 
 <body>
 
-<h1>OpenStack DefCore Tracked Capabilities</h1>
+<div id="header"></div>
 
-<ul id="capabilities"></ul>
+<input id="only_core" name="only_core" type="checkbox" checked onclick="create_caps()" />
+<label for="only_core">Show only core tests</label>
+<br>
+<select id="admin" onclick="create_caps()">
+    <option>All tests</option>
+    <option>Tests require admin rights</option>
+    <option>Tests don't require admin rights</option>
+</select>
+<div id="capabilities"></div>
+
+<h2>Criterion descriptions</h2>
+
+<ul id="criteria"></ul>
 
 <div>Copyright OpenStack Foundation, 2014.  Apache 2 License.</div>
 </body>
