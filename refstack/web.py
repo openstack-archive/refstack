@@ -15,9 +15,8 @@
 #
 
 import flask
-import os
 from flask import abort, flash, request, redirect, url_for, \
-    render_template, g, session, make_response, send_file
+    render_template, g, session, make_response
 from flask_mail import Mail
 from refstack import app as base_app
 from refstack.extensions import db
@@ -330,42 +329,6 @@ def test_cloud(cloud_id):
     names = dict(user=cloud.test_user, admin=cloud.admin_user)
 
     return render_template('test_cloud.html', next_url='/', names=names)
-
-
-@app.route('/get-script', methods=['GET'])
-def get_script():
-    """Return a generic python script to be run a remote test runner."""
-
-    filepath = os.path.join('tools', 'execute_test', 'execute_test')
-    return send_file(filepath, mimetype='text/plain')
-
-
-@app.route('/get-miniconf', methods=['GET'])
-def get_miniconf():
-    """Return a JSON of mini tempest conf to a remote test runner."""
-
-    test_id = request.args.get('test_id', '')
-    try:
-        response = make_response(TempestTester(test_id).generate_miniconf())
-        response.headers["Content-Disposition"] = \
-            "attachment; filename=miniconf.json"
-        return response
-    except ValueError:
-        return make_response('Invalid test ID')
-
-
-@app.route('/get-testcases', methods=['GET'])
-def get_testcases():
-    """Return a JSON of tempest test cases to a remote test runner."""
-
-    test_id = request.args.get('test_id', '')
-    try:
-        response = make_response(TempestTester(test_id).generate_testcases())
-        response.headers["Content-Disposition"] = \
-            "attachment; filename=testcases.json"
-        return response
-    except ValueError:
-        return make_response('Invalid test ID')
 
 
 @app.route('/post-result', methods=['POST'])
