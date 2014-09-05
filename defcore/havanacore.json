@@ -1,4 +1,5 @@
 { "release" : "havana",
+  "status" : "advisory",
   "schema" : "1.0",
   "criteria" : { "atomic" : { "Description" : "Capabilities is unique and cannot be built out of other must-pass capabilities",
           "name" : "Atomic",

@@ -1,0 +1,78 @@
+{ "release" : "havana",
+  "status" : "draft",
+  "schema" : "1.0",
+  "projects" : {
+    "nova" : {
+      "guidance": "By default, designated except scheduler, filter, drivers, API extensions and networking.",
+      "core-capabilities": true,
+      "comment": "All code except driver/plugins listed.  Even for replaceable drivers or plugins, we still expect use of the existing nova service that wraps those interfaces.",
+      "sections": {
+        "scheduler driver": { "description": "(Host and cell)", "designated": false, "comment": "none provided"},
+        "filter scheduler driver": { "description": "(Host and cell)  While the line above implies the entire driver is fair game, this case is incredibly common and worth mentioning specifically.", "designated": false, "comment": "none provided"},
+        "compute driver": { "description": "not provided", "designated": false, "comment": "none provided"},
+        "rest api extensions": { "description": "may be required for capabilities", "designated": false, "comment": "none provided"},
+        "nova networking components": { "description": "not provided", "designated": false, "comment": "none provided"},
+        "nova networking drivers": { "description": "not provided", "designated": false, "comment": "none provided"}
+      }
+    },
+    "glance": {
+      "guidance": "Designated sections are the API implementation code and domain model.",
+      "core-capabilities": true,
+      "comment": "not given",
+      "sections": {
+        "http apis": { "description": "not provided", "designated": true, "comment": "API"},
+        "domain model": { "description": "not provided", "designated": true, "comment": "Shared"},
+        "stores": { "description": "the swift, filesystem, and http stores", "designated": false, "comment": "should be replaceable, vendor-specificddCross platform"},
+        "db driver": { "description": "not provided", "designated": false, "comment": "should be replaceable" },
+        "wsgi framework": { "description": "not provided", "designated": false, "comment": "should be replaceable"}
+      }
+    },
+    "cinder": {
+      "guidance": "Designated sections are the API implementation code",
+      "core-capabilities": true,
+      "comment": "Historically, cinder has had plug-ins around schedulers and drivers.",
+      "sections": {
+        "api": { "description": "API section means actually the CODE that exposes the API, not just API-comparability", "designated": true, "comment": ""},
+        "drivers": { "description": "not provided", "designated": false, "comment": "there MUST be requirements that it implements what's defined as core functionality in the Cinder API"},
+        "scheduler": { "description": "not provided", "designated": false, "comment": "there MUST be requirements that it implements what's defined as core functionality in the Cinder API"},
+        "api extensions": { "description": "not provided", "designated": false, "comment": "should be replaceable"}
+      }
+    },
+    "keystone": {
+      "guidance": "Not a core capability, no position at this time",
+      "core-capabilities": false,
+      "comment": "",
+      "sections": []
+    },
+    "swift" : {
+      "guidance": "Not a core capability, no position at this time",
+      "core-capabilities": false,
+      "comment": "",
+      "sections": []
+    },
+    "neutron": {
+      "guidance": "Not a core capability, no position at this time",
+      "core-capabilities": false,
+      "comment": "Neutron was not ready for review.",
+      "sections": []
+    },
+    "heat": {
+      "guidance": "Not a core capability, no position at this time",
+      "core-capabilities": false,
+      "comment": "",
+      "sections": []
+    },
+    "horizon": {
+      "guidance": "Not a core capability, no position at this time",
+      "core-capabilities": false,
+      "comment": "",
+      "sections": []
+    },
+    "ceilometer": {
+      "guidance": "Not a core capability, no position at this time",
+      "core-capabilities": false,
+      "comment": "",
+      "sections": []
+    }
+  }
+}
