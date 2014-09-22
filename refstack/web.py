@@ -16,17 +16,15 @@
 
 import flask
 from flask import abort, flash, request, redirect, url_for, \
-    render_template, g, session, make_response
+    render_template, g, session
 from flask_mail import Mail
 from refstack import app as base_app
 from refstack.extensions import db
 from refstack.extensions import oid
 from refstack.models import Cloud
 from refstack.models import Test
-from refstack.models import TestStatus
 from refstack.models import User
 from refstack.models import Vendor
-from refstack.tools.tempest_tester import TempestTester
 
 app = base_app.create_app()
 mail = Mail(app)
@@ -111,132 +109,6 @@ def create_profile():
         'create_profile.html', next_url=oid.get_next_url())
 
 
-@app.route('/delete-cloud/<int:cloud_id>', methods=['GET', 'POST'])
-def delete_cloud(cloud_id):
-    """Delete function for clouds."""
-    cloud = Cloud.query.filter_by(id=cloud_id).first()
-
-    if not cloud:
-        flash(u'Not a valid Cloud ID!')
-    elif not cloud.user_id == g.user.id:
-        flash(u"This isn't your cloud!")
-    else:
-        # Delete all the tests associated with the cloud from DB
-        for test in cloud.tests:
-            db.session.delete(test)
-        # Delete the cloud from DB
-        db.session.delete(cloud)
-        db.session.commit()
-
-    return redirect('/')
-
-
-@app.route('/delete-test/<int:test_id>', methods=['GET', 'POST'])
-def delete_test(test_id):
-    """Delete function for tests."""
-    test = Test.query.filter_by(id=test_id).first()
-
-    if not test:
-        flash(u'Not a valid Test ID!')
-    elif not test.cloud.user_id == g.user.id:
-        flash(u"This isn't your test!")
-    else:
-        db.session.delete(test)
-        db.session.commit()
-
-    return redirect('/')
-
-
-@app.route('/edit-cloud/<int:cloud_id>', methods=['GET', 'POST'])
-def edit_cloud(cloud_id):
-    cloud = Cloud.query.filter_by(id=cloud_id).first()
-
-    if not cloud:
-        flash(u'Not a valid Cloud ID!')
-        return redirect('/')
-    elif not cloud.user_id == g.user.id:
-        flash(u"This isn't your cloud!")
-
-    if request.method == 'POST':
-        # some validation
-        # todo: do this smarter
-        if not request.form['label']:
-            flash(u'Error: All fields are required')
-        elif not request.form['endpoint']:
-            flash(u'Error: All fields are required')
-        elif not request.form['test_user']:
-            flash(u'Error: All fields are required')
-        elif not request.form['alt_user']:
-            flash(u'Error: All fields are required')
-        elif not request.form['admin_endpoint']:
-            flash(u'Error: All fields are required')
-        elif not request.form['admin_user']:
-            flash(u'Error: All fields are required')
-        else:
-            cloud.label = request.form['label']
-            cloud.endpoint = request.form['endpoint']
-            cloud.test_user = request.form['test_user']
-            cloud.alt_user = request.form['alt_user']
-            cloud.admin_endpoint = request.form['admin_endpoint']
-            cloud.endpoint_v3 = request.form['endpoint_v3']
-            cloud.version = request.form['version']
-            cloud.admin_user = request.form['admin_user']
-
-            db.session.commit()
-
-            flash(u'Cloud Saved!')
-            return redirect('/')
-
-    form = dict(label=cloud.label,
-                endpoint=cloud.endpoint,
-                endpoint_v3=cloud.endpoint_v3,
-                admin_endpoint=cloud.admin_endpoint,
-                admin_user=cloud.admin_user,
-                version=cloud.version,
-                test_user=cloud.test_user,
-                alt_user=cloud.alt_user)
-
-    return render_template('edit_cloud.html', form=form)
-
-
-@app.route('/create-cloud', methods=['GET', 'POST'])
-def create_cloud():
-    """This is the handler for creating a new cloud."""
-
-    if g.user is None:
-        abort(401)
-    if request.method == 'POST':
-        if not request.form['label']:
-            flash(u'Error: All fields are required')
-        elif not request.form['endpoint']:
-            flash(u'Error: All fields are required')
-        elif not request.form['test_user']:
-            flash(u'Error: All fields are required')
-        elif not request.form['alt_user']:
-            flash(u'Error: All fields are required')
-        elif not request.form['admin_endpoint']:
-            flash(u'Error: All fields are required')
-        elif not request.form['admin_user']:
-            flash(u'Error: All fields are required')
-        else:
-            new_cloud = Cloud()
-            new_cloud.user_id = g.user.id
-            new_cloud.label = request.form['label']
-            new_cloud.endpoint = request.form['endpoint']
-            new_cloud.test_user = request.form['test_user']
-            new_cloud.alt_user = request.form['alt_user']
-            new_cloud.admin_endpoint = request.form['admin_endpoint']
-            new_cloud.endpoint_v3 = request.form['endpoint_v3']
-            new_cloud.version = request.form['version']
-            new_cloud.admin_user = request.form['admin_user']
-
-            db.session.add(new_cloud)
-            db.session.commit()
-            return redirect('/')
-
-    return render_template('create_cloud.html', next_url='/')
-
-
 @app.route('/profile/edit', methods=['GET', 'POST'])
 def edit_profile():
     """Updates a profile."""
@@ -282,55 +154,6 @@ def logout():
     return redirect(oid.get_next_url())
 
 
-@app.route('/test-cloud/<int:cloud_id>', methods=['GET', 'POST'])
-def test_cloud(cloud_id):
-    """Handler for creating a new test."""
-
-    cloud = Cloud.query.filter_by(id=cloud_id).first()
-
-    if not cloud:
-        flash(u'Not a valid Cloud ID!')
-        return redirect('/')
-    elif not cloud.user_id == g.user.id:
-        flash(u"This isn't your cloud!")
-        return redirect('/')
-
-    if request.method == 'POST':
-
-        # Check for required fields
-        REQUIRED_FIELDS = ('pw_admin', 'pw_user')
-        if not all(request.form[field] for field in REQUIRED_FIELDS):
-            flash(u'Error: All fields are required')
-        else:
-            # Create new test object in db
-            new_test = Test()
-            new_test.cloud = cloud
-            new_test.cloud_id = cloud.id
-            db.session.add(new_test)
-            db.session.commit()
-
-            # Construct confJSON with the passwords provided
-            # and using the same user for alt_user
-            pw_admin = request.form['pw_admin']
-            pw_user = request.form['pw_user']
-            pw_alt = request.form['pw_user']
-            json_str = '{"identity":{"password":"%s","admin_password":"%s",\
-"alt_password":"%s"}}' % (pw_user, pw_admin, pw_alt)
-
-            # Excute the test
-            try:
-                TempestTester(new_test.id).execute_test(json_str)
-                flash(u'Test started!')
-            except ValueError:
-                flash(u'Fail to start test!')
-
-            return redirect('/')
-
-    names = dict(user=cloud.test_user, admin=cloud.admin_user)
-
-    return render_template('test_cloud.html', next_url='/', names=names)
-
-
 @app.route('/post-result', methods=['POST'])
 def post_result():
     """Receive tempest test result from a remote test runner."""
@@ -359,84 +182,3 @@ def post_result():
 
         db.session.commit()
         return 'thank you', 201
-
-
-@app.route('/update-test-status/<int:test_id>', methods=['POST'])
-def update_test_status(test_id):
-    """updates the test status."""
-
-    test = Test.query.filter_by(id=test_id).first()
-
-    if not test or request.args.get('status', ''):
-        return 'bad request', 400
-
-    message = request.args.get('status', '')
-    status = TestStatus(test_id, message)
-
-    db.session.add(status)
-    db.session.commit()
-
-    return 'thank you', 201
-
-
-@app.route('/show-status/<int:test_id>', methods=['GET', 'POST'])
-def show_status(test_id):
-    """Handler for showing test status."""
-
-    test = Test.query.filter_by(id=test_id).first()
-
-    if not test:
-        flash(u'Not a valid Test ID!')
-        return redirect('/')
-    elif not test.cloud.user_id == g.user.id:
-        flash(u"This isn't your test!")
-        return redirect('/')
-
-    # This is a place holder for now
-    ''' TODO: Generate the appropriate status page '''
-
-    return render_template('show_status.html', next_url='/', test=test)
-
-
-@app.route('/show-report/<int:test_id>', methods=['GET', 'POST'])
-def show_report(test_id):
-    """Handler for showing test report."""
-
-    test = Test.query.filter_by(id=test_id).first()
-
-    if not test:
-        flash(u'Not a valid Test ID!')
-        return redirect('/')
-
-    # Users can see report of all tests (including other people's tests)
-
-    test_result = TempestTester(test_id).get_result()
-    if not test_result:
-        flash(u"No test result available!")
-        return redirect('/')
-
-    return render_template('show_report.html', next_url='/', test=test,
-                           test_result=test_result)
-
-
-@app.route('/download-result/<int:test_id>', methods=['GET', 'POST'])
-def download_result(test_id):
-    """Handler for downloading test results."""
-
-    test = Test.query.filter_by(id=test_id).first()
-
-    if not test:
-        flash(u'Not a valid Test ID!')
-        return redirect('/')
-    elif not test.cloud.user_id == g.user.id:
-        # Users can only download result of their own tests
-        flash(u"This isn't your test!")
-        return redirect('/')
-
-    # Send back the subunit data stream
-
-    response = make_response(test.subunit)
-    response.headers['Content-Disposition'] = \
-        'attachment; filename=subunit_%s.txt' % (test_id)
-    response.content_type = "text/plain"
-    return response
