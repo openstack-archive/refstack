@@ -1,0 +1,60 @@
+{{#items}}
+    <div class="cap_item">
+        <div class="cap_shot">
+            <div style="width: 2em; display: table-cell;"> {{#caps_support}}{{/caps_support}} </div>
+            <div style="width: 30em; display: table-cell;">
+                <a onclick="toggle_one_item('{{class}}', '{{id}}', 'detailed_results'); return false; " title="Description: {{description}}"  href="#" >  {{name}} </a>
+            </div>
+            <div style="width: 3em; display: table-cell; ">
+                <span class="passed">{{passed_count}}</span>
+            </div>
+            <div style="width: 3em; display: table-cell; ">
+                <span class="passed">{{#fixed_count}}+{{fixed_count}}{{/fixed_count}}</span>
+            </div>
+            <div style="width: 3em; display: table-cell; ">
+                <span class="failed">{{#broken_count}}-{{broken_count}}{{/broken_count}}</span>
+            </div>
+            <div style="width: 3em; display: table-cell; ">
+                <span class="failed">{{failed_count}}</span>
+            </div>
+        </div>
+        <div id="{{id}}_detailed_results" class="{{class}}_detailed_results" style="display:none;">
+            <ul class="fa-ul test_results">
+                {{#broken_tests}}
+                    <li class="fa fa-exclamation-circle failed">
+                        <span>
+                            {{.}} <a href="javascript:void(window.get_code_url('{{.}}'));"> [github] </a>
+                        </span>
+                    </li>
+                {{/broken_tests}}
+            </ul>
+            <ul class="fa-ul test_results">
+                {{#fixed_tests}}
+                    <li class="fa fa-wrench passed">
+                        <span>
+                            {{.}} <a href="javascript:void(window.get_code_url('{{.}}'));"> [github] </a>
+                        </span>
+                    </li>
+                {{/fixed_tests}}
+            </ul>
+            <ul class="fa-ul test_results">
+                {{#failed_tests}}
+                    <li class="fa fa-times failed">
+                        <span>
+                            {{.}} <a href="javascript:void(window.get_code_url('{{.}}'));"> [github] </a>
+                        </span>
+                    </li>
+                {{/failed_tests}}
+            </ul>
+            <ul class="fa-ul test_results">
+                {{#passed_tests}}
+                    <li class="fa fa-check passed">
+                        <span>
+                            {{.}} <a href="javascript:void(window.get_code_url('{{.}}'));"> [github] </a>
+                        </span>
+                    </li>
+                {{/passed_tests}}
+            </ul>
+        </div>
+    </div>
+{{/items}}

@@ -6,7 +6,6 @@ body {
 }
 
 .container{
-    width:  !important;
 }
 
 .grid{
@@ -183,7 +182,6 @@ input[name="openid"] {
 
 .report_data_table{
     border: 1px solid rgb(200, 200, 200);
-    border-collapse: initial;
     border-radius: 5px;
 }
 
