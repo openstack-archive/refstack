@@ -14,7 +14,7 @@ The following instructions are designs run Refstack/Tempest in a container with 
 1. Setup Docker to run without sudo
   1. permanently (recommended):
     1. `sudo usermod -a -G docker <your-user>`
-    1. you will need to reboot after this change
+    1. log out and log back in so your user picks up the new group membership
   1. short term: `sudo chmod 666 /var/run/docker.sock`
 
 1. Get the code: `wget https://raw.githubusercontent.com/stackforge/refstack/master/scripts/tcup.py`
