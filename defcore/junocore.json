@@ -1,0 +1,2275 @@
+{
+    "release": "juno",
+    "status": "proposal, icehouse-based",
+    "schema": "1.0",
+    "criteria": {
+        "atomic": {
+            "Description": "Capabilities is unique and cannot be built out of other must-pass capabilities",
+            "name": "Atomic",
+            "weight": 8
+        },
+        "clients": {
+            "Description": "Candidates are widely used capabilities: Should be included if part of common libraries (Fog, Apache jclouds, etc)",
+            "name": "Used by Clients",
+            "weight": 8
+        },
+        "complete": {
+            "Description": "Where the code being tested has a designated area of alternate implementation (extension framework) as per the Core Principles, there should be parity in capability tested across extension implementations. This also implies that the capability test is not configuration specific or locked to non-open technology",
+            "name": "Complete",
+            "weight": 8
+        },
+        "deployed": {
+            "Description": "Candidates are widely deployed capabilities. We favor capabilities that are supported by multiple public cloud providers and private cloud products",
+            "name": "Widely Deployed",
+            "weight": 8
+        },
+        "discover": {
+            "Description": "Capability being tested is Service Discoverable (can be found in Keystone and via service introspection)",
+            "name": "Discoverable",
+            "weight": 8
+        },
+        "doc": {
+            "Description": "Should be well documented, particularly the expected behavior. This can be a very subjective measure and we expect to refine this definition over time",
+            "name": "Documented",
+            "weight": 8
+        },
+        "foundation": {
+            "Description": "Test capabilities that are required by other must-pass tests and/or depended on by many other capabilities",
+            "name": "Foundation",
+            "weight": 8
+        },
+        "future": {
+            "Description": "Should reflect future technical direction (from the project technical teams and the TC) and help manage deprecated capabilities",
+            "name": "Future Direction",
+            "weight": 9
+        },
+        "proximity": {
+            "Description": "Sometimes called a Test Cluster, selects for Capabilities that are related to Core Capabilities. This helps ensure that related capabilities are managed together",
+            "name": "Proximity",
+            "weight": 8
+        },
+        "stable": {
+            "Description": "Test is required stable for >2 releases because we don't want core capabilities that do not have dependable APIs",
+            "name": "Stable",
+            "weight": 9
+        },
+        "sticky": {
+            "Description": "A test that is a must-pass test should stay a must-pass test. This makes core capabilities sticky release per release. Leaving Core is disruptive to the ecosystem",
+            "name": "Core in Last Release",
+            "weight": 9
+        },
+        "tools": {
+            "Description": "Candidates are widely used capabilities:Should be included if supported by common tools (RightScale, Scalr, CloudForms, ...)",
+            "name": "Used by Tools",
+            "weight": 9
+        }
+    },
+    "capabilities": {
+        "baremetal-admin": {
+            "achievements": [ ],
+            "admin": true,
+            "core": false,
+            "description": "Common admin operations in Baremetal API",
+            "flagged": [],
+            "name": "Baremetal Admin",
+            "tests": [
+                "tempest.api.baremetal.admin.test_api_discovery.TestApiDiscovery.test_api_versions",
+                "tempest.api.baremetal.admin.test_api_discovery.TestApiDiscovery.test_default_version",
+                "tempest.api.baremetal.admin.test_api_discovery.TestApiDiscovery.test_version_1_resources",
+                "tempest.api.baremetal.admin.test_drivers.TestDrivers.test_list_drivers",
+                "tempest.api.baremetal.admin.test_drivers.TestDrivers.test_show_driver"
+            ]
+        },
+        "baremetal-admin-chassis": {
+            "achievements": [ ],
+            "admin": true,
+            "core": false,
+            "description": "CRUD admin operations for chassis in Baremetal API",
+            "flagged": [],
+            "name": "Baremetal Admin Chassis",
+            "tests": [
+                "tempest.api.baremetal.admin.test_chassis.TestChassis.test_chassis_node_list",
+                "tempest.api.baremetal.admin.test_chassis.TestChassis.test_create_chassis",
+                "tempest.api.baremetal.admin.test_chassis.TestChassis.test_create_chassis_unicode_description",
+                "tempest.api.baremetal.admin.test_chassis.TestChassis.test_delete_chassis",
+                "tempest.api.baremetal.admin.test_chassis.TestChassis.test_list_chassis",
+                "tempest.api.baremetal.admin.test_chassis.TestChassis.test_show_chassis",
+                "tempest.api.baremetal.admin.test_chassis.TestChassis.test_update_chassis"
+            ]
+        },
+        "baremetal-admin-nodes": {
+            "achievements": [ ],
+            "admin": true,
+            "core": false,
+            "description": "CRUD admin operations for nodes in Baremetal API",
+            "flagged": [],
+            "name": "Baremetal Admin Nodes",
+            "tests": [
+                "tempest.api.baremetal.admin.test_nodes.TestNodes.test_create_node",
+                "tempest.api.baremetal.admin.test_nodes.TestNodes.test_delete_node",
+                "tempest.api.baremetal.admin.test_nodes.TestNodes.test_get_console",
+                "tempest.api.baremetal.admin.test_nodes.TestNodes.test_get_node_boot_device",
+                "tempest.api.baremetal.admin.test_nodes.TestNodes.test_get_node_by_instance_uuid",
+                "tempest.api.baremetal.admin.test_nodes.TestNodes.test_get_node_supported_boot_devices",
+                "tempest.api.baremetal.admin.test_nodes.TestNodes.test_list_nodes",
+                "tempest.api.baremetal.admin.test_nodes.TestNodes.test_list_nodes_association",
+                "tempest.api.baremetal.admin.test_nodes.TestNodes.test_node_port_list",
+                "tempest.api.baremetal.admin.test_nodes.TestNodes.test_node_port_list_no_ports",
+                "tempest.api.baremetal.admin.test_nodes.TestNodes.test_set_console_mode",
+                "tempest.api.baremetal.admin.test_nodes.TestNodes.test_set_node_boot_device",
+                "tempest.api.baremetal.admin.test_nodes.TestNodes.test_show_node",
+                "tempest.api.baremetal.admin.test_nodes.TestNodes.test_update_node",
+                "tempest.api.baremetal.admin.test_nodes.TestNodes.test_validate_driver_interface",
+                "tempest.api.baremetal.admin.test_nodestates.TestNodeStates.test_list_nodestates",
+                "tempest.api.baremetal.admin.test_nodestates.TestNodeStates.test_set_node_power_state"
+            ]
+        },
+        "baremetal-admin-ports": {
+            "achievements": [ ],
+            "admin": true,
+            "core": false,
+            "description": "CRUD admin operations for ports in Baremetal API",
+            "flagged": [],
+            "name": "Baremetal Admin Ports",
+            "tests": [
+                "tempest.api.baremetal.admin.test_ports.TestPorts.test_create_port",
+                "tempest.api.baremetal.admin.test_ports.TestPorts.test_create_port_specifying_uuid",
+                "tempest.api.baremetal.admin.test_ports.TestPorts.test_create_port_with_extra",
+                "tempest.api.baremetal.admin.test_ports.TestPorts.test_delete_port",
+                "tempest.api.baremetal.admin.test_ports.TestPorts.test_list_ports",
+                "tempest.api.baremetal.admin.test_ports.TestPorts.test_list_ports_details",
+                "tempest.api.baremetal.admin.test_ports.TestPorts.test_list_ports_details_with_address",
+                "tempest.api.baremetal.admin.test_ports.TestPorts.test_list_with_limit",
+                "tempest.api.baremetal.admin.test_ports.TestPorts.test_show_port",
+                "tempest.api.baremetal.admin.test_ports.TestPorts.test_show_port_with_links",
+                "tempest.api.baremetal.admin.test_ports.TestPorts.test_update_port_add",
+                "tempest.api.baremetal.admin.test_ports.TestPorts.test_update_port_mixed_ops",
+                "tempest.api.baremetal.admin.test_ports.TestPorts.test_update_port_remove",
+                "tempest.api.baremetal.admin.test_ports.TestPorts.test_update_port_replace",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_create_port_duplicated_mac",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_create_port_duplicated_port_uuid",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_create_port_malformed_extra",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_create_port_malformed_mac",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_create_port_malformed_node_id",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_create_port_malformed_port_uuid",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_create_port_no_mandatory_field_mac",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_create_port_no_mandatory_field_node_id",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_create_port_nonexsistent_node_id",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_delete_port_by_mac_not_allowed",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_show_port_by_mac_not_allowed",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_show_port_malformed_uuid",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_show_port_nonexistent_uuid",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_update_port_add_malformed_extra",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_update_port_add_nonexistent_property",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_update_port_add_whole_malformed_extra",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_update_port_by_mac_not_allowed",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_update_port_malformed_port_uuid",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_update_port_mixed_ops_integrity",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_update_port_nonexistent",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_update_port_remove_mandatory_field_mac",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_update_port_remove_mandatory_field_port_uuid",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_update_port_remove_nonexistent_property",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_update_port_replace_extra_item_with_malformed",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_update_port_replace_mac_with_duplicated",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_update_port_replace_mac_with_malformed",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_update_port_replace_node_id_with_malformed",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_update_port_replace_node_id_with_nonexistent",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_update_port_replace_nonexistent_property",
+                "tempest.api.baremetal.admin.test_ports_negative.TestPortsNegative.test_update_port_replace_whole_extra_with_malformed"
+            ]
+        },
+        "compute-admin-aggregates": {
+            "achievements": [
+                "deployed",
+                "future",
+                "complete",
+                "stable",
+                "doc",
+                "atomic",
+                "proximity"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "Retrieving information about host aggregation using Compute API admin endpoint",
+            "flagged": [],
+            "name": "Compute Admin aggregates",
+            "tests": [
+                "tempest.api.compute.admin.test_aggregates.AggregatesAdminTestJSON.test_aggregate_create_update_with_az",
+                "tempest.api.compute.admin.test_aggregates.AggregatesAdminTestJSON.test_aggregate_add_remove_host",
+                "tempest.api.compute.admin.test_aggregates.AggregatesAdminTestJSON.test_aggregate_add_host_list",
+                "tempest.api.compute.admin.test_aggregates.AggregatesAdminTestJSON.test_aggregate_add_host_get_details",
+                "tempest.api.compute.admin.test_aggregates.AggregatesAdminTestJSON.test_aggregate_create_delete_with_az",
+                "tempest.api.compute.admin.test_aggregates.AggregatesAdminTestJSON.test_aggregate_create_delete",
+                "tempest.api.compute.admin.test_aggregates.AggregatesAdminTestJSON.test_aggregate_create_verify_entry_in_list",
+                "tempest.api.compute.admin.test_aggregates.AggregatesAdminTestJSON.test_aggregate_add_host_create_server_with_az"
+            ]
+        },
+        "compute-admin-avail-zone": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "sticky",
+                "foundation",
+                "atomic"
+            ],
+            "admin": true,
+            "core": false,
+            "description": " Retrieving information about availability zones using Compute API admin endpoint",
+            "flagged": [],
+            "name": "Compute Admin avail-zone",
+            "tests": []
+        },
+        "compute-admin-fixed-ips": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "sticky",
+                "foundation",
+                "atomic",
+                "proximity"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "Tests of managing fixed ip reservations using Compute API admin endpoint",
+            "flagged": [],
+            "name": "Compute Admin fixed-ips",
+            "tests": [
+                "tempest.api.compute.admin.test_fixed_ips.FixedIPsTestJson.test_list_fixed_ip_details",
+                "tempest.api.compute.admin.test_fixed_ips.FixedIPsTestJson.test_set_reserve",
+                "tempest.api.compute.admin.test_fixed_ips.FixedIPsTestXml.test_list_fixed_ip_details",
+                "tempest.api.compute.admin.test_fixed_ips.FixedIPsTestXml.test_set_unreserve",
+                "tempest.api.compute.admin.test_fixed_ips.FixedIPsTestXml.test_set_reserve",
+                "tempest.api.compute.admin.test_fixed_ips.FixedIPsTestJson.test_set_unreserve"
+            ]
+        },
+        "compute-admin-flavors": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "sticky",
+                "foundation",
+                "atomic",
+                "proximity"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "Managing flavor definitions and parameters using Compute API admin endpoint",
+            "flagged": [],
+            "name": "Compute Admin flavors",
+            "tests": [
+                "tempest.api.compute.admin.test_flavors.FlavorsAdminTestJSON.test_list_public_flavor_with_other_user",
+                "tempest.api.compute.admin.test_flavors.FlavorsAdminTestJSON.test_list_non_public_flavor",
+                "tempest.api.compute.admin.test_flavors.FlavorsAdminTestJSON.test_create_server_with_non_public_flavor",
+                "tempest.api.compute.admin.test_flavors.FlavorsAdminTestJSON.test_is_public_string_variations",
+                "tempest.api.compute.admin.test_flavors.FlavorsAdminTestJSON.test_create_flavor_using_string_ram",
+                "tempest.api.compute.admin.test_flavors.FlavorsAdminTestJSON.test_create_list_flavor_without_extra_data",
+                "tempest.api.compute.admin.test_flavors_access.FlavorsAccessTestJSON.test_flavor_access_add_remove",
+                "tempest.api.compute.admin.test_flavors.FlavorsAdminTestJSON.test_create_flavor_verify_entry_in_list_details"
+            ]
+        },
+        "compute-admin-hosts": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "sticky",
+                "foundation",
+                "atomic",
+                "proximity"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "Retrieving host information using Compute API admin endpoint",
+            "flagged": [],
+            "name": "Compute Admin hosts",
+            "tests": [
+                "tempest.api.compute.admin.test_hosts.HostsAdminTestJSON.test_list_hosts_with_a_blank_zone",
+                "tempest.api.compute.admin.test_hosts.HostsAdminTestJSON.test_list_hosts",
+                "tempest.api.compute.admin.test_hosts.HostsAdminTestJSON.test_list_hosts_with_zone",
+                "tempest.api.compute.admin.test_hosts.HostsAdminTestJSON.test_show_host_detail"
+            ]
+        },
+        "compute-admin-hypervisor": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "sticky",
+                "foundation",
+                "atomic",
+                "proximity"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "Retrieving hypervisor information using Compute API admin endpoint",
+            "flagged": [],
+            "name": "Compute Admin hypervisor",
+            "tests": [
+                "tempest.api.compute.admin.test_hypervisor.HypervisorAdminTestJSON.test_get_hypervisor_uptime",
+                "tempest.api.compute.admin.test_hypervisor.HypervisorAdminTestJSON.test_get_hypervisor_show_details",
+                "tempest.api.compute.admin.test_hypervisor.HypervisorAdminTestJSON.test_get_hypervisor_stats",
+                "tempest.api.compute.admin.test_hypervisor.HypervisorAdminTestJSON.test_get_hypervisor_list_details",
+                "tempest.api.compute.admin.test_hypervisor.HypervisorAdminTestJSON.test_get_hypervisor_list",
+                "tempest.api.compute.admin.test_hypervisor.HypervisorAdminTestJSON.test_get_hypervisor_show_servers"
+            ]
+        },
+        "compute-admin-quota": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "sticky",
+                "foundation",
+                "atomic",
+                "proximity"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "Tests for managing quotas in compute nodes using Compute API admin endpoint",
+            "flagged": [],
+            "name": "Compute Admin quota",
+            "tests": [
+                "tempest.api.compute.admin.test_quotas.QuotasAdminTestJSON.test_get_updated_quotas",
+                "tempest.api.compute.admin.test_quotas.QuotasAdminTestJSON.test_update_all_quota_resources_for_tenant",
+                "tempest.api.compute.admin.test_quotas.QuotasAdminTestJSON.test_get_default_quotas"
+            ]
+        },
+        "compute-admin-server": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "sticky",
+                "atomic",
+                "proximity"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "Managing servers including state resets, deletions and 'all-tenant' actions using Compute API admin endpoint",
+            "flagged": [],
+            "name": "Compute Admin server",
+            "tests": [
+                "tempest.api.compute.admin.test_servers.ServersAdminTestJSON.test_reset_state_server",
+                "tempest.api.compute.admin.test_servers.ServersAdminTestJSON.test_list_servers_by_admin",
+                "tempest.api.compute.admin.test_servers.ServersAdminTestJSON.test_get_server_diagnostics_by_admin",
+                "tempest.api.compute.admin.test_servers.ServersAdminTestJSON.test_list_servers_by_admin_with_all_tenants"
+            ]
+        },
+        "compute-admin-servers-pause": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "atomic",
+                "proximity"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Managing servers pause state using Compute API admin endpoint",
+            "flagged": [],
+            "name": "Compute Admin Servers Pause",
+            "tests": [
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_unpause_server_invalid_state",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_unpause_non_existent_server",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_pause_paused_server",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_pause_non_existent_server",
+                "tempest.api.compute.servers.test_server_actions.ServerActionsTestJSON.test_pause_unpause_server"
+            ]
+        },
+        "compute-admin-servers-suspend": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "atomic",
+                "proximity"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Managing servers suspend state using Compute API admin endpoint",
+            "flagged": [],
+            "name": "Compute Admin Servers Suspend",
+            "tests": [
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_resume_non_existent_server",
+                "tempest.api.compute.servers.test_server_actions.ServerActionsTestJSON.test_suspend_resume_server",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_resume_server_invalid_state",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_suspend_server_invalid_state",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_suspend_non_existent_server"
+            ]
+        },
+        "compute-admin-services": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "sticky",
+                "atomic",
+                "proximity"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "List, enable, and disable Compute services in all hosts using Compute API admin endpoint",
+            "flagged": [],
+            "name": "Compute Admin services",
+            "tests": [
+                "tempest.api.compute.admin.test_services.ServicesAdminTestJSON.test_get_service_by_service_binary_name",
+                "tempest.api.compute.admin.test_services.ServicesAdminTestJSON.test_get_service_by_host_name",
+                "tempest.api.compute.admin.test_services.ServicesAdminTestJSON.test_list_services",
+                "tempest.api.compute.admin.test_services.ServicesAdminTestJSON.test_get_service_by_service_and_host_name"
+            ]
+        },
+        "compute-attach-interface": {
+            "achievements": [
+                "discover",
+                "atomic"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Create, list and attach port interfaces using Compute API endpoint",
+            "flagged": [],
+            "name": "Compute Attach Interface",
+            "tests": [
+                "tempest.api.compute.servers.test_attach_interfaces.AttachInterfacesTestJSON.test_create_list_show_delete_interfaces"
+            ]
+        },
+        "compute-attach-multi-interfaces": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Attach multiple interfaces to one network using Compute API endpoint",
+            "flagged": [],
+            "name": "Compute Attach Multiple Interfaces",
+            "tests": [
+                "tempest.api.compute.servers.test_create_server.ServersTestJSON.test_verify_multiple_nics_order"
+            ]
+        },
+        "compute-auth": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "sticky",
+                "foundation",
+                "atomic",
+                "proximity"
+            ],
+            "admin": false,
+            "core": true,
+            "description": "Auth related tests using Compute API",
+            "flagged": [],
+            "name": "compute-auth",
+            "tests": [
+                "tempest.api.compute.test_authorization.AuthorizationTestJSON.test_create_server_with_unauthorized_image",
+                "tempest.api.compute.test_authorization.AuthorizationTestJSON.test_get_metadata_of_alt_account_server_fails",
+                "tempest.api.compute.test_authorization.AuthorizationTestJSON.test_create_server_fails_when_tenant_incorrect",
+                "tempest.api.compute.test_authorization.AuthorizationTestJSON.test_set_metadata_of_alt_account_server_fails"
+            ]
+        },
+        "compute-auth-v3": {
+            "achievements": [
+                "future"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Support for the Auth V3 API through the Compute API",
+            "flagged": [],
+            "name": "compute-auth-v3",
+            "tests": []
+        },
+        "compute-console-log": {
+            "achievements": [
+                "future",
+                "atomic"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Retrieve console log information through the Compute API",
+            "flagged": [],
+            "name": "compute-console-log",
+            "tests": [
+                "tempest.api.compute.test_authorization.AuthorizationTestJSON.test_get_console_output_of_alt_account_server_fails",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_get_console_output_of_non_existent_server"
+            ]
+        },
+        "compute-ext-disk-config": {
+            "achievements": [
+                "deployed",
+                "clients",
+                "complete",
+                "discover",
+                "doc",
+                "atomic"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Ability to manage the disk config (manual or automatic) through the Compute API",
+            "flagged": [],
+            "name": "compute-ext-disk-config",
+            "tests": [
+                "tempest.api.compute.servers.test_disk_config.ServerDiskConfigTestJSON.test_resize_server_from_manual_to_auto",
+                "tempest.api.compute.servers.test_disk_config.ServerDiskConfigTestJSON.test_resize_server_from_auto_to_manual",
+                "tempest.api.compute.servers.test_disk_config.ServerDiskConfigTestJSON.test_rebuild_server_with_auto_disk_config",
+                "tempest.api.compute.servers.test_disk_config.ServerDiskConfigTestJSON.test_rebuild_server_with_manual_disk_config"
+            ]
+        },
+        "compute-flavors": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "sticky",
+                "foundation",
+                "atomic",
+                "proximity"
+            ],
+            "admin": false,
+            "core": true,
+            "description": "Flavor operations in the Compute API",
+            "flagged": [],
+            "name": "compute-flavors",
+            "tests": []
+        },
+        "compute-floating-ips": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "atomic",
+                "proximity"
+            ],
+            "admin": false,
+            "core": true,
+            "description": "Manage floating IPs through the Compute API",
+            "flagged": [],
+            "name": "compute-floating-ips",
+            "tests": [
+                "tempest.api.compute.floating_ips.test_floating_ips_actions.FloatingIPsTestJSON.test_delete_floating_ip",
+                "tempest.api.compute.floating_ips.test_floating_ips_actions.FloatingIPsTestJSON.test_associate_disassociate_floating_ip",
+                "tempest.api.compute.floating_ips.test_floating_ips_actions.FloatingIPsTestJSON.test_associate_already_associated_floating_ip",
+                "tempest.api.compute.floating_ips.test_floating_ips_actions.FloatingIPsTestJSON.test_allocate_floating_ip",
+                "tempest.api.compute.floating_ips.test_list_floating_ips.FloatingIPDetailsTestJSON.test_get_floating_ip_details",
+                "tempest.api.compute.floating_ips.test_list_floating_ips.FloatingIPDetailsTestJSON.test_list_floating_ips",
+                "tempest.api.compute.floating_ips.test_list_floating_ips.FloatingIPDetailsTestJSON.test_list_floating_ip_pools"
+            ]
+        },
+        "compute-image-metadata": {
+            "achievements": [
+                "deployed",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "sticky",
+                "atomic",
+                "proximity"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Support for additional metadata operations beyond the base ops in Compute API",
+            "flagged": [],
+            "name": "compute-image-metadata",
+            "tests": [
+                "tempest.api.compute.images.test_image_metadata.ImagesMetadataTestJSON.test_set_image_metadata",
+                "tempest.api.compute.images.test_image_metadata.ImagesMetadataTestJSON.test_get_image_metadata_item",
+                "tempest.api.compute.images.test_image_metadata.ImagesMetadataTestJSON.test_list_image_metadata",
+                "tempest.api.compute.images.test_image_metadata.ImagesMetadataTestJSON.test_update_image_metadata",
+                "tempest.api.compute.images.test_image_metadata.ImagesMetadataTestJSON.test_set_image_metadata_item",
+                "tempest.api.compute.images.test_image_metadata.ImagesMetadataTestJSON.test_delete_image_metadata_item"
+            ]
+        },
+        "compute-images": {
+            "achievements": [
+                "tools",
+                "clients",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "sticky",
+                "atomic",
+                "proximity"
+            ],
+            "admin": false,
+            "core": true,
+            "description": "Image operations within the Compute API",
+            "flagged": [],
+            "name": "compute-images",
+            "tests": [
+                "tempest.api.compute.images.test_list_image_filters.ListImageFiltersTestJSON.test_list_images_filter_by_server_id",
+                "tempest.api.compute.images.test_list_image_filters.ListImageFiltersTestJSON.test_list_images_with_detail_filter_by_changes_since",
+                "tempest.api.compute.images.test_images.ImagesTestJSON.test_delete_saving_image",
+                "tempest.api.compute.images.test_list_image_filters.ListImageFiltersTestJSON.test_list_images_with_detail_filter_by_status",
+                "tempest.api.compute.images.test_list_image_filters.ListImageFiltersTestJSON.test_list_images_filter_by_type",
+                "tempest.api.compute.images.test_list_images.ListImagesTestJSON.test_get_image",
+                "tempest.api.compute.images.test_images_oneserver.ImagesOneServerTestJSON.test_create_delete_image",
+                "tempest.api.compute.images.test_list_image_filters.ListImageFiltersTestJSON.test_list_images_filter_by_server_ref",
+                "tempest.api.compute.images.test_list_image_filters.ListImageFiltersTestJSON.test_list_images_filter_by_name",
+                "tempest.api.compute.images.test_list_images.ListImagesTestJSON.test_list_images_with_detail",
+                "tempest.api.compute.images.test_list_image_filters.ListImageFiltersTestJSON.test_list_images_with_detail_filter_by_type",
+                "tempest.api.compute.images.test_list_image_filters.ListImageFiltersTestJSON.test_list_images_filter_by_status",
+                "tempest.api.compute.images.test_list_image_filters.ListImageFiltersTestJSON.test_list_images_with_detail_filter_by_server_ref",
+                "tempest.api.compute.images.test_list_image_filters.ListImageFiltersTestJSON.test_list_images_limit_results",
+                "tempest.api.compute.images.test_list_image_filters.ListImageFiltersTestJSON.test_list_images_with_detail_filter_by_name",
+                "tempest.api.compute.images.test_list_image_filters.ListImageFiltersTestJSON.test_list_images_with_detail_limit_results",
+                "tempest.api.compute.images.test_list_images.ListImagesTestJSON.test_list_images",
+                "tempest.api.compute.images.test_images_oneserver.ImagesOneServerTestJSON.test_create_image_specify_multibyte_character_image_name",
+                "tempest.api.compute.images.test_list_image_filters.ListImageFiltersTestJSON.test_list_images_filter_by_changes_since"
+            ]
+        },
+        "compute-instance-actions": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "foundation",
+                "atomic"
+            ],
+            "admin": false,
+            "core": true,
+            "description": "Basic support Compute API for server actions such as reboot, rebuild, resize",
+            "flagged": [],
+            "name": "compute-instance-actions",
+            "tests": [
+                "tempest.api.compute.servers.test_instance_actions.InstanceActionsTestJSON.test_list_instance_actions",
+                "tempest.api.compute.servers.test_instance_actions.InstanceActionsTestJSON.test_get_instance_action"
+            ]
+        },
+        "compute-keypairs": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "sticky",
+                "atomic"
+            ],
+            "admin": false,
+            "core": true,
+            "description": "Generate, import, and delete SSH keys within Compute services",
+            "flagged": [],
+            "name": "compute-keypairs",
+            "tests": [
+                "tempest.api.compute.servers.test_servers.ServersTestJSON.test_create_specify_keypair",
+                "tempest.api.compute.test_authorization.AuthorizationTestJSON.test_create_keypair_in_analt_user_tenant",
+                "tempest.api.compute.test_authorization.AuthorizationTestJSON.test_get_keypair_of_alt_account_fails"
+            ]
+        },
+        "compute-limits": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "doc"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Manage absolute limits within Compute services",
+            "flagged": [],
+            "name": "compute-limits",
+            "tests": [
+                "tempest.api.compute.limits.test_absolute_limits.AbsoluteLimitsTestJSON.test_absLimits_get"
+            ]
+        },
+        "compute-live-migration": {
+            "achievements": [
+                "future",
+                "discover",
+                "doc",
+                "foundation",
+                "atomic"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Live migration operations through the Compute API",
+            "flagged": [],
+            "name": "compute-live-migration",
+            "tests": []
+        },
+        "compute-multiple-create": {
+            "achievements": [
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "proximity"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Create one or more servers with an optional reservation ID through the Compute API",
+            "flagged": [],
+            "name": "compute-multiple-create",
+            "tests": []
+        },
+        "compute-quotas": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "sticky",
+                "foundation",
+                "atomic",
+                "proximity"
+            ],
+            "admin": false,
+            "core": true,
+            "description": "Quotas management in Compute API",
+            "flagged": [],
+            "name": "compute-quotas",
+            "tests": [
+                "tempest.api.compute.test_quotas.QuotasTestJSON.test_get_default_quotas",
+                "tempest.api.compute.test_quotas.QuotasTestJSON.test_get_quotas"
+            ]
+        },
+        "compute-rescue-custom-image": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Custom image usage for instance rescue through the Compute API",
+            "flagged": [],
+            "name": "compute rescue custom image",
+            "tests": [
+                "tempest.api.compute.servers.test_server_rescue_negative.ServerRescueNegativeTestJSON.test_rescued_vm_rebuild"
+            ]
+        },
+        "compute-rescue-volume": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Disks attachment support during instance rescue through the Compute API",
+            "flagged": [],
+            "name": "compute rescue volume",
+            "tests": [
+                "tempest.api.compute.servers.test_server_rescue_negative.ServerRescueNegativeTestJSON.test_rescued_vm_detach_volume"
+            ]
+        },
+        "compute-scheduler-server-groups": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Server groups support in the compute scheduler through the Compute API",
+            "flagged": [],
+            "name": "compute Scheduler Server Groups",
+            "tests": [
+                "tempest.api.compute.servers.test_server_group.ServerGroupTestJSON.test_create_delete_server_group_with_affinity_policy",
+                "tempest.api.compute.servers.test_server_group.ServerGroupTestJSON.test_create_delete_server_group_with_anti_affinity_policy"
+            ]
+        },
+        "compute-security-groups": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "doc",
+                "atomic",
+                "proximity"
+            ],
+            "admin": false,
+            "core": true,
+            "description": "Manage security groups using Compute API",
+            "flagged": [],
+            "name": "compute-security-groups",
+            "tests": [
+                "tempest.api.compute.test_authorization.AuthorizationTestJSON.test_get_security_group_of_alt_account_fails",
+                "tempest.api.compute.test_authorization.AuthorizationTestJSON.test_create_security_group_in_analt_user_tenant",
+                "tempest.api.compute.security_groups.test_security_groups.SecurityGroupsTestJSON.test_security_group_create_get_delete",
+                "tempest.api.compute.security_groups.test_security_groups.SecurityGroupsTestJSON.test_server_security_groups",
+                "tempest.api.compute.test_authorization.AuthorizationTestJSON.test_delete_image_for_alt_account_fails",
+                "tempest.api.compute.security_groups.test_security_group_rules.SecurityGroupRulesTestJSON.test_security_group_rules_list",
+                "tempest.api.compute.test_authorization.AuthorizationTestJSON.test_create_security_group_rule_in_analt_user_tenant",
+                "tempest.api.compute.test_authorization.AuthorizationTestJSON.test_delete_security_group_rule_of_alt_account_fails",
+                "tempest.api.compute.test_authorization.AuthorizationTestJSON.test_delete_security_group_of_alt_account_fails",
+                "tempest.api.compute.security_groups.test_security_groups.SecurityGroupsTestJSON.test_security_groups_create_list_delete",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_create_with_nonexistent_security_group",
+                "tempest.api.compute.security_groups.test_security_group_rules.SecurityGroupRulesTestJSON.test_security_group_rules_create"
+            ]
+        },
+        "compute-servers": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "sticky",
+                "foundation",
+                "atomic",
+                "proximity"
+            ],
+            "admin": false,
+            "core": true,
+            "description": "Basic server operations in the Compute API",
+            "flagged": [],
+            "name": "compute-servers",
+            "tests": [
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_update_server_of_another_tenant",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_invalid_ip_v6_address",
+                "tempest.api.compute.servers.test_list_servers_negative.ListServersNegativeTestJSON.test_list_servers_by_non_existing_image",
+                "tempest.api.compute.servers.test_servers.ServersTestJSON.test_update_access_server_address",
+                "tempest.api.compute.servers.test_server_metadata.ServerMetadataTestJSON.test_update_metadata_empty_body",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_delete_non_existent_server",
+                "tempest.api.compute.servers.test_server_actions.ServerActionsTestJSON.test_resize_server_confirm",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_create_server_name_length_exceeds_256",
+                "tempest.api.compute.servers.test_list_server_filters.ListServerFiltersTestJSON.test_list_servers_filtered_by_ip_regex",
+                "tempest.api.compute.servers.test_list_servers_negative.ListServersNegativeTestJSON.test_list_servers_by_non_existing_flavor",
+                "tempest.api.compute.servers.test_list_server_filters.ListServerFiltersTestJSON.test_list_servers_filter_by_server_name",
+                "tempest.api.compute.servers.test_list_servers_negative.ListServersNegativeTestJSON.test_list_servers_by_changes_since_future_date",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_create_with_invalid_network_uuid",
+                "tempest.api.compute.servers.test_list_server_filters.ListServerFiltersTestJSON.test_list_servers_detailed_filter_by_server_status",
+                "tempest.api.compute.servers.test_list_server_filters.ListServerFiltersTestJSON.test_list_servers_filter_by_server_status",
+                "tempest.api.compute.servers.test_create_server.ServersTestJSON.test_verify_created_server_vcpus",
+                "tempest.api.compute.servers.test_server_metadata.ServerMetadataTestJSON.test_update_server_metadata",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_create_with_invalid_flavor",
+                "tempest.api.compute.servers.test_create_server.ServersTestManualDisk.test_verify_created_server_vcpus",
+                "tempest.api.compute.servers.test_server_actions.ServerActionsTestJSON.test_reboot_server_hard",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_create_server_metadata_exceeds_length_limit",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_create_with_invalid_image",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_update_name_of_non_existent_server",
+                "tempest.api.compute.servers.test_servers.ServersTestJSON.test_create_with_existing_server_name",
+                "tempest.api.compute.servers.test_server_actions.ServerActionsTestJSON.test_change_server_password",
+                "tempest.api.compute.servers.test_create_server.ServersTestManualDisk.test_host_name_is_same_as_server_name",
+                "tempest.api.compute.servers.test_create_server.ServersTestJSON.test_list_servers",
+                "tempest.api.compute.servers.test_server_actions.ServerActionsTestJSON.test_stop_start_server",
+                "tempest.api.compute.servers.test_create_server.ServersTestManualDisk.test_verify_server_details",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_resize_server_with_non_existent_flavor",
+                "tempest.api.compute.servers.test_list_server_filters.ListServerFiltersTestJSON.test_list_servers_filtered_by_name_wildcard",
+                "tempest.api.compute.servers.test_list_server_filters.ListServerFiltersTestJSON.test_list_servers_filter_by_flavor",
+                "tempest.api.compute.servers.test_server_metadata.ServerMetadataTestJSON.test_list_server_metadata",
+                "tempest.api.compute.servers.test_list_servers_negative.ListServersNegativeTestJSON.test_list_servers_detail_server_is_deleted",
+                "tempest.api.compute.servers.test_list_servers_negative.ListServersNegativeTestJSON.test_list_servers_by_non_existing_server_name",
+                "tempest.api.compute.servers.test_create_server.ServersTestManualDisk.test_list_servers",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_delete_a_server_of_another_tenant",
+                "tempest.api.compute.servers.test_servers.ServersTestJSON.test_create_server_with_admin_password",
+                "tempest.api.compute.servers.test_list_server_filters.ListServerFiltersTestJSON.test_list_servers_detailed_limit_results",
+                "tempest.api.compute.servers.test_server_actions.ServerActionsTestJSON.test_rebuild_server",
+                "tempest.api.compute.servers.test_servers.ServersTestJSON.test_update_server_name",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_update_server_set_empty_name",
+                "tempest.api.compute.servers.test_list_server_filters.ListServerFiltersTestJSON.test_list_servers_filter_by_limit",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_server_name_blank",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_stop_non_existent_server",
+                "tempest.api.compute.servers.test_server_actions.ServerActionsTestJSON.test_resize_server_revert",
+                "tempest.api.compute.servers.test_server_metadata.ServerMetadataTestJSON.test_delete_server_metadata_item",
+                "tempest.api.compute.servers.test_server_metadata.ServerMetadataTestJSON.test_get_server_metadata_item",
+                "tempest.api.compute.servers.test_list_server_filters.ListServerFiltersTestJSON.test_list_servers_detailed_filter_by_image",
+                "tempest.api.compute.servers.test_list_servers_negative.ListServersNegativeTestJSON.test_list_servers_by_limits_pass_string",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_get_non_existent_server",
+                "tempest.api.compute.servers.test_list_server_filters.ListServerFiltersTestJSON.test_list_servers_filtered_by_ip",
+                "tempest.api.compute.servers.test_create_server.ServersTestJSON.test_list_servers_with_detail",
+                "tempest.api.compute.servers.test_server_actions.ServerActionsTestJSON.test_lock_unlock_server",
+                "tempest.api.compute.servers.test_create_server.ServersTestJSON.test_verify_server_details",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_update_server_name_length_exceeds_256",
+                "tempest.api.compute.servers.test_list_servers_negative.ListServersNegativeTestJSON.test_list_servers_by_limits",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_delete_server_pass_negative_id",
+                "tempest.api.compute.servers.test_list_servers_negative.ListServersNegativeTestJSON.test_list_servers_with_a_deleted_server",
+                "tempest.api.compute.servers.test_create_server.ServersTestManualDisk.test_list_servers_with_detail",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_rebuild_reboot_deleted_server",
+                "tempest.api.compute.servers.test_create_server.ServersTestJSON.test_host_name_is_same_as_server_name",
+                "tempest.api.compute.servers.test_list_server_filters.ListServerFiltersTestJSON.test_list_servers_filter_by_image",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_reboot_non_existent_server",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_rebuild_non_existent_server",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_resize_server_with_null_flavor",
+                "tempest.api.compute.servers.test_list_servers_negative.ListServersNegativeTestJSON.test_list_servers_by_changes_since_invalid_date",
+                "tempest.api.compute.servers.test_list_servers_negative.ListServersNegativeTestJSON.test_list_servers_by_limits_pass_negative_value",
+                "tempest.api.compute.servers.test_server_metadata.ServerMetadataTestJSON.test_set_server_metadata",
+                "tempest.api.compute.servers.test_server_metadata.ServerMetadataTestJSON.test_set_server_metadata_item",
+                "tempest.api.compute.servers.test_server_actions.ServerActionsTestJSON.test_reboot_server_soft",
+                "tempest.api.compute.servers.test_list_servers_negative.ListServersNegativeTestJSON.test_list_servers_by_limits_greater_than_actual_count",
+                "tempest.api.compute.servers.test_list_server_filters.ListServerFiltersTestJSON.test_list_servers_detailed_filter_by_server_name",
+                "tempest.api.compute.servers.test_server_actions.ServerActionsTestJSON.test_get_console_output",
+                "tempest.api.compute.servers.test_list_servers_negative.ListServersNegativeTestJSON.test_list_servers_status_non_existing",
+                "tempest.api.compute.servers.test_list_server_filters.ListServerFiltersTestJSON.test_list_servers_detailed_filter_by_flavor",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_create_numeric_server_name",
+                "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_delete_server_pass_id_exceeding_length_limit"
+            ]
+        },
+        "compute-servers-metadata": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "sticky",
+                "foundation"
+            ],
+            "admin": false,
+            "core": true,
+            "description": "Manage the access to ip extended attribute for servers through the Compute API",
+            "flagged": [],
+            "name": "compute-servers-metadata",
+            "tests": []
+        },
+        "compute-servers-personality": {
+            "achievements": [
+                "deployed",
+                "complete",
+                "stable",
+                "discover",
+                "doc"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Compute API personality extension to enable the injection of data at create time",
+            "flagged": [],
+            "name": "compute-servers-personality",
+            "tests": []
+        },
+        "compute-usage": {
+            "achievements": [
+                "tools",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "atomic",
+                "proximity"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Report usage statistics on compute and storage resources through Compute API",
+            "flagged": [],
+            "name": "compute-usage",
+            "tests": []
+        },
+        "compute-virtual-interfaces": {
+            "achievements": [
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "discover",
+                "doc",
+                "foundation",
+                "atomic"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "List the virtual interfaces for a specified server instance through Compute API",
+            "flagged": [],
+            "name": "compute-virtual-interfaces",
+            "tests": []
+        },
+        "compute-volume": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "sticky",
+                "foundation",
+                "atomic",
+                "proximity"
+            ],
+            "admin": false,
+            "core": true,
+            "description": "Retrieve volume information through the Compute API",
+            "flagged": [],
+            "name": "compute-volume",
+            "tests": [
+                "tempest.api.compute.volumes.test_volumes_list.VolumesTestJSON.test_volume_list",
+                "tempest.api.compute.volumes.test_attach_volume.AttachVolumeTestJSON.test_attach_detach_volume",
+                "tempest.api.compute.volumes.test_volumes_negative.VolumesNegativeTest.test_get_volume_without_passing_volume_id",
+                "tempest.api.compute.volumes.test_volumes_list.VolumesTestJSON.test_volume_list_with_details",
+                "tempest.api.compute.volumes.test_volumes_negative.VolumesNegativeTest.test_get_invalid_volume_id"
+            ]
+        },
+        "compute-volume-proxy": {
+            "achievements": [],
+            "admin": false,
+            "core": false,
+            "description": "Extended volume API operations through the Compute API",
+            "flagged": [],
+            "name": "compute-volume-proxy",
+            "tests": []
+        },
+        "data-proc-jobs": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Hadoop jobs management and IO data source operations in Data Processing API",
+            "flagged": [],
+            "name": "Data Processing Jobs",
+            "tests": [
+                "tempest.api.data_processing.test_data_sources.DataSourceTest.test_external_hdfs_data_source_create",
+                "tempest.api.data_processing.test_data_sources.DataSourceTest.test_external_hdfs_data_source_delete",
+                "tempest.api.data_processing.test_data_sources.DataSourceTest.test_external_hdfs_data_source_get",
+                "tempest.api.data_processing.test_data_sources.DataSourceTest.test_external_hdfs_data_source_list",
+                "tempest.api.data_processing.test_data_sources.DataSourceTest.test_local_hdfs_data_source_create",
+                "tempest.api.data_processing.test_data_sources.DataSourceTest.test_local_hdfs_data_source_delete",
+                "tempest.api.data_processing.test_data_sources.DataSourceTest.test_local_hdfs_data_source_get",
+                "tempest.api.data_processing.test_data_sources.DataSourceTest.test_local_hdfs_data_source_list",
+                "tempest.api.data_processing.test_data_sources.DataSourceTest.test_swift_data_source_create",
+                "tempest.api.data_processing.test_data_sources.DataSourceTest.test_swift_data_source_delete",
+                "tempest.api.data_processing.test_data_sources.DataSourceTest.test_swift_data_source_get",
+                "tempest.api.data_processing.test_data_sources.DataSourceTest.test_swift_data_source_list",
+                "tempest.api.data_processing.test_job_binaries.JobBinaryTest.test_internal_db_job_binary_create",
+                "tempest.api.data_processing.test_job_binaries.JobBinaryTest.test_internal_db_job_binary_delete",
+                "tempest.api.data_processing.test_job_binaries.JobBinaryTest.test_internal_db_job_binary_get",
+                "tempest.api.data_processing.test_job_binaries.JobBinaryTest.test_internal_db_job_binary_list",
+                "tempest.api.data_processing.test_job_binaries.JobBinaryTest.test_job_binary_get_data",
+                "tempest.api.data_processing.test_job_binaries.JobBinaryTest.test_swift_job_binary_create",
+                "tempest.api.data_processing.test_job_binaries.JobBinaryTest.test_swift_job_binary_delete",
+                "tempest.api.data_processing.test_job_binaries.JobBinaryTest.test_swift_job_binary_get",
+                "tempest.api.data_processing.test_job_binaries.JobBinaryTest.test_swift_job_binary_list",
+                "tempest.api.data_processing.test_job_binary_internals.JobBinaryInternalTest.test_job_binary_internal_create",
+                "tempest.api.data_processing.test_job_binary_internals.JobBinaryInternalTest.test_job_binary_internal_delete",
+                "tempest.api.data_processing.test_job_binary_internals.JobBinaryInternalTest.test_job_binary_internal_get",
+                "tempest.api.data_processing.test_job_binary_internals.JobBinaryInternalTest.test_job_binary_internal_get_data",
+                "tempest.api.data_processing.test_job_binary_internals.JobBinaryInternalTest.test_job_binary_internal_list",
+                "tempest.api.data_processing.test_jobs.JobTest.test_job_create",
+                "tempest.api.data_processing.test_jobs.JobTest.test_job_delete",
+                "tempest.api.data_processing.test_jobs.JobTest.test_job_get",
+                "tempest.api.data_processing.test_jobs.JobTest.test_job_list"
+            ]
+        },
+        "compute-v3-rescue-custom-image": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Custom image usage for instance rescue through the Compute API v3",
+            "flagged": [],
+            "name": "compute v3 rescue custom image",
+            "tests": [
+                "tempest.api.compute.v3.servers.test_server_rescue_negative.ServerRescueNegativeV3Test.test_rescued_vm_rebuild"
+            ]
+        },
+        "compute-v3-rescue-volume": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Disks attachment support during instance rescue through the Compute API v3",
+            "flagged": [],
+            "name": "compute v3 rescue volume",
+            "tests": [
+                "tempest.api.compute.v3.servers.test_server_rescue_negative.ServerRescueNegativeV3Test.test_rescued_vm_detach_volume"
+            ]
+        },
+        "data-proc-plugins": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Plugin management in Data Processing API",
+            "flagged": [],
+            "name": "Data Processing Plugins",
+            "tests": [
+                "tempest.api.data_processing.test_plugins.PluginsTest.test_plugin_get",
+                "tempest.api.data_processing.test_plugins.PluginsTest.test_plugin_list"
+            ]
+        },
+        "data-proc-templates": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Templates management in Data Processing API",
+            "flagged": [],
+            "name": "Data Processing Templates",
+            "tests": [
+                "tempest.api.data_processing.test_cluster_templates.ClusterTemplateTest.test_cluster_template_create",
+                "tempest.api.data_processing.test_cluster_templates.ClusterTemplateTest.test_cluster_template_delete",
+                "tempest.api.data_processing.test_cluster_templates.ClusterTemplateTest.test_cluster_template_get",
+                "tempest.api.data_processing.test_cluster_templates.ClusterTemplateTest.test_cluster_template_list",
+                "tempest.api.data_processing.test_node_group_templates.NodeGroupTemplateTest.test_node_group_template_create",
+                "tempest.api.data_processing.test_node_group_templates.NodeGroupTemplateTest.test_node_group_template_delete",
+                "tempest.api.data_processing.test_node_group_templates.NodeGroupTemplateTest.test_node_group_template_get",
+                "tempest.api.data_processing.test_node_group_templates.NodeGroupTemplateTest.test_node_group_template_list"
+            ]
+        },
+        "database-flavors": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Flavors management in Database API v1",
+            "flagged": [],
+            "name": "Database flavors",
+            "tests": [
+                "tempest.api.database.flavors.test_flavors.DatabaseFlavorsTest.test_compare_db_flavors_with_os",
+                "tempest.api.database.flavors.test_flavors.DatabaseFlavorsTest.test_get_db_flavor",
+                "tempest.api.database.flavors.test_flavors.DatabaseFlavorsTest.test_list_db_flavors",
+                "tempest.api.database.flavors.test_flavors_negative.DatabaseFlavorsNegativeTest.test_get_non_existent_db_flavor"
+            ]
+        },
+        "database-versions": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Versions management in Database API v1",
+            "flagged": [],
+            "name": "Database versions",
+            "tests": [
+                "tempest.api.database.versions.test_versions.DatabaseVersionsTest.test_list_db_versions"
+            ]
+        },
+        "identity-admin-roles": {
+            "achievements": [
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "foundation",
+                "atomic"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "Administration roles in Identity API",
+            "flagged": [],
+            "name": "Identity admin-roles",
+            "tests": [
+                "tempest.api.identity.admin.test_roles.RolesTestJSON.test_role_create_delete",
+                "tempest.api.identity.admin.test_roles.RolesTestJSON.test_list_roles",
+                "tempest.api.identity.admin.test_roles.RolesTestJSON.test_assign_user_role",
+                "tempest.api.identity.admin.test_roles.RolesTestJSON.test_list_user_roles",
+                "tempest.api.identity.admin.test_roles.RolesTestJSON.test_remove_user_role"
+            ]
+        },
+        "identity-admin-services": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "foundation",
+                "atomic",
+                "proximity"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "CRUD operations for services in Identity API",
+            "flagged": [],
+            "name": "Identity admin-services",
+            "tests": [
+                "tempest.api.identity.admin.test_services.ServicesTestJSON.test_create_get_delete_service",
+                "tempest.api.identity.admin.test_services.ServicesTestJSON.test_list_services"
+            ]
+        },
+        "identity-admin-tenants": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "complete",
+                "discover",
+                "foundation",
+                "atomic",
+                "proximity"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "Administer tenants in the Identity API",
+            "flagged": [],
+            "name": "Identity admin-tenants",
+            "tests": [
+                "tempest.api.identity.admin.test_tenant_negative.TenantsNegativeTestJSON.test_tenant_update_by_unauthorized_user",
+                "tempest.api.identity.admin.test_tenants.TenantsTestJSON.test_tenant_list_delete",
+                "tempest.api.identity.admin.test_tenants.TenantsTestJSON.test_tenant_update_name",
+                "tempest.api.identity.admin.test_tenants.TenantsTestJSON.test_tenant_create_not_enabled",
+                "tempest.api.identity.admin.test_tenants.TenantsTestJSON.test_tenant_create_with_description",
+                "tempest.api.identity.admin.test_tenant_negative.TenantsNegativeTestJSON.test_tenant_update_request_without_token",
+                "tempest.api.identity.admin.test_tenant_negative.TenantsNegativeTestJSON.test_delete_non_existent_tenant",
+                "tempest.api.identity.admin.test_tenant_negative.TenantsNegativeTestJSON.test_tenant_create_duplicate",
+                "tempest.api.identity.admin.test_tenants.TenantsTestJSON.test_tenant_update_enable",
+                "tempest.api.identity.admin.test_tenant_negative.TenantsNegativeTestJSON.test_create_tenant_by_unauthorized_user",
+                "tempest.api.identity.admin.test_tenant_negative.TenantsNegativeTestJSON.test_create_tenants_name_length_over_64",
+                "tempest.api.identity.admin.test_tenant_negative.TenantsNegativeTestJSON.test_tenant_delete_by_unauthorized_user",
+                "tempest.api.identity.admin.test_tenant_negative.TenantsNegativeTestJSON.test_tenant_delete_request_without_token",
+                "tempest.api.identity.admin.test_tenant_negative.TenantsNegativeTestJSON.test_list_tenants_by_unauthorized_user",
+                "tempest.api.identity.admin.test_tenants.TenantsTestJSON.test_tenant_create_enabled",
+                "tempest.api.identity.admin.test_tenant_negative.TenantsNegativeTestJSON.test_create_tenant_with_empty_name",
+                "tempest.api.identity.admin.test_tenants.TenantsTestJSON.test_tenant_update_desc",
+                "tempest.api.identity.admin.test_tenant_negative.TenantsNegativeTestJSON.test_update_non_existent_tenant",
+                "tempest.api.identity.admin.test_tenant_negative.TenantsNegativeTestJSON.test_list_tenant_request_without_token",
+                "tempest.api.identity.admin.test_tenant_negative.TenantsNegativeTestJSON.test_create_tenant_request_without_token"
+            ]
+        },
+        "identity-admin-unscoped-token": {
+            "achievements": [ ],
+            "admin": true,
+            "core": false,
+            "description": "Unscoped token management in the Identity API",
+            "flagged": [],
+            "name": "Identity admin-unscoped-token",
+            "tests": [
+                "tempest.api.identity.admin.test_tokens.TokensTestJSON.test_rescope_token"
+            ]
+        },
+        "identity-admin-users": {
+            "achievements": [
+                "deployed",
+                "complete",
+                "stable",
+                "discover",
+                "atomic",
+                "proximity"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "Administer users in the Identity API",
+            "flagged": [],
+            "name": "Identity admin-users",
+            "tests": [
+                "tempest.api.identity.admin.test_users_negative.UsersNegativeTestJSON.test_create_user_with_enabled_non_bool",
+                "tempest.api.identity.admin.test_users_negative.UsersNegativeTestJSON.test_delete_user_request_without_a_token",
+                "tempest.api.identity.admin.test_users_negative.UsersNegativeTestJSON.test_list_users_with_invalid_tenant",
+                "tempest.api.identity.admin.test_users_negative.UsersNegativeTestJSON.test_get_users_request_without_token",
+                "tempest.api.identity.admin.test_users_negative.UsersNegativeTestJSON.test_authentication_when_tenant_is_disabled",
+                "tempest.api.identity.admin.test_users_negative.UsersNegativeTestJSON.test_create_user_with_name_length_over_255",
+                "tempest.api.identity.admin.test_users_negative.UsersNegativeTestJSON.test_create_user_with_empty_name",
+                "tempest.api.identity.admin.test_users_negative.UsersNegativeTestJSON.test_update_user_by_unauthorized_user",
+                "tempest.api.identity.admin.test_users.UsersTestJSON.test_delete_user",
+                "tempest.api.identity.admin.test_users_negative.UsersNegativeTestJSON.test_create_user_with_duplicate_name",
+                "tempest.api.identity.admin.test_users.UsersTestJSON.test_create_user",
+                "tempest.api.identity.admin.test_users.UsersTestJSON.test_create_user_with_enabled",
+                "tempest.api.identity.admin.test_users.UsersTestJSON.test_update_user",
+                "tempest.api.identity.admin.test_users.UsersTestJSON.test_list_users_for_tenant",
+                "tempest.api.identity.admin.test_users_negative.UsersNegativeTestJSON.test_delete_users_by_unauthorized_user",
+                "tempest.api.identity.admin.test_users_negative.UsersNegativeTestJSON.test_authentication_with_invalid_username",
+                "tempest.api.identity.admin.test_users_negative.UsersNegativeTestJSON.test_update_user_request_without_a_token",
+                "tempest.api.identity.admin.test_users.UsersTestJSON.test_user_authentication",
+                "tempest.api.identity.admin.test_users_negative.UsersNegativeTestJSON.test_authentication_with_invalid_tenant",
+                "tempest.api.identity.admin.test_users_negative.UsersNegativeTestJSON.test_authentication_for_disabled_user",
+                "tempest.api.identity.admin.test_users_negative.UsersNegativeTestJSON.test_create_user_by_unauthorized_user",
+                "tempest.api.identity.admin.test_users.UsersTestJSON.test_authentication_request_without_token",
+                "tempest.api.identity.admin.test_users_negative.UsersNegativeTestJSON.test_get_users_by_unauthorized_user",
+                "tempest.api.identity.admin.test_users.UsersTestJSON.test_get_users",
+                "tempest.api.identity.admin.test_users_negative.UsersNegativeTestJSON.test_authentication_with_invalid_password",
+                "tempest.api.identity.admin.test_users.UsersTestJSON.test_list_users_with_roles_for_tenant",
+                "tempest.api.identity.admin.test_users_negative.UsersNegativeTestJSON.test_create_user_request_without_a_token"
+            ]
+        },
+        "identity-admin-v3-credentials": {
+            "achievements": [
+                "future",
+                "foundation",
+                "atomic"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "Basic auth operations using Identity API v3",
+            "flagged": [],
+            "name": "Identity admin-v3-credentials",
+            "tests": [
+                "tempest.api.identity.admin.v3.test_credentials.CredentialsTestJSON.test_credentials_create_get_update_delete",
+                "tempest.api.identity.admin.v3.test_endpoints.EndPointsTestJSON.test_list_endpoints",
+                "tempest.api.identity.admin.v3.test_credentials.CredentialsTestJSON.test_credentials_list_delete",
+                "tempest.api.identity.admin.v3.test_endpoints.EndPointsTestJSON.test_create_list_delete_endpoint",
+                "tempest.api.identity.admin.v3.test_endpoints.EndPointsTestJSON.test_update_endpoint"
+            ]
+        },
+        "identity-admin-v3-domains": {
+            "achievements": [
+                "future",
+                "foundation",
+                "atomic"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "CRUD operations for domains in Identity API v3",
+            "flagged": [],
+            "name": "Identity admin-v3-domains",
+            "tests": [
+                "tempest.api.identity.admin.v3.test_domains.DomainsTestJSON.test_create_update_delete_domain",
+                "tempest.api.identity.admin.v3.test_domains.DomainsTestJSON.test_list_domains"
+            ]
+        },
+        "identity-admin-v3-endpoints": {
+            "achievements": [
+                "future",
+                "foundation",
+                "atomic"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "CRUD operations for endpoints in Identity API v3",
+            "flagged": [],
+            "name": "Identity admin-v3-endpoints",
+            "tests": []
+        },
+        "identity-admin-v3-policies": {
+            "achievements": [
+                "future",
+                "foundation",
+                "atomic"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "CRUD operations on policies in Identity API v3",
+            "flagged": [],
+            "name": "Identity admin-v3-policies",
+            "tests": [
+                "tempest.api.identity.admin.v3.test_policies.PoliciesTestJSON.test_create_update_delete_policy",
+                "tempest.api.identity.admin.v3.test_policies.PoliciesTestJSON.test_list_policies"
+            ]
+        },
+        "identity-admin-v3-projects": {
+            "achievements": [
+                "future",
+                "foundation",
+                "atomic",
+                "proximity"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "Basic management of projects in Identity API v3",
+            "flagged": [],
+            "name": "Identity admin-v3-projects",
+            "tests": [
+                "tempest.api.identity.admin.v3.test_projects.ProjectsTestJSON.test_associate_user_to_project",
+                "tempest.api.identity.admin.v3.test_projects.ProjectsTestJSON.test_project_update_desc",
+                "tempest.api.identity.admin.v3.test_projects.ProjectsTestJSON.test_project_update_enable",
+                "tempest.api.identity.admin.v3.test_projects.ProjectsTestJSON.test_project_create_not_enabled",
+                "tempest.api.identity.admin.v3.test_projects.ProjectsTestJSON.test_project_create_enabled",
+                "tempest.api.identity.admin.v3.test_projects.ProjectsTestJSON.test_project_create_with_description",
+                "tempest.api.identity.admin.v3.test_projects.ProjectsTestJSON.test_project_update_name"
+            ]
+        },
+        "identity-admin-v3-regions": {
+            "achievements": [ ],
+            "admin": true,
+            "core": false,
+            "description": "Multi-region deployments in Identity API v3",
+            "flagged": [],
+            "name": "Identity admin-v3 regions",
+            "tests": [
+                "tempest.api.identity.admin.v3.test_regions.RegionsTestJSON.test_create_region_with_specific_id",
+                "tempest.api.identity.admin.v3.test_regions.RegionsTestJSON.test_create_update_get_delete_region",
+                "tempest.api.identity.admin.v3.test_regions.RegionsTestJSON.test_list_regions"
+            ]
+        },
+        "identity-admin-v3-roles": {
+            "achievements": [
+                "future",
+                "foundation",
+                "atomic"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "Management of roles in Identity API v3",
+            "flagged": [],
+            "name": "Identity admin-v3-roles",
+            "tests": [
+                "tempest.api.identity.admin.v3.test_roles.RolesV3TestJSON.test_grant_list_revoke_role_to_user_on_project",
+                "tempest.api.identity.admin.v3.test_roles.RolesV3TestJSON.test_grant_list_revoke_role_to_user_on_domain",
+                "tempest.api.identity.admin.v3.test_roles.RolesV3TestJSON.test_grant_list_revoke_role_to_group_on_domain",
+                "tempest.api.identity.admin.v3.test_users.UsersV3TestJSON.test_list_user_projects",
+                "tempest.api.identity.admin.v3.test_roles.RolesV3TestJSON.test_grant_list_revoke_role_to_group_on_project"
+            ]
+        },
+        "identity-admin-v3-services": {
+            "achievements": [
+                "future",
+                "foundation",
+                "atomic"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "CRUD operations for services in Identity API v3",
+            "flagged": [],
+            "name": "Identity admin-v3-services",
+            "tests": []
+        },
+        "identity-admin-v3-tokens": {
+            "achievements": [
+                "future",
+                "foundation",
+                "atomic"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "Tokens management in Identity API v3",
+            "flagged": [],
+            "name": "Identity admin-v3-tokens",
+            "tests": []
+        },
+        "identity-admin-v3-trusts": {
+            "achievements": [ ],
+            "admin": true,
+            "core": false,
+            "description": "Trusts management in Identity API v3",
+            "flagged": [],
+            "name": "Identity admin-v3 trusts",
+            "tests": [
+                "tempest.api.identity.admin.v3.test_trusts.TrustsV3TestJSON.test_get_trusts_all",
+                "tempest.api.identity.admin.v3.test_trusts.TrustsV3TestJSON.test_get_trusts_query",
+                "tempest.api.identity.admin.v3.test_trusts.TrustsV3TestJSON.test_trust_expire_invalid"
+            ]
+        },
+        "identity-admin-v3-unscoped-token": {
+            "achievements": [ ],
+            "admin": true,
+            "core": false,
+            "description": "Unscoped token management in the Identity API v3",
+            "flagged": [],
+            "name": "Identity admin-v3-unscoped-token",
+            "tests": [
+                "tempest.api.identity.admin.v3.test_tokens.TokensV3TestJSON.test_rescope_token"
+            ]
+        },
+        "identity-admin-v3-users": {
+            "achievements": [
+                "future",
+                "foundation",
+                "atomic"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "CRUD operations for users in Identity API v3",
+            "flagged": [],
+            "name": "Identity admin-v3-users",
+            "tests": [
+                "tempest.api.identity.admin.v3.test_users.UsersV3TestJSON.test_user_update"
+            ]
+        },
+        "identity-non-admin-roles": {
+            "achievements": [
+                "deployed",
+                "future",
+                "complete",
+                "discover",
+                "doc",
+                "foundation",
+                "atomic"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Non-admin operations in Identity API",
+            "flagged": [],
+            "name": "Identity Non Admin Roles",
+            "tests": []
+        },
+        "images-v1": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "foundation",
+                "atomic",
+                "proximity"
+            ],
+            "admin": false,
+            "core": true,
+            "description": "Basic image management in the Images API v1",
+            "flagged": [],
+            "name": "images-v1",
+            "tests": [
+                "tempest.api.image.v1.test_images.CreateRegisterImagesTest.test_register_remote_image",
+                "tempest.api.image.v1.test_images.ListImagesTest.test_index_name",
+                "tempest.api.image.v1.test_images.ListImagesTest.test_index_no_params",
+                "tempest.api.image.v1.test_images.CreateRegisterImagesTest.test_register_http_image",
+                "tempest.api.image.v1.test_images.ListImagesTest.test_index_min_size",
+                "tempest.api.image.v1.test_images.ListImagesTest.test_index_container_format",
+                "tempest.api.image.v1.test_images.CreateRegisterImagesTest.test_register_then_upload",
+                "tempest.api.image.v1.test_images.ListImagesTest.test_index_disk_format",
+                "tempest.api.image.v1.test_images.CreateRegisterImagesTest.test_register_image_with_min_ram",
+                "tempest.api.image.v1.test_images.ListImagesTest.test_index_max_size",
+                "tempest.api.image.v1.test_images.ListImagesTest.test_index_status_active_detail"
+            ]
+        },
+        "images-v2": {
+            "achievements": [
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "foundation",
+                "atomic",
+                "proximity"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "CRUD image operations in Images API v2",
+            "flagged": [],
+            "name": "images-v2",
+            "tests": [
+                "tempest.api.image.v2.test_images.ListImagesTest.test_index_no_params"
+            ]
+        },
+        "messaging-claims": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Claim operations in Messaging API",
+            "flagged": [],
+            "name": "Messaging Admin",
+            "tests": [
+                "tempest.api.messaging.test_claims.TestClaims.test_post_claim",
+                "tempest.api.messaging.test_claims.TestClaims.test_release_claim"
+            ]
+        },
+        "messaging-messages": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Messages management in Messaging API",
+            "flagged": [],
+            "name": "Messaging messages",
+            "tests": [
+                "tempest.api.messaging.test_messages.TestMessages.test_delete_multiple_messages",
+                "tempest.api.messaging.test_messages.TestMessages.test_delete_single_message",
+                "tempest.api.messaging.test_messages.TestMessages.test_get_message",
+                "tempest.api.messaging.test_messages.TestMessages.test_get_multiple_messages",
+                "tempest.api.messaging.test_messages.TestMessages.test_list_messages",
+                "tempest.api.messaging.test_messages.TestMessages.test_post_messages"
+            ]
+        },
+        "messaging-queues": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Message queues management in Messaging API",
+            "flagged": [],
+            "name": "Messaging queues",
+            "tests": [
+                "tempest.api.messaging.test_queues.TestManageQueue.test_check_queue_existence",
+                "tempest.api.messaging.test_queues.TestManageQueue.test_check_queue_head",
+                "tempest.api.messaging.test_queues.TestManageQueue.test_delete_queue",
+                "tempest.api.messaging.test_queues.TestManageQueue.test_get_queue_stats",
+                "tempest.api.messaging.test_queues.TestManageQueue.test_list_queues",
+                "tempest.api.messaging.test_queues.TestManageQueue.test_set_and_get_queue_metadata",
+                "tempest.api.messaging.test_queues.TestQueues.test_create_queue"
+            ]
+        },
+        "networks-admin-l3-routers": {
+            "achievements": [ ],
+            "admin": true,
+            "core": false,
+            "description": "Network layer3 admin CRUD operations with routers in Network API",
+            "flagged": [],
+            "name": "Networks admin l3 routers",
+            "tests": [
+                "tempest.api.network.admin.test_l3_agent_scheduler.L3AgentSchedulerTestJSON.test_add_list_remove_router_on_l3_agent",
+                "tempest.api.network.admin.test_l3_agent_scheduler.L3AgentSchedulerTestJSON.test_list_routers_on_l3_agent"
+            ]
+        },
+        "networks-bulk-ops": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Bulk CRUD operations in Network API",
+            "flagged": [],
+            "name": "Networks bulk operations",
+            "tests": [
+                "tempest.api.network.test_networks.BulkNetworkOpsTestJSON.test_bulk_create_delete_network",
+                "tempest.api.network.test_networks.BulkNetworkOpsTestJSON.test_bulk_create_delete_port",
+                "tempest.api.network.test_networks.BulkNetworkOpsTestJSON.test_bulk_create_delete_subnet"
+            ]
+        },
+        "networks-extensions": {
+            "achievements": [
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "foundation",
+                "atomic"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "List available network extensions using Network API",
+            "flagged": [],
+            "name": "Networks extensions",
+            "tests": []
+        },
+        "networks-ipv6": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "IPV6 support for tenant networks in Network API",
+            "flagged": [],
+            "name": "Networks IPv6",
+            "tests": [
+                "tempest.api.network.test_networks.NetworksIpV6TestJSON.test_create_delete_subnet_all_attributes",
+                "tempest.api.network.test_networks.NetworksIpV6TestJSON.test_create_delete_subnet_with_allocation_pools",
+                "tempest.api.network.test_networks.NetworksIpV6TestJSON.test_create_delete_subnet_with_dhcp_enabled",
+                "tempest.api.network.test_networks.NetworksIpV6TestJSON.test_create_delete_subnet_with_gw",
+                "tempest.api.network.test_networks.NetworksIpV6TestJSON.test_create_delete_subnet_with_gw_and_allocation_pools",
+                "tempest.api.network.test_networks.NetworksIpV6TestJSON.test_create_delete_subnet_with_host_routes_and_dns_nameservers",
+                "tempest.api.network.test_networks.NetworksIpV6TestJSON.test_create_delete_subnet_with_v6_attributes",
+                "tempest.api.network.test_networks.NetworksIpV6TestJSON.test_create_delete_subnet_without_gw",
+                "tempest.api.network.test_networks.NetworksIpV6TestJSON.test_create_update_delete_network_subnet",
+                "tempest.api.network.test_networks.NetworksIpV6TestJSON.test_delete_network_with_subnet",
+                "tempest.api.network.test_networks.NetworksIpV6TestJSON.test_list_networks",
+                "tempest.api.network.test_networks.NetworksIpV6TestJSON.test_list_networks_fields",
+                "tempest.api.network.test_networks.NetworksIpV6TestJSON.test_list_subnets",
+                "tempest.api.network.test_networks.NetworksIpV6TestJSON.test_list_subnets_fields",
+                "tempest.api.network.test_networks.NetworksIpV6TestJSON.test_show_network",
+                "tempest.api.network.test_networks.NetworksIpV6TestJSON.test_show_network_fields",
+                "tempest.api.network.test_networks.NetworksIpV6TestJSON.test_show_subnet",
+                "tempest.api.network.test_networks.NetworksIpV6TestJSON.test_show_subnet_fields",
+                "tempest.api.network.test_networks.NetworksIpV6TestJSON.test_update_subnet_gw_dns_host_routes_dhcp",
+                "tempest.api.network.test_ports.PortsAdminExtendedAttrsIpV6TestJSON.test_create_port_binding_ext_attr",
+                "tempest.api.network.test_ports.PortsAdminExtendedAttrsIpV6TestJSON.test_list_ports_binding_ext_attr",
+                "tempest.api.network.test_ports.PortsAdminExtendedAttrsIpV6TestJSON.test_show_port_binding_ext_attr",
+                "tempest.api.network.test_ports.PortsAdminExtendedAttrsIpV6TestJSON.test_update_port_binding_ext_attr",
+                "tempest.api.network.test_ports.PortsIpV6TestJSON.test_create_update_delete_port",
+                "tempest.api.network.test_ports.PortsIpV6TestJSON.test_list_ports",
+                "tempest.api.network.test_ports.PortsIpV6TestJSON.test_list_ports_fields",
+                "tempest.api.network.test_ports.PortsIpV6TestJSON.test_port_list_filter_by_router_id",
+                "tempest.api.network.test_ports.PortsIpV6TestJSON.test_show_port",
+                "tempest.api.network.test_ports.PortsIpV6TestJSON.test_show_port_fields",
+                "tempest.api.network.test_ports.PortsIpV6TestJSON.test_update_port_with_second_ip",
+                "tempest.api.network.test_ports.PortsIpV6TestJSON.test_update_port_with_security_group",
+                "tempest.api.network.test_ports.PortsIpV6TestJSON.test_update_port_with_two_security_groups",
+                "tempest.api.network.test_security_groups.SecGroupIPv6Test.test_create_list_update_show_delete_security_group",
+                "tempest.api.network.test_security_groups.SecGroupIPv6Test.test_create_security_group_rule_with_additional_args",
+                "tempest.api.network.test_security_groups.SecGroupIPv6Test.test_create_security_group_rule_with_icmp_type_code",
+                "tempest.api.network.test_security_groups.SecGroupIPv6Test.test_create_security_group_rule_with_remote_group_id",
+                "tempest.api.network.test_security_groups.SecGroupIPv6Test.test_create_security_group_rule_with_remote_ip_prefix",
+                "tempest.api.network.test_security_groups.SecGroupIPv6Test.test_create_show_delete_security_group_rule",
+                "tempest.api.network.test_security_groups.SecGroupIPv6Test.test_list_security_groups",
+                "tempest.api.network.test_security_groups_negative.NegativeSecGroupIPv6Test.test_create_additional_default_security_group_fails",
+                "tempest.api.network.test_security_groups_negative.NegativeSecGroupIPv6Test.test_create_duplicate_security_group_rule_fails",
+                "tempest.api.network.test_security_groups_negative.NegativeSecGroupIPv6Test.test_create_security_group_rule_with_bad_ethertype",
+                "tempest.api.network.test_security_groups_negative.NegativeSecGroupIPv6Test.test_create_security_group_rule_with_bad_protocol",
+                "tempest.api.network.test_security_groups_negative.NegativeSecGroupIPv6Test.test_create_security_group_rule_with_bad_remote_ip_prefix",
+                "tempest.api.network.test_security_groups_negative.NegativeSecGroupIPv6Test.test_create_security_group_rule_with_invalid_ports",
+                "tempest.api.network.test_security_groups_negative.NegativeSecGroupIPv6Test.test_create_security_group_rule_with_non_existent_remote_groupid",
+                "tempest.api.network.test_security_groups_negative.NegativeSecGroupIPv6Test.test_create_security_group_rule_with_non_existent_security_group",
+                "tempest.api.network.test_security_groups_negative.NegativeSecGroupIPv6Test.test_create_security_group_rule_with_remote_ip_and_group",
+                "tempest.api.network.test_security_groups_negative.NegativeSecGroupIPv6Test.test_delete_non_existent_security_group",
+                "tempest.api.network.test_security_groups_negative.NegativeSecGroupIPv6Test.test_show_non_existent_security_group",
+                "tempest.api.network.test_security_groups_negative.NegativeSecGroupIPv6Test.test_show_non_existent_security_group_rule"
+            ]
+        },
+        "networks-floating-ips": {
+            "achievements": [
+                "future",
+                "discover",
+                "doc",
+                "atomic"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Floating IPs management using Network API",
+            "flagged": [],
+            "name": "Networks floating IPs",
+            "tests": [
+                "tempest.api.network.test_floating_ips.FloatingIPTestJSON.test_create_list_show_update_delete_floating_ip"
+            ]
+        },
+        "networks-l2": {
+            "achievements": [
+                "future",
+                "discover",
+                "doc",
+                "foundation",
+                "atomic",
+                "proximity"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Network layer2 CRUD operations in Network API",
+            "flagged": [],
+            "name": "Networks L2",
+            "tests": []
+        },
+        "networks-l3": {
+            "achievements": [
+                "future",
+                "discover",
+                "doc",
+                "foundation",
+                "atomic",
+                "proximity"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Network layer3 CRUD operations in Network API",
+            "flagged": [],
+            "name": "Networks L3",
+            "tests": [
+                "tempest.api.network.test_routers.RoutersTest.test_add_remove_router_interface_with_subnet_id",
+                "tempest.api.network.test_routers.RoutersTest.test_add_remove_router_interface_with_port_id",
+                "tempest.api.network.test_routers.RoutersTest.test_create_show_list_update_delete_router"
+            ]
+        },
+        "networks-lbaas": {
+            "achievements": [
+                "future",
+                "discover",
+                "doc"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Create and manage load balancers, listeners, pools, members, and health monitors using Network API",
+            "flagged": [],
+            "name": "Networks LBaaS",
+            "tests": []
+        },
+        "networks-quotas": {
+            "achievements": [
+                "future",
+                "discover"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Networks quotas management using Network API",
+            "flagged": [],
+            "name": "Networks quotas",
+            "tests": []
+        },
+        "networks-security-groups": {
+            "achievements": [
+                "future",
+                "discover",
+                "doc",
+                "proximity"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Networks security groups management using Network API",
+            "flagged": [],
+            "name": "Networks security groups",
+            "tests": [
+                "tempest.api.network.test_security_groups.SecGroupTest.test_create_show_delete_security_group_rule",
+                "tempest.api.network.test_security_groups_negative.NegativeSecGroupTest.test_show_non_existent_security_group_rule",
+                "tempest.api.network.test_security_groups.SecGroupTest.test_list_security_groups",
+                "tempest.api.network.test_security_groups_negative.NegativeSecGroupTest.test_show_non_existent_security_group"
+            ]
+        },
+        "networks-vpn": {
+            "achievements": [
+                "future",
+                "discover"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "VPN CRUD operations in Networks API",
+            "flagged": [],
+            "name": "Networks VPN",
+            "tests": []
+        },
+        "objectstore-acct-services": {
+            "achievements": [
+                "deployed",
+                "complete",
+                "stable",
+                "doc",
+                "sticky",
+                "foundation",
+                "atomic"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Basic account services in Object Storage API",
+            "flagged": [],
+            "name": "Object storage account services",
+            "tests": [
+                "tempest.api.object_storage.test_account_services.AccountTest.test_list_containers_with_marker",
+                "tempest.api.object_storage.test_account_services.AccountTest.test_list_account_metadata",
+                "tempest.api.object_storage.test_account_services.AccountTest.test_list_containers",
+                "tempest.api.object_storage.test_account_services.AccountTest.test_list_containers_with_end_marker",
+                "tempest.api.object_storage.test_account_services.AccountTest.test_list_containers_with_limit",
+                "tempest.api.object_storage.test_account_services.AccountTest.test_list_containers_with_limit_and_marker"
+            ]
+        },
+        "objectstore-bulk-delete": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Bulk delete by POST in Object Storage API",
+            "flagged": [],
+            "name": "Object storage bulk delete",
+            "tests": [
+                "tempest.api.object_storage.test_account_bulk.BulkTest.test_bulk_delete_by_POST"
+            ]
+        },
+        "objectstore-container": {
+            "achievements": [
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "doc",
+                "foundation",
+                "atomic",
+                "proximity"
+            ],
+            "admin": false,
+            "core": true,
+            "description": "Basic container operations in Object Store API",
+            "flagged": [],
+            "name": "Object storage container",
+            "tests": [
+                "tempest.api.object_storage.test_container_services.ContainerTest.test_delete_container",
+                "tempest.api.object_storage.test_container_sync.ContainerSyncTest.test_container_synchronization",
+                "tempest.api.object_storage.test_container_services.ContainerTest.test_create_container"
+            ]
+        },
+        "objectstore-container-acl": {
+            "achievements": [
+                "deployed",
+                "complete",
+                "stable",
+                "doc",
+                "sticky",
+                "foundation",
+                "atomic"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "ACL support in Object Storage API",
+            "flagged": [],
+            "name": "Object storage container ACL",
+            "tests": [
+                "tempest.api.object_storage.test_container_acl.ObjectTestACLs.test_read_object_with_rights",
+                "tempest.api.object_storage.test_container_acl.ObjectTestACLs.test_write_object_with_rights"
+            ]
+        },
+        "objectstore-container-quota": {
+            "achievements": [
+                "deployed",
+                "future",
+                "complete",
+                "stable",
+                "doc",
+                "sticky",
+                "foundation",
+                "atomic"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Container quotas support in Object Storage API",
+            "flagged": [],
+            "name": "Object storage container quota",
+            "tests": [
+                "tempest.api.object_storage.test_container_quotas.ContainerQuotasTest.test_upload_large_object",
+                "tempest.api.object_storage.test_container_quotas.ContainerQuotasTest.test_upload_too_many_objects",
+                "tempest.api.object_storage.test_container_quotas.ContainerQuotasTest.test_upload_valid_object"
+            ]
+        },
+        "objectstore-container-staticweb": {
+            "achievements": [
+                "deployed",
+                "complete",
+                "stable",
+                "doc",
+                "sticky",
+                "foundation",
+                "atomic"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Static web support in Object Storage API",
+            "flagged": [],
+            "name": "Object storage container staticweb",
+            "tests": [
+                "tempest.api.object_storage.test_container_staticweb.StaticWebTest.test_web_index",
+                "tempest.api.object_storage.test_container_staticweb.StaticWebTest.test_web_listing"
+            ]
+        },
+        "objectstore-container-staticweb-404": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Not found object error handling in Object Storage API",
+            "flagged": [],
+            "name": "Object storage container staticweb 404",
+            "tests": [
+                "tempest.api.object_storage.test_container_staticweb.StaticWebTest.test_web_error"
+            ]
+        },
+        "objectstore-healthcheck": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Healthcheck support in Object Storage API",
+            "flagged": [],
+            "name": "Object storage healthcheck",
+            "tests": [
+                "tempest.api.object_storage.test_healthcheck.HealthcheckTest.test_get_healthcheck"
+            ]
+        },
+        "objectstore-object": {
+            "achievements": [
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "doc",
+                "foundation",
+                "atomic",
+                "proximity"
+            ],
+            "admin": false,
+            "core": true,
+            "description": "Basic object operations in Object Storage API",
+            "flagged": [],
+            "name": "Object storage object",
+            "tests": [
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_get_object_if_different",
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_copy_object_2d_way",
+                "tempest.api.object_storage.test_object_temp_url.ObjectTempUrlTest.test_put_object_using_temp_url",
+                "tempest.api.object_storage.test_object_version.ContainerTest.test_versioned_container",
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_copy_object_in_same_container",
+                "tempest.api.object_storage.test_object_services.PublicObjectTest.test_access_public_object_with_another_user_creds",
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_delete_object",
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_copy_object_across_containers",
+                "tempest.api.object_storage.test_object_expiry.ObjectExpiryTest.test_get_object_after_expiry_time",
+                "tempest.api.object_storage.test_object_temp_url.ObjectTempUrlTest.test_get_object_using_temp_url",
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_object_upload_in_segments",
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_get_object",
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_create_object",
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_copy_object_to_itself",
+                "tempest.api.object_storage.test_object_services.PublicObjectTest.test_access_public_container_object_without_using_creds"
+            ]
+        },
+        "objectstore-quotas": {
+            "achievements": [
+                "deployed",
+                "future",
+                "complete",
+                "stable",
+                "doc",
+                "sticky",
+                "foundation",
+                "atomic"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "General quotas support in Object Storage API",
+            "flagged": [],
+            "name": "Object storage quotas",
+            "tests": [
+                "tempest.api.object_storage.test_account_quotas.AccountQuotasTest.test_admin_modify_quota"
+            ]
+        },
+        "objectstore-sys-metadata": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "System metadata support in Object Storage API",
+            "flagged": [],
+            "name": "Object storage system metadata",
+            "tests": [
+                "tempest.api.object_storage.test_account_services.AccountTest.test_list_no_account_metadata",
+                "tempest.api.object_storage.test_account_services.AccountTest.test_update_account_metadata_with_create_and_delete_metadata",
+                "tempest.api.object_storage.test_account_services.AccountTest.test_update_account_metadata_with_create_matadata_key",
+                "tempest.api.object_storage.test_account_services.AccountTest.test_update_account_metadata_with_create_metadata",
+                "tempest.api.object_storage.test_account_services.AccountTest.test_update_account_metadata_with_delete_matadata",
+                "tempest.api.object_storage.test_account_services.AccountTest.test_update_account_metadata_with_delete_matadata_key",
+                "tempest.api.object_storage.test_container_services.ContainerTest.test_create_container_with_metadata_key",
+                "tempest.api.object_storage.test_container_services.ContainerTest.test_create_container_with_metadata_value",
+                "tempest.api.object_storage.test_container_services.ContainerTest.test_create_container_with_remove_metadata_key",
+                "tempest.api.object_storage.test_container_services.ContainerTest.test_create_container_with_remove_metadata_value",
+                "tempest.api.object_storage.test_container_services.ContainerTest.test_list_container_metadata",
+                "tempest.api.object_storage.test_container_services.ContainerTest.test_list_no_container_metadata",
+                "tempest.api.object_storage.test_container_services.ContainerTest.test_update_container_metadata_with_create_and_delete_matadata",
+                "tempest.api.object_storage.test_container_services.ContainerTest.test_update_container_metadata_with_create_matadata_key",
+                "tempest.api.object_storage.test_container_services.ContainerTest.test_update_container_metadata_with_create_metadata",
+                "tempest.api.object_storage.test_container_services.ContainerTest.test_update_container_metadata_with_delete_metadata",
+                "tempest.api.object_storage.test_container_services.ContainerTest.test_update_container_metadata_with_delete_metadata_key"
+            ]
+        },
+        "objectstore-sys-metadata-puts": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "System metadata support on PUTs in Object Storage API",
+            "flagged": [],
+            "name": "Object storage system metadata PUTs",
+            "tests": [
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_copy_object_with_x_fresh_metadata",
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_copy_object_with_x_object_meta",
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_copy_object_with_x_object_metakey",
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_create_object_with_content_disposition",
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_create_object_with_content_encoding",
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_create_object_with_etag",
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_create_object_with_expect_continue",
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_create_object_with_transfer_encoding",
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_create_object_with_x_fresh_metadata",
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_create_object_with_x_object_meta",
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_create_object_with_x_object_metakey",
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_create_object_with_x_remove_object_meta",
+                "tempest.api.object_storage.test_object_services.ObjectTest.test_create_object_with_x_remove_object_metakey"
+            ]
+        },
+        "objectstore-temp-url": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Temp URL methods support in Object Storage API",
+            "flagged": [],
+            "name": "Object storage temp URL",
+            "tests": [
+                "tempest.api.object_storage.test_object_temp_url.ObjectTempUrlTest.test_get_object_using_temp_url_key_2",
+                "tempest.api.object_storage.test_object_temp_url.ObjectTempUrlTest.test_get_object_using_temp_url_with_inline_query_parameter",
+                "tempest.api.object_storage.test_object_temp_url.ObjectTempUrlTest.test_head_object_using_temp_url",
+                "tempest.api.object_storage.test_object_temp_url_negative.ObjectTempUrlNegativeTest.test_get_object_after_expiration_time"
+            ]
+        },
+        "objectstore-token-expiration": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Token expiration partway through the download management in Object Storage API",
+            "flagged": [],
+            "name": "Object storage token expiration",
+            "tests": [
+                "tempest.api.object_storage.test_object_expiry.ObjectExpiryTest.test_get_object_at_expiry_time"
+            ]
+        },
+        "orch-config-files": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Config files usage for stacks creation in Orchestration API",
+            "flagged": [],
+            "name": "Orchestration configuration files",
+            "tests": [
+                "tempest.api.orchestration.stacks.test_environment.StackEnvironmentTest.test_environment_provider_resource",
+                "tempest.api.orchestration.stacks.test_environment.StackEnvironmentTest.test_files_provider_resource"
+            ]
+        },
+        "orch-resources-keypair": {
+            "achievements": [ ],
+            "admin": false,
+            "core": false,
+            "description": "Keypair resources CRUD operations in Orchestration API",
+            "flagged": [],
+            "name": "Orchestration keypair resources",
+            "tests": [
+                "tempest.api.orchestration.stacks.test_nova_keypair_resources.NovaKeyPairResourcesAWSTest.test_created_resources",
+                "tempest.api.orchestration.stacks.test_nova_keypair_resources.NovaKeyPairResourcesAWSTest.test_stack_keypairs_output",
+                "tempest.api.orchestration.stacks.test_nova_keypair_resources.NovaKeyPairResourcesYAMLTest.test_created_resources",
+                "tempest.api.orchestration.stacks.test_nova_keypair_resources.NovaKeyPairResourcesYAMLTest.test_stack_keypairs_output"
+            ]
+        },
+        "orch-stacks": {
+            "achievements": [
+                "doc",
+                "foundation"
+            ],
+            "admin": false,
+            "core": false,
+            "description": "Orchestration CRUD operations in Orchestration API",
+            "flagged": [],
+            "name": "Orchestration Stacks",
+            "tests": [
+                "tempest.api.orchestration.stacks.test_neutron_resources.NeutronResourcesTestJSON.test_created_subnet",
+                "tempest.api.orchestration.stacks.test_neutron_resources.NeutronResourcesTestJSON.test_created_resources",
+                "tempest.api.orchestration.stacks.test_non_empty_stack.StacksTestJSON.test_resource_metadata",
+                "tempest.api.orchestration.stacks.test_neutron_resources.NeutronResourcesTestJSON.test_created_router_interface",
+                "tempest.api.orchestration.stacks.test_templates.TemplateYAMLTestJSON.test_validate_template",
+                "tempest.api.orchestration.stacks.test_templates.TemplateYAMLTestJSON.test_show_template",
+                "tempest.api.orchestration.stacks.test_stacks.StacksTestJSON.test_stack_crud_no_resources",
+                "tempest.api.orchestration.stacks.test_non_empty_stack.StacksTestJSON.test_show_event",
+                "tempest.api.orchestration.stacks.test_neutron_resources.NeutronResourcesTestJSON.test_created_server",
+                "tempest.api.orchestration.stacks.test_neutron_resources.NeutronResourcesTestJSON.test_created_network",
+                "tempest.api.orchestration.stacks.test_templates.TemplateAWSTestJSON.test_validate_template",
+                "tempest.api.orchestration.stacks.test_limits.TestServerStackLimits.test_exceed_max_template_size_fails",
+                "tempest.api.orchestration.stacks.test_non_empty_stack.StacksTestJSON.test_list_events",
+                "tempest.api.orchestration.stacks.test_stacks.StacksTestJSON.test_stack_list_responds",
+                "tempest.api.orchestration.stacks.test_templates.TemplateAWSTestJSON.test_show_template",
+                "tempest.api.orchestration.stacks.test_non_empty_stack.StacksTestJSON.test_stack_show",
+                "tempest.api.orchestration.stacks.test_non_empty_stack.StacksTestJSON.test_list_resources",
+                "tempest.api.orchestration.stacks.test_non_empty_stack.StacksTestJSON.test_stack_list",
+                "tempest.api.orchestration.stacks.test_non_empty_stack.StacksTestJSON.test_show_resource"
+            ]
+        },
+        "volume-admin-quota-delete": {
+            "achievements": [ ],
+            "admin": true,
+            "core": true,
+            "description": "Delete operation for quota in Block Storage API",
+            "flagged": [],
+            "name": "Volume admin quota delete",
+            "tests": [
+                "tempest.api.volume.admin.test_volume_quotas.VolumeQuotasAdminTestJSON.test_delete_quota"
+            ]
+        },
+        "volume": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "sticky",
+                "foundation",
+                "atomic",
+                "proximity"
+            ],
+            "admin": false,
+            "core": true,
+            "description": "CRUD operations for volumes management in Block Storage API",
+            "flagged": [],
+            "name": "Volume",
+            "tests": []
+        },
+        "volume-extra-specs": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "doc",
+                "sticky",
+                "foundation",
+                "atomic",
+                "proximity"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "Block Storage API extension to support additional specs",
+            "flagged": [],
+            "name": "Volume extra-specs",
+            "tests": [
+                "tempest.api.volume.admin.test_volume_types_extra_specs_negative.ExtraSpecsNegativeTest.test_update_multiple_extra_spec",
+                "tempest.api.volume.admin.test_volume_types_extra_specs_negative.ExtraSpecsNegativeTest.test_create_nonexistent_type_id",
+                "tempest.api.volume.admin.test_volume_types_extra_specs_negative.ExtraSpecsNegativeTest.test_get_nonexistent_extra_spec_id",
+                "tempest.api.volume.admin.test_volume_types_extra_specs_negative.ExtraSpecsNegativeTest.test_update_no_body",
+                "tempest.api.volume.admin.test_volume_types_extra_specs_negative.ExtraSpecsNegativeTest.test_list_nonexistent_volume_type_id",
+                "tempest.api.volume.admin.test_volume_types_extra_specs.VolumeTypesExtraSpecsTest.test_volume_type_extra_specs_list",
+                "tempest.api.volume.admin.test_volume_types_extra_specs_negative.ExtraSpecsNegativeTest.test_create_none_body",
+                "tempest.api.volume.admin.test_volume_types_extra_specs_negative.ExtraSpecsNegativeTest.test_delete_nonexistent_volume_type_id",
+                "tempest.api.volume.admin.test_volume_types_extra_specs.VolumeTypesExtraSpecsTest.test_volume_type_extra_specs_update",
+                "tempest.api.volume.admin.test_volume_types_extra_specs_negative.ExtraSpecsNegativeTest.test_update_none_extra_spec_id",
+                "tempest.api.volume.admin.test_volume_types_extra_specs_negative.ExtraSpecsNegativeTest.test_create_invalid_body",
+                "tempest.api.volume.admin.test_volume_types_extra_specs_negative.ExtraSpecsNegativeTest.test_get_nonexistent_volume_type_id",
+                "tempest.api.volume.admin.test_volume_types_extra_specs_negative.ExtraSpecsNegativeTest.test_update_nonexistent_extra_spec_id"
+            ]
+        },
+        "volume-multi-backend": {
+            "achievements": [
+                "future",
+                "complete",
+                "stable",
+                "doc",
+                "atomic"
+            ],
+            "admin": true,
+            "core": false,
+            "description": "Block Storage API extension for multi-backends",
+            "flagged": [],
+            "name": "Volume multi-backend",
+            "tests": []
+        },
+        "volume-snapshots": {
+            "achievements": [
+                "deployed",
+                "tools",
+                "clients",
+                "future",
+                "complete",
+                "stable",
+                "discover",
+                "doc",
+                "sticky",
+                "proximity"
+            ],
+            "admin": false,
+            "core": true,
+            "description": "Snapshot support for Block Storage API",
+            "flagged": [],
+            "name": "Volume snapshots",
+            "tests": []
+        }
+    }
+}
