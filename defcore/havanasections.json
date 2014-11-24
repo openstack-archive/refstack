@@ -45,10 +45,48 @@
       "sections": []
     },
     "swift" : {
-      "guidance": "Not a core capability, no position at this time",
-      "core-capabilities": false,
-      "comment": "",
-      "sections": []
+      "guidance": "Designated sections are proxy server, object server, container server, account server and select middleware",
+      "core-capabilities": true,
+      "comment": "You should use the proxy and storage servers, and you can use your own DiskFile or add new middleware for the proxy or storage nodes.  Please review sections for specific middleware guidelines",
+      "sections": {
+         // Group A: *Sections that should be in every Swift deployment* These are the bare minimum pieces of code that I would expect anyone running something called "Swift" to include. 
+        "proxy server": { "description": "the proxy server code and, if enabled, the functionality 
+          implemented by provided middleware (eg static large objects or signed urls or bulk
+          requests", "designated": true, "comment": ""},
+        "object server": { "description": "the object server code that calls a DiskFile implementation 
+          and updates container listings", "designated": true, "comment": ""},
+        "container server": { "description": "the code that provides a list of objects in a container 
+          and container metadata", "designated": true, "comment": ""},
+        "account server": { "description": "the code that provides a list of containers and account metadata",
+          "designated": true, "comment": ""},
+        "catch_errors": { "description": "not provided", "designated": true, "comment": "middleware"},
+        "healthcheck": { "description": "not provided", "designated": true, "comment": ""},
+        "bulk": { "description": "not provided", "designated": true, "comment": ""},
+        "slo": { "description": "not provided", "designated": true, "comment": ""}, 
+        "container-quotas": { "description": "not provided", "designated": true, "comment": ""},
+        "account-quotas": { "description": "not provided", "designated": true, "comment": ""},
+        "tempurl": { "description": "not provided", "designated": true, "comment": ""},
+        //Group B: *Code that should be used, if you are using this functionality* There are several parts of Swift that are features but not always required to be enabled. I would expect deployers using functionality provided by these modules to contribute any changes upstream. 
+        "replicators": { "description": "not provided", "designated": false, "comment": "recommended"},
+        "auditors": { "description": "not provided", "designated": false, "comment": "recommended"},
+        "updaters": { "description": "not provided", "designated": false, "comment": "recommended"},
+        "account reaper": { "description": "not provided", "designated": false, "comment": "recommended"},
+        "object expirer": { "description": "not provided", "designated": false, "comment": "recommended"},
+        "ratelimit": { "description": "not provided", "designated": false, "comment": "middleware, recommended"},
+        "recon": { "description": "not provided", "designated": false, "comment": "middleware, recommended"},
+        "staticweb": { "description": "not provided", "designated": false, "comment": "middleware, recommended"},
+        "formpost": { "description": "not provided", "designated": false, "comment": "middleware, recommended"},
+        "domain_remap": { "description": "not provided", "designated": false, "comment": "middleware, recommended"},
+        "crossdomain": { "description": "not provided", "designated": false, "comment": "middleware, recommended"},
+        "cname_lookup": { "description": "not provided", "designated": false, "comment": "middleware, recommended"},
+        //Group C: *Replaceable Sections* These are either intentional areas of extensibility in Swift, or functionality provided in the project because an implementation is required "out of the box". 
+        "diskfile": { "description": "the part of the object server that actually persists the object data 
+          to a storage volume", "designated": false, "comment": "replaceable"},
+        "cache": { "description": "not provided", "designated": false, "comment": "middleware, replaceable"},
+        "tempauth": { "description": "not provided", "designated": false, "comment": "middleware, replaceable"},
+        "keystoneauth": { "description": "not provided", "designated": false, "comment": "middleware, replaceable"}, 
+        "proxy-logging": { "description": "not provided", "designated": false, "comment": "middleware, replaceable"}
+      }
     },
     "neutron": {
       "guidance": "Not a core capability, no position at this time",
