@@ -1,5 +1,5 @@
 { "release" : "havana",
-  "status" : "draft",
+  "status" : "approved",
   "schema" : "1.0",
   "projects" : {
     "nova" : {
