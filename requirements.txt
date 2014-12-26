@@ -1,6 +1,7 @@
 SQLAlchemy==0.8.3
 alembic==0.5.0
 gunicorn==0.17.4
+pecan>=0.8.2
 pyOpenSSL==0.13
 pycrypto==2.6
 requests==1.2.3
