@@ -9,8 +9,6 @@
     <h2> {{release}} Tracked Capabilities</h2>
     </script>
     <script id="capabilities_template" type="x-tmpl-mustache">
-
-
     {{#capabilities}}
     <ul>
         <li> <a onclick="$('#{{class}}_tests').toggle(500);return false;" href="#"> {{class}} capabilities ({{count}} of {{total}} total) </a>
@@ -25,10 +23,10 @@
                 <li>Achievements (met {{achievements_count}} of {{criteria_count}} total): {{#achievements}} <a href="#{{.}}">{{.}}</a> {{/achievements}}
                 {{#admin}}<li>Admin rights required</li>{{/admin}}
                 {{#core}}<li>Core test</li>{{/core}}</li>
-                <li> <a onclick="$('#{{name}}').toggle(500);return false;" href="#"> Tests ({{tests_count}}) </a>
-                <div id="{{name}}" style="display:none;">
+                <li> <a onclick="toggle_one_item('{{class}}', '{{id}}', 'tests_list');return false;" href="#"> Tests ({{tests_count}}) </a>
+                <div id="{{id}}_tests_list" class="{{class}}_tests_list" style="display:none;">
                 <ul>
-                    {{#tests}} <li> {{.}} {{#code_url}} {{.}} {{/code_url}} </li> {{/tests}}
+                    {{#tests}} <li> {{.}} <a href="javascript:void(get_code_url('{{.}}'));"> [github] </a> </li> {{/tests}}
                 </ul>
                 <div>
                 </li>
@@ -58,19 +56,23 @@
     {{/criteria}}
     </script>
     <script src="/js/helpers.js"></script>
+    <script>
+        window.render_page = function(){render_capabilities_page()};
+        $(document).ready(window.render_page);
+    </script>
 </head>
 
 <body>
 
 <div id="header"></div>
 
-<input id="only_core" name="only_core" type="checkbox" checked onclick="create_caps()" />
+<input id="only_core" name="only_core" type="checkbox" checked onclick="render_page()" />
 <label for="only_core">Show only core tests</label>
 <br>
-<select id="admin" onclick="create_caps()">
-    <option>All tests</option>
-    <option>Tests require admin rights</option>
-    <option>Tests don't require admin rights</option>
+<select id="admin" onchange="render_page()">
+    <option value="all" >All tests</option>
+    <option value="admin" >Tests require admin rights</option>
+    <option value="noadmin">Tests don't require admin rights</option>
 </select>
 <div id="capabilities"></div>
 
@@ -80,4 +82,4 @@
 
 <div>Copyright OpenStack Foundation, 2014.  Apache 2 License.</div>
 </body>
-</html> 
+</html>

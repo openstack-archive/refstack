@@ -1,0 +1,140 @@
+.cap-passed {
+    color: green;
+    list-style-type: none;
+    display: block;
+}
+
+.cap-part-passed {
+    color: gold;
+    list-style-type: none;
+    display: block;
+}
+
+.cap-failed {
+    color: red;
+    list-style-type: none;
+    display: block;
+}
+
+
+ul.test_results li.passed {
+    color: green;
+    list-style-type: none;
+    display: block;
+}
+
+ul.test_results li.failed {
+    color: red;
+    list-style-type: none;
+    display: block;
+}
+
+ul.test_results li span {
+    color: black;
+    list-style-type: none;
+}
+
+span.passed {
+    color: green;
+    display: inline;
+    list-style-type: none;
+}
+
+span.failed {
+    color: red;
+    display: inline;
+    list-style-type: none;
+}
+
+div.caps_names_list{
+    display: table-row;
+}
+
+div.caps_summary{
+    display: inline;
+    width: 80%;
+}
+
+span.caps_summary{
+    display: inline;
+    width: 340px !important;
+}
+
+div.caps_summary_table{
+    width: 35em;
+    display: table;
+}
+
+div.caps_summary_col_1{
+    width: 2em;
+    display: table-cell;
+}
+
+div.caps_summary_col_2{
+    width: 20em;
+    display: table-cell;
+}
+
+div.caps_summary_col_3{
+    width: 3em;
+    display: table-cell;
+}
+
+div.overall_summary_table{
+    display: table;
+}
+
+div.overall_summary_col_1{
+    width: 2em;
+    display: table-cell;
+}
+
+div.overall_summary_col_2{
+    width: 30em;
+    display: table-cell;
+}
+
+div.overall_summary_col_3{
+    width: 3em;
+    display: table-cell;
+}
+
+div.cap_short{
+    width: 50em;
+    display: inline-table;
+}
+div.cap_item{
+    display: table-row;
+}
+
+div.caps_details_table{
+    display: table;
+}
+
+.zebra_odd div {
+    width: auto;
+        background-color: #FDFFF5;
+    }
+
+.zebra_even div {
+    width: auto;
+        background-color: #F7F5FF;
+    }
+
+.ui-button .ui-button-text
+{
+    line-height: 0.9;
+    font-size: 0.8em !important;
+}
+
+.ui-selectmenu-button span.ui-selectmenu-text
+{
+    line-height: 0.9;
+    font-size: 0.8em !important;
+}
+
+.ui-menu .ui-menu-item
+{
+    line-height: 0.9;
+    font-size: 0.8em !important;
+}

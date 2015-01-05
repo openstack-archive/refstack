@@ -1,0 +1,23 @@
+<div style="display: table">
+    <div style="display: table-row">
+        <div style="width: 10em; display: table-cell"></div>
+        <div style="width: 25em; display: table-cell; text-align: center">Current test run</div>
+        <div style="width: 25em; display: table-cell; text-align: center">Previous test run</div>
+    </div>
+    <div style="display: table-row">
+        <div style="width: 10em; display: table-cell">Cloud ID</div>
+        <div style="width: 25em; display: table-cell; text-align: center">{{current_run.cpid}}</div>
+        <div style="width: 25em; display: table-cell; text-align: center">
+            {{#same_clouds}}The same cloud{{/same_clouds}}
+            {{^same_clouds}}{{previous_run.cpid}}{{/same_clouds}}
+        </div>
+    </div>
+    <div style="display: table-row">
+        <div style="width: 10em; display: table-cell">Test execution time</div>
+        <div style="width: 25em; display: table-cell; text-align: center">{{current_run.duration_seconds}} ( {{time_diff}} )</div>
+        <div style="width: 25em; display: table-cell; text-align: center">{{previous_run.duration_seconds}}</div>
+    </div>
+
+</div>
+
+<p></p>
