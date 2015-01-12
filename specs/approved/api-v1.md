@@ -36,18 +36,16 @@ str:data - a string input containing json as shown in lower example.
     {
      'cpid': '2fd4e1c67a2d28fced849ee1bb76e7391b93eb12',
      'duration_seconds': 23445234,
-     'job_id': '3fd4e1c67a2d28fced849ee1bb76e7391b93eb13', /*optional*/
-     'results': ['fully.qualified.test.path', 'another.test.path'] /* array of passes */
+     'results': [
+          {'name':'fully.qualified.test.path',
+           'uid':'test uuid'}, /* if test has uid. uid has a priority */   
+          {'name: 'another.test.path.without.uid'}] /* only passed tests */
     }
 
 **normal response:** http:201 - the status has been saved
 
     {
-      'id': '7fd4e1c67a2d28fced849ee1bb76e7391b93eb12',
-      'cpid': '2fd4e1c67a2d28fced849ee1bb76e7391b93eb12',
-      'duration_seconds': 23445234,
-      'job_id': '3fd4e1c67a2d28fced849ee1bb76e7391b93eb13'
-      /* if posted without job_id this will contain the test id that was created */
+      'test_run_id': '7fd4e1c67a2d28fced849ee1bb76e7391b93eb12',
     }
 
 **failed response:** http:404 - the job_id does not exist
