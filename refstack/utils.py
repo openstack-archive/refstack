@@ -19,7 +19,6 @@
 
 from datetime import datetime
 import os
-import pprint
 import random
 import string
 
@@ -120,8 +119,3 @@ def make_dir(dir_path):
 
 
 ### Begin Non-Fbone stuff
-
-
-def dump_config(app):
-    """Useful to dump app config for debug purposes."""
-    return pprint.pformat(dict(app.config.items()))

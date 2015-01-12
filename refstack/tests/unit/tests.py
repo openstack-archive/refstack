@@ -13,14 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 #
-from refstack import app as base_app
 import unittest
 
 
 class TestSequenceFunctions(unittest.TestCase):
-
-    def setUp(self):
-        self.app = base_app.create_app().test_client()
 
     def test_nothing(self):
         # make sure the shuffled sequence does not lose any elements
