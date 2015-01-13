@@ -19,6 +19,7 @@ def upgrade():
     op.create_table(
         'test',
         sa.Column('id', sa.String(length=36), nullable=False),
+        sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.Column('cpid', sa.String(length=128), nullable=False),
         sa.Column('duration_seconds', sa.Integer(), nullable=False),
         sa.PrimaryKeyConstraint('id')
@@ -37,7 +38,7 @@ def upgrade():
         'results',
         sa.Column('_id', sa.Integer(), nullable=False),
         sa.Column('test_id', sa.String(length=36), nullable=False),
-        sa.Column('name', sa.String(length=1024), nullable=True),
+        sa.Column('name', sa.String(length=512), nullable=True),
         sa.Column('uid', sa.String(length=36), nullable=True),
         sa.ForeignKeyConstraint(['test_id'], ['test.id'], ),
         sa.PrimaryKeyConstraint('_id'),

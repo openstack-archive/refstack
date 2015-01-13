@@ -1,5 +1,3 @@
-# Copyright (c) 2015 Mirantis, Inc.
-# All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -12,21 +10,15 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
-"""Root controller."""
-
-from pecan import expose
-
-from refstack.api.controllers import v1
+#
+import unittest
 
 
-class RootController(object):
+class TestSequenceFunctions(unittest.TestCase):
 
-    """root handler."""
+    def test_nothing(self):
+        # make sure the shuffled sequence does not lose any elements
+        pass
 
-    v1 = v1.V1Controller()
-
-    @expose('json')
-    def index(self):
-        """root response."""
-        return {'Root': 'OK'}
+if __name__ == '__main__':
+    unittest.main()

@@ -13,15 +13,81 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from pecan import make_app
+"""App factory."""
+
+import json
+import logging
+
+import pecan
+from pecan import hooks
+import webob
+
+from refstack import backend
+
+logger = logging.getLogger(__name__)
+
+
+class BackendHook(hooks.PecanHook):
+
+    """Pecan Hook for providing backend functionality."""
+
+    def __init__(self, app_config):
+        """Hook init."""
+        self.global_backend = backend.Backend(app_config)
+
+    def before(self, state):
+        """Before request."""
+        state.request.backend = self.global_backend.create_local()
+
+    def after(self, state):
+        """After request."""
+        pass
+
+
+class JSONErrorHook(hooks.PecanHook):
+    """
+    A pecan hook that translates webob HTTP errors into a JSON format.
+    """
+    def __init__(self, app_config):
+        """Hook init."""
+        self.debug = app_config.get('debug', False)
+
+    def on_error(self, state, exc):
+        """Request error handler."""
+        if isinstance(exc, webob.exc.HTTPError):
+            body = {'code': exc.status_int,
+                    'title': exc.title}
+            if self.debug:
+                body['detail'] = str(exc)
+            return webob.Response(
+                body=json.dumps(body),
+                status=exc.status,
+                content_type='application/json'
+            )
+        else:
+            logger.exception(exc)
+            body = {'code': 500,
+                    'title': 'Internal Server Error'}
+            if self.debug:
+                body['detail'] = str(exc)
+            return webob.Response(
+                body=json.dumps(body),
+                status=500,
+                content_type='application/json'
+            )
 
 
 def setup_app(config):
-
+    """App factory."""
     app_conf = dict(config.app)
 
-    return make_app(
+    app = pecan.make_app(
         app_conf.pop('root'),
         logging=getattr(config, 'logging', {}),
+        hooks=[JSONErrorHook(app_conf), hooks.RequestViewerHook(
+            {'items': ['status', 'method', 'controller', 'path', 'body']}
+        ), BackendHook(app_conf)],
         **app_conf
     )
+
+    return app
