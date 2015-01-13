@@ -38,10 +38,7 @@ We use nginx and gunicorn, you may use something else if you so desire.
 For the most basic setup that you can try right now, just kick off
 gunicorn:
 
-`gunicorn -b 0.0.0.0:8000 refstack.web:app`
+`gunicorn_pecan refstack/api/config.py`
 
-To actually configure refstack, check out the config section and
-crack open refstack.cfg in your preffered editor.
-`vim refstack.cfg`
-
-Now browse to http://localhost:8000
+Now available http://localhost:8000/ with JSON response {'Root': 'OK'}
+and http://localhost:8000/v1/results/ with JSON response {'Results': 'OK'}.

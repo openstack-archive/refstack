@@ -1,5 +1,5 @@
-#
-# Copyright (c) 2014 Piston Cloud Computing, Inc. All Rights Reserved.
+# Copyright (c) 2015 Mirantis, Inc.
+# All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -12,15 +12,21 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-#
-import unittest
+
+"""Version 1 of the API.
+"""
+from pecan import expose
+from pecan import rest
 
 
-class TestSequenceFunctions(unittest.TestCase):
+class ResultsController(rest.RestController):
 
-    def test_nothing(self):
-        # make sure the shuffled sequence does not lose any elements
-        pass
+    @expose('json')
+    def index(self):
+        return {'Results': 'OK'}
 
-if __name__ == '__main__':
-    unittest.main()
+
+class V1Controller(object):
+    """Version 1 API controller root."""
+
+    results = ResultsController()
