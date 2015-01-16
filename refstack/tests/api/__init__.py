@@ -19,14 +19,16 @@ import os
 
 import alembic
 import alembic.config
-from pecan import set_config
-from pecan.testing import load_test_app
+from oslo.config import cfg
 import sqlalchemy as sa
 import sqlalchemy.exc
 from unittest import TestCase
+from webtest import TestApp
 
 import refstack
-from refstack.models import Base
+from refstack.api import app
+
+CONF = cfg.CONF
 
 
 class FunctionalTest(TestCase):
@@ -39,33 +41,32 @@ class FunctionalTest(TestCase):
 
     def setUp(self):
         """Test setup."""
-        self.config = {
-            'app': {
+        class TestConfig(object):
+            app = {
                 'root': 'refstack.api.controllers.root.RootController',
-                'db_url': os.environ.get(
-                    'TEST_DB_URL',
-                    'mysql://root:r00t@127.0.0.1/refstack_test'
-                ),
                 'modules': ['refstack.api'],
                 'static_root': '%(confdir)s/public',
                 'template_path': '%(confdir)s/${package}/templates',
             }
-        }
+
+        test_config = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'refstack.test.conf'
+        )
+        os.environ['REFSTACK_OSLO_CONFIG'] = test_config
         self.project_path = os.path.abspath(
             os.path.join(inspect.getabsfile(refstack), '..', '..'))
-
+        self.app = TestApp(app.setup_app(TestConfig()))
         self.prepare_test_db()
         self.migrate_test_db()
 
-        self.app = load_test_app(self.config)
-
     def tearDown(self):
         """Test teardown."""
-        set_config({}, overwrite=True)
+        self.app.reset()
 
     def prepare_test_db(self):
         """Create/clear test database."""
-        db_url = self.config['app']['db_url']
+        db_url = CONF.database.connection
         db_name = db_url.split('/')[-1]
         short_db_url = '/'.join(db_url.split('/')[0:-1])
         try:
@@ -83,21 +84,16 @@ class FunctionalTest(TestCase):
             conn.execute('create database %s' % db_name)
             conn.close()
 
-        engine = sa.create_engine(db_url)
-        conn = engine.connect()
-        conn.execute('commit')
-        for tbl in reversed(Base.metadata.sorted_tables):
-            if engine.has_table(tbl.name):
-                conn.execute('drop table %s' % tbl.name)
-        conn.close()
-
     def migrate_test_db(self):
         """Apply migrations to test database."""
         alembic_cfg = alembic.config.Config()
-        alembic_cfg.set_main_option("script_location",
-                                    os.path.join(self.project_path, 'alembic'))
+        alembic_cfg.set_main_option(
+            "script_location",
+            os.path.join(self.project_path, 'refstack', 'db',
+                         'migrations', 'alembic')
+        )
         alembic_cfg.set_main_option("sqlalchemy.url",
-                                    self.config['app']['db_url'])
+                                    CONF.database.connection)
         alembic.command.upgrade(alembic_cfg, 'head')
 
     def get_json(self, url, headers=None, extra_environ=None,

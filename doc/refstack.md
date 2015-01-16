@@ -1,8 +1,5 @@
 Refstack Quickstart
 ===================
-
-Instruction to run refstack for development or behind your firewall.
-
 ####Install dependencies (on ubuntu 14.x)..
 
 - `sudo apt-get install git python-dev libssl-dev python-setuptools`
@@ -46,40 +43,44 @@ Instruction to run refstack for development or behind your firewall.
 
 - `cd refstack`
 
-- Update the db connection strings in following files to the correct
- information of your environment.
-
- - The `sqlalchemy.url = mysql://root:passw0rd@127.0.0.1/refstack` string
-   in the `./refstack/db/migrations/alembic.ini` file.
-
- - The `'db_url': 'mysql://root:passw0rd@127.0.0.1/refstack'` string in the
-   `./refstack/api/config.py` file.
-
- - NOTE: You may need to also update the `'debug': False` string in the
-   `./refstack/api/config.py` file for development.
-
 - Creare virtual environment: `virtualenv .venv --system-site-package`
 
 - Source to virtual environment: `source .venv/bin/activate`
 
-- Install refstack: `python setup.py install`
 
-- Create tables in the refstack database.
+####Install Refstack application (on ubuntu 14.x)..
 
- - `cd ./refstack/db/migrations/`
+- `python setup.py install`
 
- - `alembic upgrade head`
+####Configuration file preparation
 
- - `cd ../../..`
+- Make a copy of the sample config and update it with the correct information of your environment. Example of config file available in etc directory.
 
-Plug this bad boy into your server infrastructure.
+####Database sync
 
-We use nginx and gunicorn, you may use something else if you so desire.
+- Check current revision:
+
+  `refstack-manage --config-file /path/to/refstack.conf version`
+
+  The response will show the current database revision. If the revision is `None` (indicating a clear database), the following command should be performed to upgrade the database to the latest revision:
+
+ - Upgrade database to latest revision:
+
+   `refstack-manage --config-file /path/to/refstack.conf upgrade --revision head`
+
+ - Check current revision:
+
+   `refstack-manage --config-file /path/to/refstack.conf version`
+
+   Now it should be `42278d6179b9`.
+
+
+####Start Refstack
 
 For the most basic setup that you can try right now, just kick off
 gunicorn:
 
-`gunicorn_pecan --debug refstack/api/config.py`
+- `refstack-api --env REFSTACK_OSLO_CONFIG=/path/to/refstack.conf`
 
 Now available http://localhost:8000/ with JSON response {'Root': 'OK'}
 and http://localhost:8000/v1/results/ with JSON response {'Results': 'OK'}.

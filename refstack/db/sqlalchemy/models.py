@@ -13,34 +13,56 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
-"""DB models"""
+"""
+SQLAlchemy models for Refstack data.
+"""
 
 import datetime
 
+from oslo.config import cfg
+from oslo.db.sqlalchemy import models
+from oslo.utils import timeutils
 import sqlalchemy as sa
 from sqlalchemy import orm
 from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
+CONF = cfg.CONF
+BASE = declarative_base()
 
 
-class Test(Base):
+class RefStackBase(models.ModelBase, models.TimestampMixin):
+
+    """Base class for RefStack Models."""
+
+    __table_args__ = {'mysql_engine': 'InnoDB'}
+    created_at = sa.Column(sa.DateTime(), default=datetime.datetime.utcnow,
+                           nullable=False)
+    updated_at = sa.Column(sa.DateTime())
+    deleted_at = sa.Column(sa.DateTime)
+    deleted = sa.Column(sa.Integer, default=0)
+    metadata = None
+
+    def delete(self, session=None):
+        """Delete this object."""
+        self.deleted = self.id
+        self.deleted_at = timeutils.utcnow()
+        self.save(session=session)
+
+
+class Test(BASE, RefStackBase):
 
     """Test."""
 
     __tablename__ = 'test'
 
     id = sa.Column(sa.String(36), primary_key=True)
-    created_at = sa.Column(sa.DateTime(), default=datetime.datetime.utcnow,
-                           nullable=False)
     cpid = sa.Column(sa.String(128), index=True, nullable=False)
     duration_seconds = sa.Column(sa.Integer, nullable=False)
     results = orm.relationship('TestResults', backref='test')
     meta = orm.relationship('TestMeta', backref='test')
 
 
-class TestResults(Base):
+class TestResults(BASE, RefStackBase):
 
     """Test results."""
 
@@ -56,7 +78,7 @@ class TestResults(Base):
     uid = sa.Column(sa.String(36))
 
 
-class TestMeta(Base):
+class TestMeta(BASE, RefStackBase):
 
     """Test metadata."""
 

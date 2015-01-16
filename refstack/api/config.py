@@ -34,7 +34,6 @@ server = {
 app = {
     'root': 'refstack.api.controllers.root.RootController',
     'modules': ['refstack.api'],
-    'db_url': 'mysql://root:r00t@127.0.0.1/refstack',
     'static_root': '%(confdir)s/../static',
     'template_path': '%(confdir)s/../templates',
     # The 'debug' option should be false in production servers, but needs to be

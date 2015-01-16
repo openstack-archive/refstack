@@ -17,31 +17,18 @@
 
 import json
 import logging
+import os
 
+from oslo.config import cfg
 import pecan
 from pecan import hooks
 import webob
 
-from refstack import backend
+from refstack import utils
 
 logger = logging.getLogger(__name__)
 
-
-class BackendHook(hooks.PecanHook):
-
-    """Pecan Hook for providing backend functionality."""
-
-    def __init__(self, app_config):
-        """Hook init."""
-        self.global_backend = backend.Backend(app_config)
-
-    def before(self, state):
-        """Before request."""
-        state.request.backend = self.global_backend.create_local()
-
-    def after(self, state):
-        """After request."""
-        pass
+CONF = cfg.CONF
 
 
 class JSONErrorHook(hooks.PecanHook):
@@ -85,9 +72,28 @@ def setup_app(config):
         app_conf.pop('root'),
         logging=getattr(config, 'logging', {}),
         hooks=[JSONErrorHook(app_conf), hooks.RequestViewerHook(
-            {'items': ['status', 'method', 'controller', 'path']}
-        ), BackendHook(app_conf)],
+            {'items': ['status', 'method', 'controller', 'path', 'body']},
+            headers=False, writer=utils.LogWriter(logger, logging.DEBUG)
+        )],
         **app_conf
     )
+
+    # By default we expect path to oslo config file in environment variable
+    # REFSTACK_OSLO_CONFIG (option for testing and development)
+    # If it is empty we look up those config files
+    # in the following directories:
+    #   ~/.${project}/
+    #   ~/
+    #   /etc/${project}/
+    #   /etc/
+    default_config_files = ((os.getenv('REFSTACK_OSLO_CONFIG'), )
+                            if os.getenv('REFSTACK_OSLO_CONFIG')
+                            else cfg.find_config_files('refstack'))
+
+    CONF('',
+         project='refstack',
+         default_config_files=default_config_files)
+
+    CONF.log_opt_values(logger, logging.DEBUG)
 
     return app

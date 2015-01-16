@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Copyright (c) 2015 Mirantis, Inc.
 # All Rights Reserved.
 #
@@ -12,8 +14,25 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 """
-DB abstraction for Refstack
+Command-line launcher for Refstack API
 """
 
-from refstack.db.api import *  # noqa
+import sys
+
+from pecan.commands import serve
+
+from refstack.api import config as api_config
+
+
+def get_pecan_config():
+    """ Get path to pecan configuration file """
+    filename = api_config.__file__.replace('.pyc', '.py')
+    return filename
+
+
+if __name__ == '__main__':
+    config_path = get_pecan_config()
+    sys.argv.append(config_path)
+    serve.gunicorn_run()

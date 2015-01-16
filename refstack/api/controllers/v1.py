@@ -19,6 +19,8 @@ import logging
 import pecan
 from pecan import rest
 
+from refstack import db
+
 logger = logging.getLogger(__name__)
 
 
@@ -37,11 +39,11 @@ class ResultsController(rest.RestController):
 
         :param test_id: ID of the test to get the JSON for.
         """
-        test_info = pecan.request.backend.get_test(test_id)
+        test_info = db.get_test(test_id)
         if not test_info:
             pecan.abort(404)
 
-        test_list = pecan.request.backend.get_test_results(test_id)
+        test_list = db.get_test_results(test_id)
         test_name_list = [test_dict[0] for test_dict in test_list]
         return {"cpid": test_info.cpid,
                 "created_at": test_info.created_at,
@@ -58,7 +60,7 @@ class ResultsController(rest.RestController):
                                detail='Request body \'%s\' could not '
                                       'be decoded as JSON.'
                                       '' % pecan.request.body)
-        test_id = pecan.request.backend.store_results(results)
+        test_id = db.store_results(results)
         return {'test_id': test_id}
 
 
