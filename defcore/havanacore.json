@@ -807,26 +807,6 @@
                 "tempest.api.compute.servers.test_servers_negative.ServersNegativeTestJSON.test_delete_server_pass_id_exceeding_length_limit"
             ]
         },
-        "compute-servers-metadata": {
-            "achievements": [
-                "deployed",
-                "tools",
-                "clients",
-                "future",
-                "complete",
-                "stable",
-                "discover",
-                "doc",
-                "sticky",
-                "foundation"
-            ],
-            "admin": false,
-            "core": true,
-            "description": "Manage the access to ip extended attribute for servers through the Compute API",
-            "flagged": [],
-            "name": "compute-servers-metadata",
-            "tests": []
-        },
         "compute-servers-personality": {
             "achievements": [
                 "deployed",
@@ -1595,12 +1575,20 @@
                 "atomic",
                 "proximity"
             ],
-            "admin": false,
-            "core": true,
+            "admin": true,
+            "core": false,
             "description": "CRUD operations for volumes management in Block Storage API",
             "flagged": [],
             "name": "volume",
-            "tests": []
+            "tests": [
+                "tempest.api.volume.admin.test_volume_types.VolumeTypesTest.test_create_get_delete_volume_with_volume_type_and_extra_specs",
+                "tempest.api.volume.admin.test_volume_types.VolumeTypesTest.test_volume_type_list",
+                "tempest.api.volume.admin.test_volume_types_extra_specs.VolumeTypesExtraSpecsTest.test_volume_type_extra_spec_create_get_delete",
+                "tempest.api.volume.admin.test_volume_types_negative.VolumeTypesNegativeTest.test_create_with_empty_name",
+                "tempest.api.volume.admin.test_volume_types_negative.VolumeTypesNegativeTest.test_create_with_nonexistent_volume_type",
+                "tempest.api.volume.admin.test_volume_types_negative.VolumeTypesNegativeTest.test_delete_nonexistent_type_id",
+                "tempest.api.volume.admin.test_volume_types_negative.VolumeTypesNegativeTest.test_get_nonexistent_type_id"
+            ]
         },
         "volume-extra-specs": {
             "achievements": [
