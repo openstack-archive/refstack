@@ -26,7 +26,8 @@ pecan.conf
 # Server Specific Configurations
 server = {
     'port': '8000',
-    'host': '0.0.0.0'
+    'host': '0.0.0.0',
+    'protocol': 'http'
 }
 
 # Pecan Application Configurations
@@ -34,8 +35,10 @@ app = {
     'root': 'refstack.api.controllers.root.RootController',
     'modules': ['refstack.api'],
     'db_url': 'mysql://root:r00t@127.0.0.1/refstack',
-    'static_root': '%(confdir)s/public',
-    'template_path': '%(confdir)s/${package}/templates',
+    'static_root': '%(confdir)s/../static',
+    'template_path': '%(confdir)s/../templates',
+    # The 'debug' option should be false in production servers, but needs to be
+    # true in development in order to allow the static_root option to work.
     'debug': False,
     'errors': {
         '404': '/error/404',

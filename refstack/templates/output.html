@@ -11,12 +11,13 @@
     <script src="/js/jquery.cookie.js"></script>
     <script src="/js/spin.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/mustache.js/0.8.1/mustache.min.js"></script>
-    <script>
-        window.result_source = '{{result_source}}';
-    </script>
     <script src="/js/helpers.js"></script>
     <script src="/js/refstack.js"></script>
     <script>
+        var test_id = getUrlParam('test_id');
+        if (test_id) {
+            window.result_source = "/v1/results/" + test_id;
+        }
         render_page = function(){
             render_defcore_report_page();
         };

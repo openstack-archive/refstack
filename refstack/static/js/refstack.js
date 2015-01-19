@@ -276,7 +276,7 @@ var render_defcore_report_page = function () {
         schema = '',
         schema_selector = $('select#schema_selector');
 
-    if (window.result_source === '{{result_source}}') {
+    if (!window.result_source) {
         window.result_source = 'sample_test_result.json';
     }
     if (schema_selector.length === 0) {
@@ -286,10 +286,10 @@ var render_defcore_report_page = function () {
     }
     console.log(schema);
     $.when(
-        $.get('mustache/report_base.mst', undefined, undefined, 'html'),
-        $.get('mustache/single_header.mst', undefined, undefined, 'html'),
-        $.get('mustache/single_capabilities_details.mst', undefined, undefined, 'html'),
-        $.get('capabilities/' + schema, undefined, undefined, 'json'),
+        $.get('/mustache/report_base.mst', undefined, undefined, 'html'),
+        $.get('/mustache/single_header.mst', undefined, undefined, 'html'),
+        $.get('/mustache/single_capabilities_details.mst', undefined, undefined, 'html'),
+        $.get('/capabilities/' + schema, undefined, undefined, 'json'),
         $.get(window.result_source, undefined, undefined, 'json')
     ).done(function (base_template, header_template, caps_template, schema, test_result) {
         var caps_list = window.build_caps_list(schema[0], filters),
@@ -320,10 +320,10 @@ var render_defcore_diff_report_page = function () {
         schema = schema_selector[0].value;
     }
     $.when(
-        $.get('mustache/report_base.mst', undefined, undefined, 'html'),
-        $.get('mustache/diff_header.mst', undefined, undefined, 'html'),
-        $.get('mustache/diff_capabilities_details.mst', undefined, undefined, 'html'),
-        $.get('capabilities/' + schema, undefined, undefined, 'json'),
+        $.get('/mustache/report_base.mst', undefined, undefined, 'html'),
+        $.get('/mustache/diff_header.mst', undefined, undefined, 'html'),
+        $.get('/mustache/diff_capabilities_details.mst', undefined, undefined, 'html'),
+        $.get('/capabilities/' + schema, undefined, undefined, 'json'),
         $.get(window.result_source, undefined, undefined, 'json'),
         $.get(window.prev_result_source, undefined, undefined, 'json')
     ).done(function (base_template, header_template, caps_template, schema,

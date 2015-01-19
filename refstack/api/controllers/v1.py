@@ -31,6 +31,23 @@ class ResultsController(rest.RestController):
         """GET handler."""
         return {'Result': 'Ok'}
 
+    @pecan.expose("json")
+    def get_one(self, test_id):
+        """Return test results in JSON format.
+
+        :param test_id: ID of the test to get the JSON for.
+        """
+        test_info = pecan.request.backend.get_test(test_id)
+        if not test_info:
+            pecan.abort(404)
+
+        test_list = pecan.request.backend.get_test_results(test_id)
+        test_name_list = [test_dict[0] for test_dict in test_list]
+        return {"cpid": test_info.cpid,
+                "created_at": test_info.created_at,
+                "duration_seconds": test_info.duration_seconds,
+                "results": test_name_list}
+
     @pecan.expose(template='json')
     def post(self, ):
         """POST handler."""
