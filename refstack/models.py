@@ -14,6 +14,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+"""DB models"""
+
+import datetime
+
 import sqlalchemy as sa
 from sqlalchemy import orm
 from sqlalchemy.ext.declarative import declarative_base
@@ -22,9 +26,14 @@ Base = declarative_base()
 
 
 class Test(Base):
+
+    """Test."""
+
     __tablename__ = 'test'
 
     id = sa.Column(sa.String(36), primary_key=True)
+    created_at = sa.Column(sa.DateTime(), default=datetime.datetime.utcnow,
+                           nullable=False)
     cpid = sa.Column(sa.String(128), index=True, nullable=False)
     duration_seconds = sa.Column(sa.Integer, nullable=False)
     results = orm.relationship('TestResults', backref='test')
@@ -32,6 +41,9 @@ class Test(Base):
 
 
 class TestResults(Base):
+
+    """Test results."""
+
     __tablename__ = 'results'
     __table_args__ = (
         sa.UniqueConstraint('test_id', 'name'),
@@ -40,11 +52,14 @@ class TestResults(Base):
     _id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     test_id = sa.Column(sa.String(36), sa.ForeignKey('test.id'),
                         index=True, nullable=False, unique=False)
-    name = sa.Column(sa.String(1024))
+    name = sa.Column(sa.String(512))
     uid = sa.Column(sa.String(36))
 
 
 class TestMeta(Base):
+
+    """Test metadata."""
+
     __tablename__ = 'meta'
     __table_args__ = (
         sa.UniqueConstraint('test_id', 'meta_key'),

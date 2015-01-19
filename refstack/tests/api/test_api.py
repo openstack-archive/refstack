@@ -12,6 +12,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import json
+import uuid
 
 from refstack.tests import api
 
@@ -19,11 +21,25 @@ from refstack.tests import api
 class TestRefStackApi(api.FunctionalTest):
 
     def test_root_controller(self):
+        """Test request to root."""
         actual_response = self.get_json('/')
         expected_response = {'Root': 'OK'}
         self.assertEqual(expected_response, actual_response)
 
     def test_results_controller(self):
-        actual_response = self.get_json('/v1/results/')
-        expected_response = {'Results': 'OK'}
-        self.assertEqual(expected_response, actual_response)
+        """Test results endpoint."""
+        results = json.dumps({
+            'cpid': 'foo',
+            'duration_seconds': 10,
+            'results': [
+                {'name': 'tempest.foo.bar'},
+                {'name': 'tempest.buzz',
+                 'uid': '42'}
+            ]
+        })
+        actual_response = self.post_json('/v1/results/', params=results)
+        self.assertIn('test_id', actual_response)
+        try:
+            uuid.UUID(actual_response.get('test_id'), version=4)
+        except ValueError:
+            self.fail("actual_response doesn't contain test_is")

@@ -13,20 +13,40 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""Version 1 of the API.
-"""
-from pecan import expose
+"""Version 1 of the API."""
+import logging
+
+import pecan
 from pecan import rest
+
+logger = logging.getLogger(__name__)
 
 
 class ResultsController(rest.RestController):
 
-    @expose('json')
-    def index(self):
-        return {'Results': 'OK'}
+    """/v1/results handler."""
+
+    @pecan.expose('json')
+    def get(self, ):
+        """GET handler."""
+        return {'Result': 'Ok'}
+
+    @pecan.expose(template='json')
+    def post(self, ):
+        """POST handler."""
+        try:
+            results = pecan.request.json
+        except ValueError:
+            return pecan.abort(400,
+                               detail='Request body \'%s\' could not '
+                                      'be decoded as JSON.'
+                                      '' % pecan.request.body)
+        test_id = pecan.request.backend.store_results(results)
+        return {'test_id': test_id}
 
 
 class V1Controller(object):
+
     """Version 1 API controller root."""
 
     results = ResultsController()

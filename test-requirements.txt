@@ -4,3 +4,4 @@ flake8==2.0
 python-subunit>=0.0.18
 testrepository>=0.0.18
 testtools>=0.9.34
+mysqlclient

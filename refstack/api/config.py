@@ -33,6 +33,7 @@ server = {
 app = {
     'root': 'refstack.api.controllers.root.RootController',
     'modules': ['refstack.api'],
+    'db_url': 'mysql://root:r00t@127.0.0.1/refstack',
     'static_root': '%(confdir)s/public',
     'template_path': '%(confdir)s/${package}/templates',
     'debug': False,
