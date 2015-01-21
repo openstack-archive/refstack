@@ -68,3 +68,21 @@ class LocalBackend(object):
         session.add(test)
         session.commit()
         return test_id
+
+    def get_test(self, test_id):
+        """Get test information from the database.
+
+        :param test_id: The ID of the test.
+        """
+        test_info = self.db_session.query(models.Test).\
+            filter_by(id=test_id).first()
+        return test_info
+
+    def get_test_results(self, test_id):
+        """Get all passed tempest tests for a particular test.
+
+        :param test_id: The ID of the test.
+        """
+        results = self.db_session.query(models.TestResults.name).filter_by(
+            test_id=test_id).all()
+        return results

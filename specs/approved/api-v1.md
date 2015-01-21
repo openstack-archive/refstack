@@ -60,6 +60,25 @@ str:data - a string input containing json as shown in lower example.
      'message': 'the job_id already has results'
     }
 
+----
+**description:** Get the results of a test run in JSON format.
+
+**url:** get /v1/results/{test_run_id}
+
+**normal response:** http:200 - OK
+
+    {
+      'created_at': '2015-01-16 10:10:10',
+      'duration_seconds': 25,
+      'cpid': '6b678f2c7fa94c7e942728b300451b56',
+      'results': [
+           'tempest.api.test.id',
+           'tempest.api.another.test.id'
+       ]
+    }
+
+----
+
 **Data model impact**
 
 * add int field called duration_seconds to test model

@@ -29,6 +29,18 @@ var capitaliseFirstLetter = function (string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
+// Get the value of a GET variable in the URL.
+var getUrlParam = function(variable) {
+    var searchString = window.location.search.substring(1);
+    var searchVariables = searchString.split('&');
+    for (var i = 0; i < searchVariables.length; i++) {
+        var getVar = searchVariables[i].split('=');
+        if (getVar[0] == variable) {
+            return getVar[1];
+        }
+    }
+}
+
 // Function searches for test with specified test_id on github and opens result in new window
 var get_code_url = function (test_id) {
     var id = test_id.split('/').join('.'),
