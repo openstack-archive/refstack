@@ -15,8 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 from __future__ import with_statement
-import sys
-sys.path.append("./")
+
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
