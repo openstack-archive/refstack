@@ -24,6 +24,8 @@ Update the "app_address" parameter in the config.json file to the correct addres
 
 Setup or update the database
 
+`cd refstack/db/migrations`
+
 NOTE: you are going to have to modify the db connection string in `alembic.ini` to get this working
 
 PROTIP: if you just want to test this out, use `-n alembic_sqlite` to make a local sqlite db
