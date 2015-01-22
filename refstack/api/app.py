@@ -85,7 +85,7 @@ def setup_app(config):
         app_conf.pop('root'),
         logging=getattr(config, 'logging', {}),
         hooks=[JSONErrorHook(app_conf), hooks.RequestViewerHook(
-            {'items': ['status', 'method', 'controller', 'path', 'body']}
+            {'items': ['status', 'method', 'controller', 'path']}
         ), BackendHook(app_conf)],
         **app_conf
     )
