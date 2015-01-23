@@ -1,46 +1,85 @@
 Refstack Quickstart
 ===================
-To run refstack for development or to have a gui for running tests behind your firewall.
 
-Git you clonin'
+Instruction to run refstack for development or behind your firewall.
 
-`git clone http://github.com/stackforge/refstack`
+####Install dependencies (on ubuntu 14.x)..
 
-`cd refstack`
+- `sudo apt-get install git python-dev libssl-dev python-setuptools`
 
-Install dependencies (on ubuntu 13.x)..
+- `sudo apt-get install mysql-server python-mysqldb`
 
-`apt-get install python-dev`
+- `sudo easy_install -U pip`
 
-`apt-get install python-pip`
+- `sudo easy_install -U virtualenv`
 
-`easy_install -U setuptools`
+####Setup the refstack database
 
-`python setup.py install`
+- Log into MySQL: `mysql -u root -p`
 
-`pip install -r test-requirements.txt`
+- After authentication, create the database:
 
-Update the "app_address" parameter in the config.json file to the correct address of your refstack server.
+  `CREATE DATABASE refstack;`
 
-Setup or update the database
+- Create a refstack user:
 
-`cd refstack/db/migrations`
+  `CREATE USER 'refstack'@'localhost' IDENTIFIED BY '<your password>';`
 
-NOTE: you are going to have to modify the db connection string in `alembic.ini` to get this working
+  or using hash value for your password
 
-PROTIP: if you just want to test this out, use `-n alembic_sqlite` to make a local sqlite db
+  `CREATE USER 'refstack'@'localhost'
+   IDENTIFIED BY PASSWORD '<hash value of your password';`
 
-`alembic -n alembic_sqlite upgrade head`
-or
-`alembic upgrade head` If you've got mysql or another database of choice.
+- Grant privileges:
+
+  `GRANT ALL PRIVILEGES ON refstack . * TO 'refstack'@'localhost';`
+
+- Reload privileges:
+
+  `FLUSH PRIVILEGES;`
+
+- Exit MySQL: `quit`
+
+####Git you clonin'
+
+- `git clone http://github.com/stackforge/refstack`
+
+- `cd refstack`
+
+- Update the db connection strings in following files to the correct
+ information of your environment.
+
+ - The `sqlalchemy.url = mysql://root:passw0rd@127.0.0.1/refstack` string
+   in the `./refstack/db/migrations/alembic.ini` file.
+
+ - The `'db_url': 'mysql://root:passw0rd@127.0.0.1/refstack'` string in the
+   `./refstack/api/config.py` file.
+
+ - NOTE: You may need to also update the `'debug': False` string in the
+   `./refstack/api/config.py` file for development.
+
+- Creare virtual environment: `virtualenv .venv --system-site-package`
+
+- Source to virtual environment: `source .venv/bin/activate`
+
+- Install refstack: `python setup.py install`
+
+- Create tables in the refstack database.
+
+ - `cd ./refstack/db/migrations/`
+
+ - `alembic upgrade head`
+
+ - `cd ../../..`
 
 Plug this bad boy into your server infrastructure.
+
 We use nginx and gunicorn, you may use something else if you so desire.
 
 For the most basic setup that you can try right now, just kick off
 gunicorn:
 
-`gunicorn_pecan refstack/api/config.py`
+`gunicorn_pecan --debug refstack/api/config.py`
 
 Now available http://localhost:8000/ with JSON response {'Root': 'OK'}
 and http://localhost:8000/v1/results/ with JSON response {'Results': 'OK'}.
