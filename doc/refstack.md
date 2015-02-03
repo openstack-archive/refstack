@@ -54,7 +54,8 @@ Refstack Quickstart
 
 ####Configuration file preparation
 
-- Make a copy of the sample config and update it with the correct information of your environment. Example of config file available in etc directory.
+- Make a copy of the sample config and update it with the correct information of your environment. Example of config file with default values available in etc directory.
+Note value of `connection` in `database` section should be corrected.
 
 ####Database sync
 
