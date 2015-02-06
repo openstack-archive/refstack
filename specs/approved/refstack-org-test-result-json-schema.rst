@@ -76,12 +76,12 @@ https://github.com/stackforge/refstack/blob/master/specs/approved/api-v1.md
 **failed response:** http:400 - Malformed data.
 
     {
-     'message': 'malformed json data, see /v1/schema/results.json'
+     'message': 'Malformed json data, see /v1/results/schema'
     }
 
-**url:** get /v1/schema/results.json
+**url:** get /v1/results/schema
 
-**valid response:** http:200 results.json file
+**valid response:** http:200 schema.json file
 
 No invalid responses. No accepted parameters.
 
