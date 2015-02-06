@@ -18,9 +18,9 @@ Implementation of SQLAlchemy backend.
 import sys
 import uuid
 
-from oslo.config import cfg
-from oslo.db import options as db_options
-from oslo.db.sqlalchemy import session as db_session
+from oslo_config import cfg
+from oslo_db import options as db_options
+from oslo_db.sqlalchemy import session as db_session
 
 from refstack.db.sqlalchemy import models
 

@@ -19,7 +19,7 @@ import os
 
 import alembic
 import alembic.config
-from oslo.config import cfg
+from oslo_config import cfg
 import sqlalchemy as sa
 import sqlalchemy.exc
 from unittest import TestCase

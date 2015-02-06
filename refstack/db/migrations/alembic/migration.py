@@ -20,7 +20,7 @@ import os
 import alembic
 from alembic import config as alembic_config
 import alembic.migration as alembic_migration
-from oslo.config import cfg
+from oslo_config import cfg
 
 from refstack.db.sqlalchemy import api as db_api
 

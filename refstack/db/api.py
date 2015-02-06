@@ -20,8 +20,8 @@ Call these functions from refstack.db namespace, not the refstack.db.api
 namespace.
 
 """
-from oslo.config import cfg
-from oslo.db import api as db_api
+from oslo_config import cfg
+from oslo_db import api as db_api
 
 
 db_opts = [

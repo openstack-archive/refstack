@@ -19,7 +19,7 @@ import json
 import logging
 import os
 
-from oslo.config import cfg
+from oslo_config import cfg
 import pecan
 from pecan import hooks
 import webob

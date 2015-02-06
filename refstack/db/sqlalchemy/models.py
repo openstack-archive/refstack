@@ -19,9 +19,9 @@ SQLAlchemy models for Refstack data.
 
 import datetime
 
-from oslo.config import cfg
-from oslo.db.sqlalchemy import models
-from oslo.utils import timeutils
+from oslo_config import cfg
+from oslo_db.sqlalchemy import models
+from oslo_utils import timeutils
 import sqlalchemy as sa
 from sqlalchemy import orm
 from sqlalchemy.ext.declarative import declarative_base
