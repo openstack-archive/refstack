@@ -34,33 +34,4 @@ server = {
 app = {
     'root': 'refstack.api.controllers.root.RootController',
     'modules': ['refstack.api'],
-    'static_root': '%(confdir)s/../static',
-    'template_path': '%(confdir)s/../templates',
-    # The 'debug' option should be false in production servers, but needs to be
-    # true in development in order to allow the static_root option to work.
-    'debug': False,
-    'errors': {
-        '404': '/error/404',
-        '__force_dict__': True
-    }
-}
-
-logging = {
-    'loggers': {
-        'root': {'level': 'INFO', 'handlers': ['console']},
-        'refstack': {'level': 'DEBUG', 'handlers': ['console']}
-    },
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple'
-        }
-    },
-    'formatters': {
-        'simple': {
-            'format': ('%(asctime)s %(levelname)-5.5s [%(name)s]'
-                       '[%(threadName)s] %(message)s')
-        }
-    }
 }

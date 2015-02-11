@@ -31,6 +31,7 @@
         ]
     ...
 """
+import refstack.api.app
 import refstack.db.api
 
 
@@ -38,4 +39,5 @@ def list_opts():
     return [
         # Keep a list in alphabetical order
         ('DEFAULT', refstack.db.api.db_opts),
+        ('api', refstack.api.app.API_OPTS),
     ]

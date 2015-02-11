@@ -14,15 +14,14 @@
 #    under the License.
 
 """Version 1 of the API."""
-import logging
-
+from oslo_log import log
 import pecan
 from pecan import rest
 
 from refstack import db
 from refstack.common import validators
 
-logger = logging.getLogger(__name__)
+LOG = log.getLogger(__name__)
 
 
 class RestControllerWithValidation(rest.RestController):

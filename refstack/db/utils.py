@@ -14,13 +14,11 @@
 #    under the License.
 
 """Utilities for database."""
-
-import logging
-
 from oslo_config import cfg
+from oslo_log import log
 
 CONF = cfg.CONF
-LOG = logging.getLogger(__name__)
+LOG = log.getLogger(__name__)
 
 
 class PluggableBackend(object):

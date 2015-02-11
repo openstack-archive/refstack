@@ -20,7 +20,6 @@
 from datetime import datetime
 import os
 import random
-import re
 import string
 
 
@@ -59,18 +58,6 @@ SEX_TYPE = {
 
 # Model
 STRING_LEN = 64
-
-
-class LogWriter(object):
-    """Stream-like API to logger"""
-
-    def __init__(self, logger, level):
-        self.logger = logger
-        self.level = level
-
-    def write(self, s):
-        if re.sub('[\n ]', '', s):
-            self.logger.log(self.level, '\n' + s)
 
 
 def get_current_time():

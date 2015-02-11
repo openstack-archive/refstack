@@ -20,11 +20,15 @@ Command-line utility for database manage
 
 import sys
 
-from oslo.config import cfg
+from oslo_config import cfg
+from oslo_log import log
 
 from refstack.db import migration
 
+LOG = log.getLogger(__name__)
 CONF = cfg.CONF
+
+log.register_options(CONF)
 
 
 class DatabaseManager(object):
@@ -91,4 +95,5 @@ CONF.register_cli_opt(command_opt)
 
 if __name__ == '__main__':
     CONF(sys.argv[1:], project='refstack')
+    log.setup(CONF, 'refstack')
     CONF.command.func()
