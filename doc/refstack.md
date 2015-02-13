@@ -54,8 +54,14 @@ Refstack Quickstart
 
 ####Configuration file preparation
 
-- Make a copy of the sample config and update it with the correct information of your environment. Example of config file with default values available in etc directory.
-Note value of `connection` in `database` section should be corrected.
+- Make a copy of the sample config and update it with the correct
+  information of your environment. Example of config file with default
+  values available in etc directory.
+
+- At the minimum the value of the `connection` field in the `[database]`
+  section should be updated. For example, if the backend database is MySQL
+  then update: `#connection = <None>` to
+  `connection = mysql://refstack:<your password>@x.x.x.x/refstack`
 
 ####Database sync
 
