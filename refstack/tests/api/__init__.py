@@ -14,26 +14,28 @@
 #    under the License.
 
 """Base classes for API tests."""
-import inspect
 import os
 
-import alembic
-import alembic.config
-from oslo_config import cfg
-import sqlalchemy as sa
-import sqlalchemy.exc
-from unittest import TestCase
-from webtest import TestApp
+from oslo_config import fixture as config_fixture
+from oslotest import base
+import pecan.testing
+from sqlalchemy.engine import reflection
+from sqlalchemy import create_engine
+from sqlalchemy.schema import (
+    MetaData,
+    Table,
+    DropTable,
+    ForeignKeyConstraint,
+    DropConstraint,
+)
+from testtools import testcase
 
-import refstack
-from refstack.api import app
-
-CONF = cfg.CONF
+from refstack.db import migration
 
 
-class FunctionalTest(TestCase):
+class FunctionalTest(base.BaseTestCase):
 
-    """Functional test case.
+    """Base class for functional test case.
 
     Used for functional tests where you need to test your.
     literal application and its integration with the framework.
@@ -41,60 +43,75 @@ class FunctionalTest(TestCase):
 
     def setUp(self):
         """Test setup."""
-        class TestConfig(object):
-            app = {
+        super(FunctionalTest, self).setUp()
+
+        # Skip integration/functional tests
+        # if database has not been created
+        self.connection = os.environ.get("REFSTACK_TEST_MYSQL_URL")
+        if self.connection is None:
+            raise testcase.TestSkipped("Database connection url was not found")
+
+        self.config = {
+            'app': {
                 'root': 'refstack.api.controllers.root.RootController',
                 'modules': ['refstack.api'],
-                'static_root': '%(confdir)s/public',
-                'template_path': '%(confdir)s/${package}/templates',
             }
+        }
+        self.config_fixture = config_fixture.Config()
+        self.CONF = self.useFixture(self.config_fixture).conf
+        self.CONF.set_override('connection',
+                               self.connection,
+                               'database')
 
-        test_config = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            'refstack.test.conf'
-        )
-        os.environ['REFSTACK_OSLO_CONFIG'] = test_config
-        self.project_path = os.path.abspath(
-            os.path.join(inspect.getabsfile(refstack), '..', '..'))
-        self.app = TestApp(app.setup_app(TestConfig()))
-        self.prepare_test_db()
-        self.migrate_test_db()
+        self.app = pecan.testing.load_test_app(self.config)
+
+        self.drop_all_tables_and_constraints()
+        migration.upgrade('head')
 
     def tearDown(self):
         """Test teardown."""
+        super(FunctionalTest, self).tearDown()
+        pecan.set_config({}, overwrite=True)
         self.app.reset()
 
-    def prepare_test_db(self):
-        """Create/clear test database."""
-        db_url = CONF.database.connection
-        db_name = db_url.split('/')[-1]
-        short_db_url = '/'.join(db_url.split('/')[0:-1])
-        try:
-            engine = sa.create_engine(db_url)
-            conn = engine.connect()
-            conn.execute('commit')
-            conn.execute('drop database %s' % db_name)
-            conn.close()
-        except sqlalchemy.exc.OperationalError:
-            pass
-        finally:
-            engine = sa.create_engine('/'.join((short_db_url, 'mysql')))
-            conn = engine.connect()
-            conn.execute('commit')
-            conn.execute('create database %s' % db_name)
-            conn.close()
+    def drop_all_tables_and_constraints(self):
+        """Drop tables and cyclical constraints between tables"""
+        engine = create_engine(self.connection)
+        conn = engine.connect()
+        trans = conn.begin()
 
-    def migrate_test_db(self):
-        """Apply migrations to test database."""
-        alembic_cfg = alembic.config.Config()
-        alembic_cfg.set_main_option(
-            "script_location",
-            os.path.join(self.project_path, 'refstack', 'db',
-                         'migrations', 'alembic')
-        )
-        alembic_cfg.set_main_option("sqlalchemy.url",
-                                    CONF.database.connection)
-        alembic.command.upgrade(alembic_cfg, 'head')
+        inspector = reflection.Inspector.from_engine(engine)
+        metadata = MetaData()
+
+        tbs = []
+        all_fks = []
+
+        try:
+            for table_name in inspector.get_table_names():
+                fks = []
+                for fk in inspector.get_foreign_keys(table_name):
+                    if not fk['name']:
+                        continue
+                    fks.append(
+                        ForeignKeyConstraint((), (), name=fk['name']))
+
+                t = Table(table_name, metadata, *fks)
+                tbs.append(t)
+                all_fks.extend(fks)
+
+            for fkc in all_fks:
+                conn.execute(DropConstraint(fkc))
+
+            for table in tbs:
+                conn.execute(DropTable(table))
+
+            trans.commit()
+            trans.close()
+            conn.close()
+        except:
+            trans.rollback()
+            conn.close()
+            raise
 
     def get_json(self, url, headers=None, extra_environ=None,
                  status=None, expect_errors=False, **params):
