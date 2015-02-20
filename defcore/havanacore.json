@@ -134,9 +134,6 @@
             "tests": [
                 "tempest.api.compute.admin.test_fixed_ips.FixedIPsTestJson.test_list_fixed_ip_details",
                 "tempest.api.compute.admin.test_fixed_ips.FixedIPsTestJson.test_set_reserve",
-                "tempest.api.compute.admin.test_fixed_ips.FixedIPsTestXml.test_list_fixed_ip_details",
-                "tempest.api.compute.admin.test_fixed_ips.FixedIPsTestXml.test_set_unreserve",
-                "tempest.api.compute.admin.test_fixed_ips.FixedIPsTestXml.test_set_reserve",
                 "tempest.api.compute.admin.test_fixed_ips.FixedIPsTestJson.test_set_unreserve"
             ]
         },
