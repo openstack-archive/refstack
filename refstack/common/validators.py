@@ -21,7 +21,6 @@ import uuid
 import json
 import jsonschema
 import pecan
-from pecan import request
 
 ext_format_checker = jsonschema.FormatChecker()
 
@@ -106,7 +105,7 @@ def safe_load_json_body(validator):
     """
     body = ''
     try:
-        body = json.loads(request.body)
+        body = json.loads(pecan.request.body)
     except (ValueError, TypeError) as e:
         pecan.abort(400, detail=e.message)
 
@@ -116,6 +115,6 @@ def safe_load_json_body(validator):
         pecan.abort(400,
                     detail=e.message,
                     title='Malformed json data, '
-                          'see %s/schema' % request.path_url)
+                          'see %s/schema' % pecan.request.path_url)
 
     return body
