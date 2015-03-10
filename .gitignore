@@ -1,61 +1,10 @@
+*.egg*
 *.py[cod]
-
-# C extensions
-*.so
-
-# Packages
-*.egg
-*.egg-info
-ChangeLog
-AUTHORS
-dist
-build
-eggs
-parts
-bin
-var
-sdist
-develop-eggs
-.installed.cfg
-lib
-lib64
-
-# Installer logs
-pip-log.txt
-
-# Unit test / coverage reports
 .coverage
-.tox
-nosetests.xml
-
-# Translations
-*.mo
-
-# Mr Developer
-.mr.developer.cfg
-.project
-.pydevproject
-
-*.db
-*.DS_Store
-manifest.yml
-refstack/localmodels.py
-
-refstack/common/debug.py
-
-refstack/client/.testrepository/format
-
-refstack/client/.testrepository/next-stream
-
-refstack/client/.smbdeleteAAA06c94.4
-
-scripts/members_sponsors_20131030.csv
-
-refstack/client/.smbdeleteAAA9ef44.4
-
-openid/*
-
-db.sqlite
-
-# Don't include Credentials if in local directory
-openrc.sh
+.testrepository/
+.tox/
+.venv/
+AUTHORS
+ChangeLog
+build/
+dist
