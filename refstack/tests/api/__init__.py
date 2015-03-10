@@ -28,7 +28,6 @@ from sqlalchemy.schema import (
     ForeignKeyConstraint,
     DropConstraint,
 )
-from testtools import testcase
 
 from refstack.db import migration
 
@@ -45,11 +44,11 @@ class FunctionalTest(base.BaseTestCase):
         """Test setup."""
         super(FunctionalTest, self).setUp()
 
-        # Skip integration/functional tests
-        # if database has not been created
         self.connection = os.environ.get("REFSTACK_TEST_MYSQL_URL")
         if self.connection is None:
-            raise testcase.TestSkipped("Database connection url was not found")
+            raise ValueError("Database connection url was not found. "
+                             "Environment variable REFSTACK_TEST_MYSQL_URL "
+                             "is not defined")
 
         self.config = {
             'app': {
