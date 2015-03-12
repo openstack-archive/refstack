@@ -23,7 +23,6 @@ from oslo_config import cfg
 from oslo_log import log
 from oslo_log import loggers
 import pecan
-from pecan import hooks
 import webob
 
 LOG = log.getLogger(__name__)
@@ -71,7 +70,7 @@ CONF.register_opts(API_OPTS, opt_group)
 log.register_options(CONF)
 
 
-class JSONErrorHook(hooks.PecanHook):
+class JSONErrorHook(pecan.hooks.PecanHook):
     """
     A pecan hook that translates webob HTTP errors into a JSON format.
     """
@@ -134,7 +133,7 @@ def setup_app(config):
         debug=CONF.api.app_dev_mode,
         static_root=static_root,
         template_path=template_path,
-        hooks=[JSONErrorHook(), hooks.RequestViewerHook(
+        hooks=[JSONErrorHook(), pecan.hooks.RequestViewerHook(
             {'items': ['status', 'method', 'controller', 'path', 'body']},
             headers=False, writer=loggers.WritableLogger(LOG, logging.DEBUG)
         )]

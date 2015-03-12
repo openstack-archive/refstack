@@ -33,6 +33,13 @@ class ValidatorsTestCase(base.BaseTestCase):
     def test_is_uuid_fail(self):
         self.assertFalse(validators.is_uuid('some_string'))
 
+    def test_checker_uuid(self):
+        value = validators.checker_uuid('12345678123456781234567812345678')
+        self.assertTrue(value)
+
+    def test_checker_uuid_fail(self):
+        self.assertFalse(validators.checker_uuid('some_string'))
+
 
 class TestResultValidatorTestCase(base.BaseTestCase):
     """Test case for database TestResultValidator."""
@@ -50,6 +57,13 @@ class TestResultValidatorTestCase(base.BaseTestCase):
         super(TestResultValidatorTestCase, self).setUp()
         self.validator = validators.TestResultValidator()
 
+    def test_assert_id(self):
+        value = self.validator.assert_id('12345678123456781234567812345678')
+        self.assertTrue(value)
+
+    def test_assert_id_fail(self):
+        self.assertFalse(self.validator.assert_id('some_string'))
+
     def test_validation(self):
         with mock.patch('jsonschema.validate') as mock_validate:
             self.validator.validate(self.FAKE_TESTS_RESULTS_JSON)
@@ -63,12 +77,6 @@ class TestResultValidatorTestCase(base.BaseTestCase):
         self.assertRaises(jsonschema.ValidationError,
                           self.validator.validate,
                           wrong_tests_result)
-
-    def test_assert_id(self):
-        self.assertTrue(validators.is_uuid('12345678123456781234567812345678'))
-
-    def test_assert_id_fail(self):
-        self.assertFalse(validators.is_uuid('some_string'))
 
     @mock.patch('pecan.request')
     def test_safe_load_json_body(self, mock_request):

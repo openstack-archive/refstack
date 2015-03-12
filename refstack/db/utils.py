@@ -32,11 +32,11 @@ class PluggableBackend(object):
     def __get_backend(self):
         if not self.__backend:
             backend_name = CONF[self.__pivot]
-            if backend_name not in self.__backends:
+            if backend_name not in self.__backends:  # pragma: no cover
                 raise Exception('Invalid backend: %s' % backend_name)
 
             backend = self.__backends[backend_name]
-            if isinstance(backend, tuple):
+            if isinstance(backend, tuple):  # pragma: no cover
                 name = backend[0]
                 fromlist = backend[1]
             else:

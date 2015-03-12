@@ -37,11 +37,11 @@ class RestControllerWithValidation(rest.RestController):
     def __init__(self, validator):
         self.validator = validator
 
-    def get_item(self, item_id):
+    def get_item(self, item_id):  # pragma: no cover
         """Handler for getting item"""
         raise NotImplemented
 
-    def store_item(self, item_in_json):
+    def store_item(self, item_in_json):  # pragma: no cover
         """Handler for storing item. Should return new item id"""
         raise NotImplemented
 

@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""Tests for database API."""
+"""Tests for database."""
 
 import six
 import mock
@@ -21,6 +21,26 @@ from oslotest import base
 
 from refstack import db
 from refstack.db.sqlalchemy import api
+from refstack.db.sqlalchemy import models
+
+
+class RefStackBaseTestCase(base.BaseTestCase):
+    """Test case for RefStackBase model."""
+
+    @mock.patch('oslo_utils.timeutils.utcnow')
+    def test_delete(self, utcnow):
+        utcnow.return_value = '123'
+
+        base_model = models.RefStackBase()
+        base_model.id = 'fake_id'
+        base_model.save = mock.Mock()
+        session = mock.MagicMock()
+
+        base_model.delete(session)
+
+        self.assertEqual(base_model.deleted, 'fake_id')
+        self.assertEqual(base_model.deleted_at, '123')
+        base_model.save.assert_called_once_with(session=session)
 
 
 class DBAPITestCase(base.BaseTestCase):
@@ -65,6 +85,12 @@ class DBHelpersTestCase(base.BaseTestCase):
 
         mock_create_facade.assert_called_once_with()
         facade.get_session.assert_called_once_with(**fake_kwargs)
+        self.assertEqual(result, 'fake_session')
+
+    @mock.patch('oslo_db.sqlalchemy.session.EngineFacade.from_config')
+    def test_create_facade_lazily(self, session):
+        session.return_value = 'fake_session'
+        result = api._create_facade_lazily()
         self.assertEqual(result, 'fake_session')
 
 

@@ -20,6 +20,19 @@ import mock
 from oslotest import base
 
 from refstack.db import migration
+from refstack.db.migrations.alembic import migration as alembic_migration
+
+
+class AlembicConfigTestCase(base.BaseTestCase):
+
+    @mock.patch('alembic.config.Config')
+    @mock.patch('os.path.join')
+    def test_alembic_config(self, os_join, alembic_config):
+        os_join.return_value = 'fake_path'
+        alembic_config.return_value = 'fake_config'
+        result = alembic_migration._alembic_config()
+        self.assertEqual(result, 'fake_config')
+        alembic_config.assert_called_once_with('fake_path')
 
 
 class MigrationTestCase(base.BaseTestCase):
