@@ -31,7 +31,10 @@
         ]
     ...
 """
+import itertools
+
 import refstack.api.app
+import refstack.api.controllers.v1
 import refstack.db.api
 
 
@@ -39,5 +42,6 @@ def list_opts():
     return [
         # Keep a list in alphabetical order
         ('DEFAULT', refstack.db.api.db_opts),
-        ('api', refstack.api.app.API_OPTS),
+        ('api', itertools.chain(refstack.api.app.API_OPTS,
+                                refstack.api.controllers.v1.CTRLS_OPTS)),
     ]

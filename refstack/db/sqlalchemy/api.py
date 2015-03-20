@@ -22,6 +22,7 @@ from oslo_config import cfg
 from oslo_db import options as db_options
 from oslo_db.sqlalchemy import session as db_session
 
+from refstack.api import constants as api_const
 from refstack.db.sqlalchemy import models
 
 
@@ -92,3 +93,40 @@ def get_test_results(test_id):
         filter_by(test_id=test_id).\
         all()
     return results
+
+
+def _apply_filters_for_query(query, filters):
+    start_date = filters.get(api_const.START_DATE)
+    if start_date:
+        query = query.filter(models.Test.created_at >= start_date)
+
+    end_date = filters.get(api_const.END_DATE)
+    if end_date:
+        query = query.filter(models.Test.created_at <= end_date)
+
+    cpid = filters.get(api_const.CPID)
+    if cpid:
+        query = query.filter(models.Test.cpid == cpid)
+
+    return query
+
+
+def get_test_records(page, per_page, filters):
+    session = get_session()
+    query = session.query(models.Test.id,
+                          models.Test.created_at,
+                          models.Test.cpid)
+
+    query = _apply_filters_for_query(query, filters)
+    results = query.order_by(models.Test.created_at.desc()).\
+        offset(per_page * (page - 1)).\
+        limit(per_page)
+    return results
+
+
+def get_test_records_count(filters):
+    session = get_session()
+    query = session.query(models.Test.id)
+    records_count = _apply_filters_for_query(query, filters).count()
+
+    return records_count

@@ -16,8 +16,11 @@
 """Tests for API's controllers"""
 
 import mock
+from oslo_config import fixture as config_fixture
 from oslotest import base
 
+from refstack.api import constants as const
+from refstack.api import utils as api_utils
 from refstack.api.controllers import root
 from refstack.api.controllers import v1
 
@@ -36,6 +39,8 @@ class ResultsControllerTestCase(base.BaseTestCase):
         super(ResultsControllerTestCase, self).setUp()
         self.validator = mock.Mock()
         self.controller = v1.ResultsController(self.validator)
+        self.config_fixture = config_fixture.Config()
+        self.CONF = self.useFixture(self.config_fixture).conf
 
     @mock.patch('refstack.db.get_test')
     @mock.patch('refstack.db.get_test_results')
@@ -115,13 +120,123 @@ class ResultsControllerTestCase(base.BaseTestCase):
         self.assertEqual(result, {'test_id': 'fake_result'})
         mock_store_item.assert_called_once_with('fake_item')
 
+    @mock.patch('pecan.abort')
+    @mock.patch('refstack.api.utils.parse_input_params')
+    def test_get_failed_in_parse_input_params(self,
+                                              parse_inputs,
+                                              pecan_abort):
 
-class RestControllerWithValidationTestCase(base.BaseTestCase):
+        parse_inputs.side_effect = api_utils.ParseInputsError()
+        pecan_abort.side_effect = Exception()
+        self.assertRaises(Exception,
+                          self.controller.get)
+
+    @mock.patch('refstack.db.get_test_records_count')
+    @mock.patch('pecan.abort')
+    @mock.patch('refstack.api.utils.parse_input_params')
+    def test_get_failed_in_get_test_records_number(self,
+                                                   parse_inputs,
+                                                   pecan_abort,
+                                                   db_get_count):
+        db_get_count.side_effect = Exception()
+        pecan_abort.side_effect = Exception()
+        self.assertRaises(Exception,
+                          self.controller.get)
+
+    @mock.patch('refstack.db.get_test_records_count')
+    @mock.patch('refstack.api.utils.parse_input_params')
+    @mock.patch('refstack.api.utils.get_page_number')
+    @mock.patch('pecan.abort')
+    def test_get_failed_in_get_page_number(self,
+                                           pecan_abort,
+                                           get_page,
+                                           parse_input,
+                                           db_get_count):
+
+        get_page.side_effect = api_utils.ParseInputsError()
+        pecan_abort.side_effect = Exception()
+        self.assertRaises(Exception,
+                          self.controller.get)
+
+    @mock.patch('refstack.db.get_test_records')
+    @mock.patch('refstack.db.get_test_records_count')
+    @mock.patch('refstack.api.utils.parse_input_params')
+    @mock.patch('refstack.api.utils.get_page_number')
+    @mock.patch('pecan.abort')
+    def test_get_failed_in_get_test_records(self,
+                                            pecan_abort,
+                                            get_page,
+                                            parce_input,
+                                            db_get_count,
+                                            db_get_test):
+
+        get_page.return_value = (mock.Mock(), mock.Mock())
+        db_get_test.side_effect = Exception()
+        pecan_abort.side_effect = Exception()
+        self.assertRaises(Exception,
+                          self.controller.get)
+
+    @mock.patch('refstack.db.get_test_records')
+    @mock.patch('refstack.db.get_test_records_count')
+    @mock.patch('refstack.api.utils.get_page_number')
+    @mock.patch('refstack.api.utils.parse_input_params')
+    def test_get_success(self,
+                         parse_input,
+                         get_page,
+                         get_test_count,
+                         db_get_test):
+
+        expected_input_params = [
+            const.START_DATE,
+            const.END_DATE,
+            const.CPID,
+        ]
+        page_number = 1
+        total_pages_number = 10
+        per_page = 5
+        records_count = 50
+        get_test_count.return_value = records_count
+        get_page.return_value = (page_number, total_pages_number)
+        self.CONF.set_override('results_per_page',
+                               per_page,
+                               'api')
+
+        record = mock.Mock()
+        record.id = 111
+        record.created_at = '12345'
+        record.cpid = '54321'
+
+        db_get_test.return_value = [record]
+        expected_result = {
+            'results': [{
+                'test_id': record.id,
+                'created_at': record.created_at,
+                'cpid': record.cpid
+            }],
+            'pagination': {
+                'current_page': page_number,
+                'total_pages': total_pages_number
+            }
+        }
+
+        actual_result = self.controller.get()
+        self.assertEqual(actual_result, expected_result)
+
+        parse_input.assert_called_once_with(expected_input_params)
+
+        filters = parse_input.return_value
+        get_test_count.assert_called_once_with(filters)
+        get_page.assert_called_once_with(records_count)
+
+        db_get_test.assert_called_once_with(page_number, per_page, filters)
+
+
+class BaseRestControllerWithValidationTestCase(base.BaseTestCase):
 
     def setUp(self):
-        super(RestControllerWithValidationTestCase, self).setUp()
+        super(BaseRestControllerWithValidationTestCase, self).setUp()
         self.validator = mock.Mock()
-        self.controller = v1.RestControllerWithValidation(self.validator)
+        self.controller = v1.BaseRestControllerWithValidation(self.validator)
 
     @mock.patch('pecan.response')
     @mock.patch('refstack.common.validators.safe_load_json_body')

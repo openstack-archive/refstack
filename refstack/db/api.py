@@ -61,3 +61,21 @@ def get_test_results(test_id):
     :param test_id: The ID of the test.
     """
     return IMPL.get_test_results(test_id)
+
+
+def get_test_records(page_number, per_page, filters):
+    """Get page with applied filters for uploaded test records.
+
+        :param page_number: The number of page.
+        :param per_page: The number of results for one page.
+        :param filters: (Dict) Filters that will be applied for records.
+    """
+    return IMPL.get_test_records(page_number, per_page, filters)
+
+
+def get_test_records_count(filters):
+    """Get total pages number with applied filters for uploaded test records.
+
+        :param filters: (Dict) Filters that will be applied for records.
+    """
+    return IMPL.get_test_records_count(filters)

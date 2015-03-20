@@ -89,5 +89,9 @@ gunicorn:
 
 - `refstack-api --env REFSTACK_OSLO_CONFIG=/path/to/refstack.conf`
 
-Now available http://localhost:8000/ with JSON response {'Root': 'OK'}
-and http://localhost:8000/v1/results/ with JSON response {'Results': 'OK'}.
+Now available:
+
+- http://localhost:8000/ with JSON response {'Root': 'OK'};
+- http://localhost:8000/v1/results with response JSON including records consisted of <upload id>, <upload date> and <cloud cpid> of the test runs. The default response is limited to one page of the most recent uploaded test run records. The number of records per page is configurable via the Refstack configuration file. Filtering parameters such as page, start_date, end_date ... can also be used to specify the desired records. For example: get http://localhost:8000/v1/results?page=n will return page n of the data.
+
+- http://localhost:8000/v1/results/<upload id> with response JSON including the detail test results of the specified <upload id>

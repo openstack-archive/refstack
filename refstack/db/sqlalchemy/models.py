@@ -17,11 +17,8 @@
 SQLAlchemy models for Refstack data.
 """
 
-import datetime
-
 from oslo_config import cfg
 from oslo_db.sqlalchemy import models
-from oslo_utils import timeutils
 import sqlalchemy as sa
 from sqlalchemy import orm
 from sqlalchemy.ext.declarative import declarative_base
@@ -30,23 +27,14 @@ CONF = cfg.CONF
 BASE = declarative_base()
 
 
-class RefStackBase(models.ModelBase, models.TimestampMixin):
+class RefStackBase(models.ModelBase,
+                   models.TimestampMixin,
+                   models.SoftDeleteMixin):
 
     """Base class for RefStack Models."""
 
     __table_args__ = {'mysql_engine': 'InnoDB'}
-    created_at = sa.Column(sa.DateTime(), default=datetime.datetime.utcnow,
-                           nullable=False)
-    updated_at = sa.Column(sa.DateTime())
-    deleted_at = sa.Column(sa.DateTime)
-    deleted = sa.Column(sa.Integer, default=0)
     metadata = None
-
-    def delete(self, session=None):
-        """Delete this object."""
-        self.deleted = self.id
-        self.deleted_at = timeutils.utcnow()
-        self.save(session=session)
 
 
 class Test(BASE, RefStackBase):

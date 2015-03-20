@@ -18,6 +18,7 @@
 import json
 import uuid
 
+from oslo_config import fixture as config_fixture
 import six
 import webtest.app
 
@@ -51,6 +52,11 @@ class TestResultsController(api.FunctionalTest):
     """Test case for ResultsController."""
 
     URL = '/v1/results/'
+
+    def setUp(self):
+        super(TestResultsController, self).setUp()
+        self.config_fixture = config_fixture.Config()
+        self.CONF = self.useFixture(self.config_fixture).conf
 
     def test_post(self):
         """Test results endpoint with post request."""
@@ -103,3 +109,114 @@ class TestResultsController(api.FunctionalTest):
         self.assertRaises(webtest.app.AppError,
                           self.get_json,
                           self.URL + 'fake_url')
+
+    def test_get_pagination(self):
+        self.CONF.set_override('results_per_page',
+                               2,
+                               'api')
+
+        responses = []
+        for i in range(3):
+            fake_results = {
+                'cpid': six.text_type(i),
+                'duration_seconds': i,
+                'results': [
+                    {'name': 'tempest.foo.bar'},
+                    {'name': 'tempest.buzz'}
+                ]
+            }
+            actual_response = self.post_json(self.URL,
+                                             params=json.dumps(fake_results))
+            responses.append(actual_response)
+
+        page_one = self.get_json(self.URL)
+        page_two = self.get_json('/v1/results?page=2')
+
+        self.assertEqual(len(page_one['results']), 2)
+        self.assertEqual(len(page_two['results']), 1)
+        self.assertNotIn(page_two['results'][0], page_one)
+
+        self.assertEqual(page_one['pagination']['current_page'], 1)
+        self.assertEqual(page_one['pagination']['total_pages'], 2)
+
+        self.assertEqual(page_two['pagination']['current_page'], 2)
+        self.assertEqual(page_two['pagination']['total_pages'], 2)
+
+        def test_get_with_not_existing_page(self):
+            self.assertRaises(webtest.app.AppError,
+                              self.get_json,
+                              '/v1/results?page=2')
+
+        def test_get_with_empty_database(self):
+            results = self.get_json(self.URL)
+            self.assertEqual(results, [])
+
+        def test_get_with_cpid_filter(self):
+            self.CONF.set_override('results_per_page',
+                                   2,
+                                   'api')
+
+            responses = []
+            for i in range(2):
+                fake_results = {
+                    'cpid': '12345',
+                    'duration_seconds': i,
+                    'results': [
+                        {'name': 'tempest.foo'},
+                        {'name': 'tempest.bar'}
+                    ]
+                }
+                json_result = json.dumps(fake_results)
+                actual_response = self.post_json(self.URL,
+                                                 params=json_result)
+                responses.append(actual_response)
+
+            for i in range(3):
+                fake_results = {
+                    'cpid': '54321',
+                    'duration_seconds': i,
+                    'results': [
+                        {'name': 'tempest.foo'},
+                        {'name': 'tempest.bar'}
+                    ]
+                }
+
+            results = self.get_json('/v1/results?page=1&cpid=12345')
+            self.asserEqual(len(results), 2)
+
+            for r in results:
+                self.assertIn(r['test_id'], responses)
+
+        def test_get_with_date_filters(self):
+            self.CONF.set_override('results_per_page',
+                                   10,
+                                   'api')
+
+            responses = []
+            for i in range(5):
+                fake_results = {
+                    'cpid': '12345',
+                    'duration_seconds': i,
+                    'results': [
+                        {'name': 'tempest.foo'},
+                        {'name': 'tempest.bar'}
+                    ]
+                }
+                json_result = json.dumps(fake_results)
+                actual_response = self.post_json(self.URL,
+                                                 params=json_result)
+                responses.append(actual_response)
+
+            all_results = self.get_json(self.URL)
+
+            slice_results = all_results[1:3]
+
+            url = 'v1/results?start_date=%(start)s&end_date=%(end)s' % {
+                'start': slice_results[2]['created_at'],
+                'end': slice_results[0]['created_at']
+            }
+
+            filtering_results = self.get_json(url)
+            self.assertEqual(len(filtering_results), 3)
+            for r in slice_results:
+                self.assertEqual(r, filtering_results)
