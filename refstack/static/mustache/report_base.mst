@@ -16,11 +16,21 @@
 <div>
     <h3>Scope filter</h3>
 
-    <div id="core_filter">
-        <input type="radio" id="core_filter_off" name="false" {{^only_core}}checked="checked"{{/only_core}} onchange="core_filter_update(this)">
-        <label for="core_filter_off">Don't apply core filter</label>
-        <input type="radio" id="core_filter_on" name="true" {{#only_core}}checked="checked"{{/only_core}} onchange="core_filter_update(this)">
-        <label for="core_filter_on">Show only core tests</label>
+    <div id="status_filter">
+        <input type="radio" id="status_filter_all" name="status_all" {{#status_all}}checked="checked"{{/status_all}} onchange="status_filter_update(this)">
+        <label for="status_filter_all">All DefCore Tests</label>
+
+        <input type="radio" id="status_filter_required" name="status_required" {{#status_required}}checked="checked"{{/status_required}} onchange="status_filter_update(this)">
+        <label for="status_filter_required">Required Tests</label>
+
+        <input type="radio" id="status_filter_advisory" name="status_advisory" {{#status_advisory}}checked="checked"{{/status_advisory}} onchange="status_filter_update(this)">
+        <label for="status_filter_advisory">Advisory Tests</label>
+
+        <input type="radio" id="status_filter_deprecated" name="status_deprecated" {{#status_deprecated}}checked="checked"{{/status_deprecated}} onchange="status_filter_update(this)">
+        <label for="status_filter_deprecated">Deprecated Tests</label>
+
+        <input type="radio" id="status_filter_removed" name="status_removed" {{#status_removed}}checked="checked"{{/status_removed}} onchange="status_filter_update(this)">
+        <label for="status_filter_removed">Removed Tests</label>
     </div>
     <br>
     <div id="admin_filter" >

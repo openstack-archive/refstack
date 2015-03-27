@@ -109,7 +109,10 @@ var build_caps_list = function (data, filters) {
             }
         });
         caps_dict.capabilities[capability.class].total += 1;
-        if (filters.only_core === true && (capability.core !== true)) {return; }
+        if (filters.status_filter === 'status_required' && (capability.status !== 'required')) {return; }
+        if (filters.status_filter === 'status_advisory' && (capability.status !== 'advisory')) {return; }
+        if (filters.status_filter === 'status_deprecated' && (capability.status !== 'deprecated')) {return; }
+        if (filters.status_filter === 'status_removed' && (capability.status !== 'removed')) {return; }
         if (filters.admin_filter === 'admin' && (capability.admin !== true)) {return; }
         if (filters.admin_filter === 'noadmin' && (capability.admin === true)) {return; }
         capability.tests.forEach(function (test) {
@@ -134,29 +137,28 @@ var build_caps_list = function (data, filters) {
     return caps_list;
 };
 
-//Get admin and core filter values
+//Get capabilities page filter values
 var get_filters_local = function () {
-    if (document.getElementById('only_core')) {
-        window.only_core = document.getElementById('only_core').checked;
+    if (document.getElementById('status')) {
+        window.status_filter = document.getElementById('status').value;
     } else {
-        window.only_core = true;
+        window.status_filter = 'status_all';
     }
     if (document.getElementById('admin')) {
         window.admin_filter = document.getElementById('admin').value;
     } else {
         window.admin_filter = 'all';
     }
-    return {only_core: window.only_core, admin_filter: window.admin_filter};
+    return {status_filter: window.status_filter, admin_filter: window.admin_filter};
 };
 
 //Rendering page header
 var render_header = function (data) {
     var template = $('#header_template').html();
-    data.release = capitaliseFirstLetter(data.release);
     $("div#header").html(Mustache.render(template, data));
 };
 
-//Rendeirng capabilities list
+//Rendering capabilities list
 var render_caps = function (data) {
     var filters = get_filters_local(),
         template = $('#capabilities_template').html(),
@@ -179,11 +181,12 @@ var render_criteria = function (data) {
 
 //Rendering page
 var render_capabilities_page = function () {
-    $.get('capabilities/havanacore.json').done(function (data) {
+    $.get('capabilities/2015.03.json').done(function (data) {
         render_caps(data);
         render_criteria(data);
         render_header(data);
     });
+    console.log("Rendered capabilities")
 };
 
 //Helper for toggling one item in list

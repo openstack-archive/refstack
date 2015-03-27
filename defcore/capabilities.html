@@ -6,7 +6,7 @@
     <script src="http://cdnjs.cloudflare.com/ajax/libs/mustache.js/0.8.1/mustache.min.js"> </script>
     <script id="header_template" type="x-tmpl-mustache">
     <h1>OpenStack DefCore</h1>
-    <h2> {{release}} Tracked Capabilities</h2>
+    <h2> {{id}} Tracked Capabilities</h2>
     </script>
     <script id="capabilities_template" type="x-tmpl-mustache">
     {{#capabilities}}
@@ -22,7 +22,7 @@
                 <li>Description: {{description}}</li>
                 <li>Achievements (met {{achievements_count}} of {{criteria_count}} total): {{#achievements}} <a href="#{{.}}">{{.}}</a> {{/achievements}}
                 {{#admin}}<li>Admin rights required</li>{{/admin}}
-                {{#core}}<li>Core test</li>{{/core}}</li>
+                <li>Status: {{status}}</li>
                 <li> <a onclick="toggle_one_item('{{class}}', '{{id}}', 'tests_list');return false;" href="#"> Tests ({{tests_count}}) </a>
                 <div id="{{id}}_tests_list" class="{{class}}_tests_list" style="display:none;">
                 <ul>
@@ -66,13 +66,20 @@
 
 <div id="header"></div>
 
-<input id="only_core" name="only_core" type="checkbox" checked onclick="render_page()" />
-<label for="only_core">Show only core tests</label>
+Status Filter:<br />
+<select id="status" onchange="render_page()">
+    <option value="status_all" >All Capabilities</option>
+    <option value="status_required" >Required Capabilities</option>
+    <option value="status_advisory">Advisory Capabilities</option>
+    <option value="status_deprecated">Deprecated Capabilities</option>
+    <option value="status_removed">Removed Capabilities</option>
+</select>
 <br>
+Admin Filter:<br />
 <select id="admin" onchange="render_page()">
-    <option value="all" >All tests</option>
-    <option value="admin" >Tests require admin rights</option>
-    <option value="noadmin">Tests don't require admin rights</option>
+    <option value="all" >All Capabilities</option>
+    <option value="admin" >Capabilities requiring admin rights</option>
+    <option value="noadmin">Capabilities not requiring admin rights</option>
 </select>
 <div id="capabilities"></div>
 

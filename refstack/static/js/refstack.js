@@ -62,7 +62,11 @@ var caps_support = function (text, render) {
 var build_report = function (caps_list, test_result) {
     var other_tests = test_result.results.slice(0),
         result = {
-            'only_core': $.cookie('only_core_flag') === 'true',
+            'status_all': $.cookie('status_filter_flag') === 'status_all',
+            'status_required': $.cookie('status_filter_flag') === 'status_required',
+            'status_advisory': $.cookie('status_filter_flag') === 'status_advisory',
+            'status_deprecated': $.cookie('status_filter_flag') === 'status_deprecated',
+            'status_removed': $.cookie('status_filter_flag') === 'status_removed',
             'all': $.cookie('admin_filter_flag') === 'all',
             'admin': $.cookie('admin_filter_flag') === 'admin',
             'noadmin': $.cookie('admin_filter_flag') === 'noadmin',
@@ -233,21 +237,21 @@ var admin_filter_update = function (item) {
     window.render_page();
 };
 
-// Updating core filter value and render page
-var core_filter_update = function (item) {
-    $.cookie('only_core_flag', item.name === 'true');
+// Updating status filter value and render page
+var status_filter_update = function (item) {
+    $.cookie('status_filter_flag', item.name);
     window.render_page();
 };
 
-// Get filter values (admin and core)
+// Get filter values (admin and status)
 var get_filters_cookie = function () {
-    if ($('input#only_core').length === 0) {
-        if (!$.cookie('only_core_flag')) {$.cookie('only_core_flag', 'true'); }
+    if ($('div#status_filter').length === 0) {
+        if (!$.cookie('status_filter_flag')) {$.cookie('status_filter_flag', 'status_all'); }
     }
     if ($('div#admin_filter').length === 0) {
         if (!$.cookie('admin_filter_flag')) {$.cookie('admin_filter_flag', 'all'); }
     }
-    return {only_core: $.cookie('only_core_flag') === 'true', admin_filter: $.cookie('admin_filter_flag')};
+    return {status_filter: $.cookie('status_filter_flag'), admin_filter: $.cookie('admin_filter_flag')};
 };
 
 // Init page spinner
@@ -264,7 +268,7 @@ var loading_spin = function () {
 var post_processing = function post_processing() {
     $('div.cap_shot:odd').addClass('zebra_odd');
     $('div.cap_shot:even').addClass('zebra_even');
-    $('div#core_filter').buttonset();
+    $('div#status_filter').buttonset();
     $('div#admin_filter').buttonset();
     $('#schema_selector').selectmenu({change: function () {window.render_page(); } });
 
@@ -280,7 +284,7 @@ var render_defcore_report_page = function () {
         window.result_source = 'sample_test_result.json';
     }
     if (schema_selector.length === 0) {
-        schema = 'havanacore.json';
+        schema = '2015.03.json';
     } else {
         schema = schema_selector[0].value;
     }
