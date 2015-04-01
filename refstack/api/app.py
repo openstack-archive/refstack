@@ -25,6 +25,8 @@ from oslo_log import loggers
 import pecan
 import webob
 
+from refstack.common import validators
+
 LOG = log.getLogger(__name__)
 
 PROJECT_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -81,26 +83,24 @@ class JSONErrorHook(pecan.hooks.PecanHook):
     def on_error(self, state, exc):
         """Request error handler."""
         if isinstance(exc, webob.exc.HTTPError):
-            body = {'code': exc.status_int,
-                    'title': exc.title}
-            if self.debug:
-                body['detail'] = str(exc)
-            return webob.Response(
-                body=json.dumps(body),
-                status=exc.status,
-                content_type='application/json'
-            )
+            status_code = exc.status_int
+            body = {'title': exc.title}
+        elif isinstance(exc, validators.ValidationError):
+            status_code = 400
+            body = {'title': exc.title}
         else:
             LOG.exception(exc)
-            body = {'code': 500,
-                    'title': 'Internal Server Error'}
-            if self.debug:
-                body['detail'] = str(exc)
-            return webob.Response(
-                body=json.dumps(body),
-                status=500,
-                content_type='application/json'
-            )
+            status_code = 500
+            body = {'title': 'Internal Server Error'}
+
+        body['code'] = status_code
+        if self.debug:
+            body['detail'] = str(exc)
+        return webob.Response(
+            body=json.dumps(body),
+            status=status_code,
+            content_type='application/json'
+        )
 
 
 def setup_app(config):

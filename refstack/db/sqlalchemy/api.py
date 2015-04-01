@@ -21,6 +21,7 @@ import uuid
 from oslo_config import cfg
 from oslo_db import options as db_options
 from oslo_db.sqlalchemy import session as db_session
+import six
 
 from refstack.api import constants as api_const
 from refstack.db.sqlalchemy import models
@@ -65,17 +66,19 @@ def store_results(results):
     test.id = test_id
     test.cpid = results.get('cpid')
     test.duration_seconds = results.get('duration_seconds')
-
-    received_test_results = results.get('results', [])
     session = get_session()
     with session.begin():
-        test.save(session)
-        for result in received_test_results:
+        for result in results.get('results', []):
             test_result = models.TestResults()
             test_result.test_id = test_id
             test_result.name = result['name']
-            test_result.uuid = result.get('uuid', None)
-            test_result.save(session)
+            test_result.uid = result.get('uuid', None)
+            test.results.append(test_result)
+        for k, v in six.iteritems(results.get('metadata', {})):
+            meta = models.TestMeta()
+            meta.meta_key, meta.value = k, v
+            test.meta.append(meta)
+        test.save(session)
     return test_id
 
 

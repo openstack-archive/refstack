@@ -16,13 +16,34 @@
 """ Validators module
 """
 
+import binascii
 import uuid
 
 import json
 import jsonschema
-import pecan
+from Crypto.Hash import SHA256
+from Crypto.PublicKey import RSA
+from Crypto.Signature import PKCS1_v1_5
 
 ext_format_checker = jsonschema.FormatChecker()
+
+
+class ValidationError(Exception):
+
+    def __init__(self, title, exc=None):
+        super(ValidationError, self).__init__(title)
+        self.exc = exc
+        self.title = title
+        self.details = "%s(%s: %s)" % (self.title,
+                                       self.exc.__class__.__name__,
+                                       str(self.exc)) \
+            if self.exc else self.title
+
+    def __repr__(self):
+        return self.details
+
+    def __str__(self):
+        return self.__repr__()
 
 
 def is_uuid(inst):
@@ -45,12 +66,22 @@ def checker_uuid(inst):
 class Validator(object):
 
     """Base class for validators"""
+    def __init__(self):
+        self.schema = {}  # pragma: no cover
 
-    def validate(self, json_data):
+    def validate(self, request):
         """
         :param json_data: data for validation
         """
-        jsonschema.validate(json_data, self.schema)
+        try:
+            body = json.loads(request.body)
+        except (ValueError, TypeError) as e:
+            raise ValidationError('Malformed request', e)
+
+        try:
+            jsonschema.validate(body, self.schema)
+        except jsonschema.ValidationError as e:
+            raise ValidationError('Request doesn''t correspond to schema', e)
 
 
 class TestResultValidator(Validator):
@@ -90,31 +121,26 @@ class TestResultValidator(Validator):
             format_checker=ext_format_checker
         )
 
+    def validate(self, request):
+        super(TestResultValidator, self).validate(request)
+        if request.headers.get('X-Signature') or \
+                request.headers.get('X-Public-Key'):
+            try:
+                sign = binascii.a2b_hex(request.headers.get('X-Signature', ''))
+            except (binascii.Error, TypeError) as e:
+                raise ValidationError('Malformed signature', e)
+
+            try:
+                key = RSA.importKey(request.headers.get('X-Public-Key', ''))
+            except ValueError as e:
+                raise ValidationError('Malformed public key', e)
+            signer = PKCS1_v1_5.new(key)
+            data_hash = SHA256.new()
+            data_hash.update(request.body.encode('utf-8'))
+            if not signer.verify(data_hash, sign):
+                raise ValidationError('Signature verification failed')
+
     @staticmethod
     def assert_id(_id):
         """ Check that _id is a valid uuid_hex string. """
         return is_uuid(_id)
-
-
-def safe_load_json_body(validator):
-    """
-    Helper for load validated request body
-    :param validator: instance of Validator class
-    :return validated body
-    :raise ValueError, jsonschema.ValidationError
-    """
-    body = ''
-    try:
-        body = json.loads(pecan.request.body)
-    except (ValueError, TypeError) as e:
-        pecan.abort(400, detail=e.message)
-
-    try:
-        validator.validate(body)
-    except jsonschema.ValidationError as e:
-        pecan.abort(400,
-                    detail=e.message,
-                    title='Malformed json data, '
-                          'see %s/schema' % pecan.request.path_url)
-
-    return body

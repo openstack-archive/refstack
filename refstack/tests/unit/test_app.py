@@ -23,6 +23,14 @@ from oslotest import base
 import webob
 
 from refstack.api import app
+from refstack.common import validators
+
+
+def get_response_kwargs(response_mock):
+    _, kwargs = response_mock.call_args
+    if kwargs['body']:
+        kwargs['body'] = json.loads(kwargs.get('body', ''))
+    return kwargs
 
 
 class JSONErrorHookTestCase(base.BaseTestCase):
@@ -32,89 +40,71 @@ class JSONErrorHookTestCase(base.BaseTestCase):
         self.config_fixture = config_fixture.Config()
         self.CONF = self.useFixture(self.config_fixture).conf
 
-    def test_on_error_with_webob_instance(self):
-        self.CONF.set_override('app_dev_mode',
-                               False,
-                               'api')
-        exc = mock.Mock(spec=webob.exc.HTTPError)
-        exc.status_int = 999
-        exc.status = 111
-        exc.title = 'fake_title'
-
-        with mock.patch.object(webob, 'Response') as response:
-            response.return_value = 'fake_value'
-
-            hook = app.JSONErrorHook()
-            result = hook.on_error(mock.Mock(), exc)
-
-            self.assertEqual(result, 'fake_value')
-            body = {'code': exc.status_int, 'title': exc.title}
-            response.assert_called_once_with(body=json.dumps(body),
-                                             status=exc.status,
-                                             content_type='application/json')
-
-    def test_on_error_with_webob_instance_with_debug(self):
-        self.CONF.set_override('app_dev_mode',
-                               True,
-                               'api')
-        exc = mock.Mock(spec=webob.exc.HTTPError)
-        exc.status_int = 999
-        exc.status = 111
-        exc.title = 'fake_title'
-
-        with mock.patch.object(webob, 'Response') as response:
-            response.return_value = 'fake_value'
-
-            hook = app.JSONErrorHook()
-            result = hook.on_error(mock.Mock(), exc)
-
-            self.assertEqual(result, 'fake_value')
-            body = {
-                'code': exc.status_int,
-                'title': exc.title,
-                'detail': str(exc)
-            }
-            response.assert_called_once_with(body=json.dumps(body),
-                                             status=exc.status,
-                                             content_type='application/json')
-
-    @mock.patch.object(webob, 'Response')
-    def test_on_error_not_webob_instance(self, response):
-        self.CONF.set_override('app_dev_mode',
-                               False,
-                               'api')
+    def _on_error(self, response, exc, expected_status_code, expected_body):
         response.return_value = 'fake_value'
-        exc = mock.Mock()
-
         hook = app.JSONErrorHook()
         result = hook.on_error(mock.Mock(), exc)
-
         self.assertEqual(result, 'fake_value')
-        body = {'code': 500, 'title': 'Internal Server Error'}
-        response.assert_called_once_with(body=json.dumps(body),
-                                         status=500,
-                                         content_type='application/json')
+        self.assertEqual(
+            dict(body=expected_body,
+                 status=expected_status_code,
+                 content_type='application/json'),
+            get_response_kwargs(response)
+        )
 
     @mock.patch.object(webob, 'Response')
-    def test_on_error_not_webob_instance_with_debug(self, response):
-        self.CONF.set_override('app_dev_mode',
-                               True,
-                               'api')
-        response.return_value = 'fake_value'
-        exc = mock.Mock()
+    def test_on_error_with_webob_instance(self, response):
+        self.CONF.set_override('app_dev_mode', False, 'api')
+        exc = mock.Mock(spec=webob.exc.HTTPError,
+                        status=418, status_int=418,
+                        title='fake_title')
 
-        hook = app.JSONErrorHook()
-        result = hook.on_error(mock.Mock(), exc)
+        self._on_error(
+            response, exc, expected_status_code=exc.status,
+            expected_body={'code': exc.status_int, 'title': exc.title}
+        )
 
-        self.assertEqual(result, 'fake_value')
-        body = {
-            'code': 500,
-            'title': 'Internal Server Error',
-            'detail': str(exc)
-        }
-        response.assert_called_once_with(body=json.dumps(body),
-                                         status=500,
-                                         content_type='application/json')
+        self.CONF.set_override('app_dev_mode', True, 'api')
+        self._on_error(
+            response, exc, expected_status_code=exc.status,
+            expected_body={'code': exc.status_int, 'title': exc.title,
+                           'detail': str(exc)}
+        )
+
+    @mock.patch.object(webob, 'Response')
+    def test_on_error_with_validation_error(self, response):
+        self.CONF.set_override('app_dev_mode', False, 'api')
+        exc = mock.Mock(spec=validators.ValidationError,
+                        title='No No No!')
+
+        self._on_error(
+            response, exc, expected_status_code=400,
+            expected_body={'code': 400, 'title': exc.title}
+        )
+
+        self.CONF.set_override('app_dev_mode', True, 'api')
+        self._on_error(
+            response, exc, expected_status_code=400,
+            expected_body={'code': 400, 'title': exc.title,
+                           'detail': str(exc)}
+        )
+
+    @mock.patch.object(webob, 'Response')
+    def test_on_error_with_other_exceptions(self, response):
+        self.CONF.set_override('app_dev_mode', False, 'api')
+        exc = mock.Mock(status=500)
+
+        self._on_error(
+            response, exc, expected_status_code=500,
+            expected_body={'code': 500, 'title': 'Internal Server Error'}
+        )
+
+        self.CONF.set_override('app_dev_mode', True, 'api')
+        self._on_error(
+            response, exc, expected_status_code=500,
+            expected_body={'code': 500, 'title': 'Internal Server Error',
+                           'detail': str(exc)}
+        )
 
 
 class SetupAppTestCase(base.BaseTestCase):

@@ -99,8 +99,9 @@ class DBBackendTestCase(base.BaseTestCase):
     @mock.patch.object(api, 'get_session')
     @mock.patch('refstack.db.sqlalchemy.models.TestResults')
     @mock.patch('refstack.db.sqlalchemy.models.Test')
+    @mock.patch('refstack.db.sqlalchemy.models.TestMeta')
     @mock.patch('uuid.uuid4')
-    def test_store_results(self, mock_uuid, mock_test,
+    def test_store_results(self, mock_uuid, mock_test_meta, mock_test,
                            mock_test_result, mock_get_session):
         fake_tests_result = {
             'cpid': 'foo',
@@ -108,7 +109,8 @@ class DBBackendTestCase(base.BaseTestCase):
             'results': [
                 {'name': 'tempest.some.test'},
                 {'name': 'tempest.test', 'uid': '12345678'}
-            ]
+            ],
+            'metadata': {'answer': 42}
         }
         _id = 12345
 
@@ -130,13 +132,10 @@ class DBBackendTestCase(base.BaseTestCase):
         session.begin.assert_called_once_with()
 
         self.assertEqual(test_id, six.text_type(_id))
-        self.assertEqual(test.id, six.text_type(_id))
         self.assertEqual(test.cpid, fake_tests_result['cpid'])
         self.assertEqual(test.duration_seconds,
                          fake_tests_result['duration_seconds'])
         self.assertEqual(mock_test_result.call_count,
-                         len(fake_tests_result['results']))
-        self.assertEqual(test_result.save.call_count,
                          len(fake_tests_result['results']))
 
     @mock.patch.object(api, 'get_session')

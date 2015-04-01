@@ -14,6 +14,8 @@
 #    under the License.
 
 """Version 1 of the API."""
+
+import json
 from oslo_config import cfg
 from oslo_log import log
 import pecan
@@ -53,16 +55,21 @@ class BaseRestControllerWithValidation(rest.RestController):
     GET base_url/schema
     """
 
-    def __init__(self, validator):
-        self.validator = validator
+    __validator__ = None
+
+    def __init__(self):  # pragma: no cover
+        if self.__validator__:
+            self.validator = self.__validator__()
+        else:
+            raise ValueError("__validator__ is not defined")
 
     def get_item(self, item_id):  # pragma: no cover
         """Handler for getting item"""
-        raise NotImplemented
+        raise NotImplementedError
 
     def store_item(self, item_in_json):  # pragma: no cover
         """Handler for storing item. Should return new item id"""
-        raise NotImplemented
+        raise NotImplementedError
 
     @pecan.expose('json')
     def get_one(self, arg):
@@ -81,7 +88,8 @@ class BaseRestControllerWithValidation(rest.RestController):
     @pecan.expose('json')
     def post(self, ):
         """POST handler."""
-        item = validators.safe_load_json_body(self.validator)
+        self.validator.validate(pecan.request)
+        item = json.loads(pecan.request.body)
         item_id = self.store_item(item)
         pecan.response.status = 201
         return item_id
@@ -90,6 +98,8 @@ class BaseRestControllerWithValidation(rest.RestController):
 class ResultsController(BaseRestControllerWithValidation):
 
     """/v1/results handler."""
+
+    __validator__ = validators.TestResultValidator
 
     def get_item(self, item_id):
         """Handler for getting item"""
@@ -105,7 +115,14 @@ class ResultsController(BaseRestControllerWithValidation):
 
     def store_item(self, item_in_json):
         """Handler for storing item. Should return new item id"""
-        test_id = db.store_results(item_in_json)
+        item = item_in_json.copy()
+        if pecan.request.headers.get('X-Public-Key'):
+            if 'metadata' not in item:
+                item['metadata'] = {}
+            item['metadata']['public_key'] = \
+                pecan.request.headers.get('X-Public-Key')
+        test_id = db.store_results(item)
+        LOG.debug(item)
         return {'test_id': test_id}
 
     @pecan.expose('json')
@@ -150,12 +167,11 @@ class ResultsController(BaseRestControllerWithValidation):
                     'cpid': r.cpid
                 })
 
-            page = {}
-            page['results'] = results
-            page['pagination'] = {
-                'current_page': page_number,
-                'total_pages': total_pages_number
-            }
+            page = {'results': results,
+                    'pagination': {
+                        'current_page': page_number,
+                        'total_pages': total_pages_number
+                    }}
         except Exception as ex:
             LOG.debug('An error occurred during '
                       'operation with database: %s' % ex)
@@ -168,4 +184,4 @@ class V1Controller(object):
 
     """Version 1 API controller root."""
 
-    results = ResultsController(validators.TestResultValidator())
+    results = ResultsController()

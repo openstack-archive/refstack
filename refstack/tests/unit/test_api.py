@@ -38,14 +38,16 @@ class ResultsControllerTestCase(base.BaseTestCase):
     def setUp(self):
         super(ResultsControllerTestCase, self).setUp()
         self.validator = mock.Mock()
-        self.controller = v1.ResultsController(self.validator)
+        v1.ResultsController.__validator__ = \
+            mock.Mock(return_value=self.validator)
+        self.controller = v1.ResultsController()
         self.config_fixture = config_fixture.Config()
         self.CONF = self.useFixture(self.config_fixture).conf
 
     @mock.patch('refstack.db.get_test')
     @mock.patch('refstack.db.get_test_results')
     def test_get(self, mock_get_test_res, mock_get_test):
-        self.validator.assert_id.return_value = True
+        self.validator.assert_id = mock.Mock(return_value=True)
 
         test_info = mock.Mock()
         test_info.cpid = 'foo'
@@ -70,17 +72,34 @@ class ResultsControllerTestCase(base.BaseTestCase):
 
     @mock.patch('refstack.db.store_results')
     @mock.patch('pecan.response')
-    @mock.patch('refstack.common.validators.safe_load_json_body')
-    def test_post(self, mock_safe_load, mock_response, mock_store_results):
-        mock_safe_load.return_value = 'fake_item'
+    @mock.patch('pecan.request')
+    def test_post(self, mock_request, mock_response, mock_store_results):
+        mock_request.body = '{"answer": 42}'
+        mock_request.headers = {}
         mock_store_results.return_value = 'fake_test_id'
-
         result = self.controller.post()
-
         self.assertEqual(result, {'test_id': 'fake_test_id'})
         self.assertEqual(mock_response.status, 201)
-        mock_safe_load.assert_called_once_with(self.validator)
-        mock_store_results.assert_called_once_with('fake_item')
+        mock_store_results.assert_called_once_with({'answer': 42})
+
+    @mock.patch('refstack.db.store_results')
+    @mock.patch('pecan.response')
+    @mock.patch('pecan.request')
+    def test_post_with_sign(self, mock_request,
+                            mock_response,
+                            mock_store_results):
+        mock_request.body = '{"answer": 42}'
+        mock_request.headers = {
+            'X-Signature': 'fake-sign',
+            'X-Public-Key': 'fake-key'
+        }
+        mock_store_results.return_value = 'fake_test_id'
+        result = self.controller.post()
+        self.assertEqual(result, {'test_id': 'fake_test_id'})
+        self.assertEqual(mock_response.status, 201)
+        mock_store_results.assert_called_once_with(
+            {'answer': 42, 'metadata': {'public_key': 'fake-key'}}
+        )
 
     @mock.patch('pecan.abort')
     @mock.patch('refstack.db.get_test')
@@ -90,35 +109,6 @@ class ResultsControllerTestCase(base.BaseTestCase):
         self.assertRaises(Exception,
                           self.controller.get_item,
                           'fake_id')
-
-    @mock.patch('refstack.db.get_test')
-    @mock.patch('refstack.db.get_test_results')
-    def test_get_item(self, mock_get_test_res, mock_get_test):
-        test_info = mock.Mock()
-        test_info.cpid = 'foo'
-        test_info.created_at = 'bar'
-        test_info.duration_seconds = 999
-        mock_get_test.return_value = test_info
-
-        mock_get_test_res.return_value = [('test1',), ('test2',), ('test3',)]
-
-        actual_result = self.controller.get_item('fake_id')
-        expected_result = {
-            'cpid': 'foo',
-            'created_at': 'bar',
-            'duration_seconds': 999,
-            'results': ['test1', 'test2', 'test3']
-        }
-        self.assertEqual(actual_result, expected_result)
-        mock_get_test_res.assert_called_once_with('fake_id')
-        mock_get_test.assert_called_once_with('fake_id')
-
-    @mock.patch('refstack.db.store_results')
-    def test_store_item(self, mock_store_item):
-        mock_store_item.return_value = 'fake_result'
-        result = self.controller.store_item('fake_item')
-        self.assertEqual(result, {'test_id': 'fake_result'})
-        mock_store_item.assert_called_once_with('fake_item')
 
     @mock.patch('pecan.abort')
     @mock.patch('refstack.api.utils.parse_input_params')
@@ -236,20 +226,21 @@ class BaseRestControllerWithValidationTestCase(base.BaseTestCase):
     def setUp(self):
         super(BaseRestControllerWithValidationTestCase, self).setUp()
         self.validator = mock.Mock()
-        self.controller = v1.BaseRestControllerWithValidation(self.validator)
+        v1.BaseRestControllerWithValidation.__validator__ = \
+            mock.Mock(return_value=self.validator)
+        self.controller = v1.BaseRestControllerWithValidation()
 
     @mock.patch('pecan.response')
-    @mock.patch('refstack.common.validators.safe_load_json_body')
-    def test_post(self, mock_safe_load, mock_response):
-        mock_safe_load.return_value = 'fake_item'
+    @mock.patch('pecan.request')
+    def test_post(self, mock_request, mock_response):
+        mock_request.body = '[42]'
         self.controller.store_item = mock.Mock(return_value='fake_id')
 
         result = self.controller.post()
 
         self.assertEqual(result, 'fake_id')
         self.assertEqual(mock_response.status, 201)
-        mock_safe_load.assert_called_once_with(self.validator)
-        self.controller.store_item.assert_called_once_with('fake_item')
+        self.controller.store_item.assert_called_once_with([42])
 
     def test_get_one_return_item(self):
         self.validator.assert_id.return_value = True
@@ -268,7 +259,7 @@ class BaseRestControllerWithValidationTestCase(base.BaseTestCase):
         self.assertEqual(result, 'fake_schema')
 
     @mock.patch('pecan.abort')
-    def test_get_one_aborut(self, mock_abort):
-        self.validator.assert_id.return_value = False
+    def test_get_one_abort(self, mock_abort):
+        self.validator.assert_id = mock.Mock(return_value=False)
         self.controller.get_one('fake_arg')
         mock_abort.assert_called_once_with(404)
