@@ -57,13 +57,16 @@ class TestResults(BASE, RefStackBase):
     __tablename__ = 'results'
     __table_args__ = (
         sa.UniqueConstraint('test_id', 'name'),
-        sa.UniqueConstraint('test_id', 'uid'),
+        # TODO(sslypushenko)
+        # Constraint should turned on after duplication test uuids issue
+        # will be fixed
+        # sa.UniqueConstraint('test_id', 'uuid'),
     )
     _id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     test_id = sa.Column(sa.String(36), sa.ForeignKey('test.id'),
                         index=True, nullable=False, unique=False)
     name = sa.Column(sa.String(512))
-    uid = sa.Column(sa.String(36))
+    uuid = sa.Column(sa.String(36))
 
 
 class TestMeta(BASE, RefStackBase):

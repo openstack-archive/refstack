@@ -72,7 +72,7 @@ class TestResultValidator(Validator):
                         'type': 'object',
                         'properties': {
                             'name': {'type': 'string'},
-                            'uid': {
+                            'uuid': {
                                 'type': 'string',
                                 'format': 'uuid_hex'
                             }

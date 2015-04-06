@@ -74,7 +74,7 @@ def store_results(results):
             test_result = models.TestResults()
             test_result.test_id = test_id
             test_result.name = result['name']
-            test_result.uid = result.get('uid', None)
+            test_result.uuid = result.get('uuid', None)
             test_result.save(session)
     return test_id
 
