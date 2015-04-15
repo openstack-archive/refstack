@@ -1,0 +1,9 @@
+.tmp
+AUTHORS
+ChangeLog
+build/
+cover/
+dist
+node_modules
+npm-debug.log
+app/assets/lib

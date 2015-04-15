@@ -1,0 +1,71 @@
+<h3>DefCore Capabilities</h3>
+<strong>Version:</strong>
+<select ng-model="version" ng-change="update()">
+    <option value="2015.03">2015.03</option>
+</select>
+<br /><br />
+<strong>Target Program:</strong>
+<select ng-model="target" >
+    <option value="platform">OpenStack Powered Platform</option>
+    <option value="compute">OpenStack Powered Compute</option>
+    <option value="object">OpenStack Powered Object Storage</option>
+</select>
+<span class="program-about"><a target="_blank" href="http://www.openstack.org/brand/interop/">About</a></span>
+<br /><br />
+
+<strong>Capability Status:</strong>
+<div class="checkbox">
+    <label>
+    <input type="checkbox" ng-model="status.required" ng-true-value="'required'" ng-false-value="''">
+    <span class="required">Required</span>
+    </label>
+    <label>
+    <input type="checkbox" ng-model="status.advisory" ng-true-value="'advisory'" ng-false-value="''">
+    <span class="advisory">Advisory</span>
+    </label>
+    <label>
+    <input type="checkbox" ng-model="status.deprecated" ng-true-value="'deprecated'" ng-false-value="''">
+    <span class="deprecated">Deprecated</span>
+    </label>
+    <label>
+    <input type="checkbox" ng-model="status.removed" ng-true-value="'removed'" ng-false-value="''">
+    <span class="removed">Removed</span>
+    </label>
+</div>
+<p><small>Tests marked with <span class="flagged"></span> are tests flagged by DefCore.</small></p>
+
+<ol class="capabilities">
+  <li class="capability-list-item" ng-repeat="capability in capabilities.capabilities | arrayConverter | filter:filterProgram | filter:filterStatus">
+    <span class="capability-name">{{capability.name}}</span><br />
+    <em>{{capability.description}}</em><br />
+    Status: <span class="{{capability.status}}">{{capability.status}}</span><br />
+    <a ng-click="hideAchievements = !hideAchievements">Achievements ({{capability.achievements.length}})</a><br />
+    <ol collapse="hideAchievements" class="list-inline">
+        <li ng-repeat="achievement in capability.achievements">
+            {{achievement}}
+        </li>
+    </ol>
+
+    <a ng-click="hideTests = !hideTests">Tests ({{capability.tests.length}})</a>
+    <ul collapse="hideTests">
+        <li ng-repeat="test in capability.tests">
+           <span ng-class="{'flagged': capability.flagged.indexOf(test) > -1}"> {{test}}</span>
+        </li>
+    </ul>
+  </li>
+</ol>
+<hr>
+
+<div class="criteria">
+    <h4><a ng-click="hideCriteria = !hideCriteria">Criteria</a></h4>
+    <div collapse="hideCriteria">
+        <ul>
+            <li ng-repeat="(key, criterion) in capabilities.criteria">
+                <span class="criterion-name">{{criterion.name}}</span><br />
+                <em>{{criterion.Description}}</em><br />
+                Weight: {{criterion.weight}}
+            </li>
+        </ul>
+    </div>
+</div>
+<br /><br />

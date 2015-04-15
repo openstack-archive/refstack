@@ -1,0 +1,130 @@
+body {
+  background: white;
+  color: black;
+  font-family: 'Helvetica Neue', 'Helvetica', 'Verdana', sans-serif;
+}
+
+a {
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.heading {
+  font-size: 3em;
+  font-weight: bold;
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
+.heading img {
+  height: 50px;
+  vertical-align: text-bottom;
+}
+
+form {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+fieldset {
+  border: 0;
+}
+
+input.error {
+  background: #FAFF78;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Futura-CondensedExtraBold', 'Futura', 'Helvetica', sans-serif;
+}
+
+.footer {
+  background: none repeat scroll 0% 0% #333;
+}
+
+.required {
+  color: #1D6503;
+}
+
+.advisory {
+  color: #9F8501;
+}
+
+.deprecated {
+  color: #B03838;
+}
+
+.removed {
+  color: #801601;
+}
+
+.checkbox {
+  word-spacing: 20px;
+  background: #F8F8F8;
+  padding: 10px;
+}
+
+.capabilities {
+  color: #4B4B4B;
+}
+
+.capabilities a, .criteria a {
+  cursor: pointer;
+}
+
+.capabilities .capability-list-item {
+  border-bottom: 2px solid #AFAFAF;
+  padding-bottom: .6em;
+}
+
+.capabilities .capability-name {
+  font-size: 1.3em;
+  font-weight: bold;
+  color: black;
+}
+
+#criteria {
+  color: #4B4B4B;
+}
+
+.criterion-name {
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+.list-inline li:before {
+  content: '\00BB';
+}
+
+.flagged:before {
+  color: #E6A100;
+  content: '\2691';
+}
+
+.program-about {
+  font-size: .8em;
+}
+
+.jumbotron .left {
+  width: 70%;
+}
+
+.container .jumbotron {
+  background: #F6F6F6;
+  border-top: 2px solid #C9C9C9;
+  border-bottom: 2px solid #C9C9C9;
+  border-radius: 0;
+}
+
+.jumbotron .right {
+  width: 30%;
+}
+
+.jumbotron img {
+  width: 70%;
+  height: 70%;
+}
