@@ -52,6 +52,11 @@ API_OPTS = [
                     'must contain %(project_root)s variable. Directory with '
                     'template files specified relative the project root.'
                ),
+    cfg.ListOpt('allowed_cors_origins',
+                default=[],
+                help='List of sites allowed cross-site resource access. If '
+                     'this is empty, only same-origin requests are allowed.'
+                ),
     cfg.BoolOpt('app_dev_mode',
                 default=False,
                 help='Switch Refstack app into debug mode. Helpful for '
@@ -76,6 +81,7 @@ class JSONErrorHook(pecan.hooks.PecanHook):
     """
     A pecan hook that translates webob HTTP errors into a JSON format.
     """
+
     def __init__(self):
         """Hook init."""
         self.debug = CONF.api.app_dev_mode
@@ -101,6 +107,30 @@ class JSONErrorHook(pecan.hooks.PecanHook):
             status=status_code,
             content_type='application/json'
         )
+
+
+class CORSHook(pecan.hooks.PecanHook):
+    """
+    A pecan hook that handles Cross-Origin Resource Sharing.
+    """
+
+    def __init__(self):
+        """Init the hook by getting the allowed origins."""
+        self.allowed_origins = getattr(CONF.api, 'allowed_cors_origins', [])
+
+    def after(self, state):
+        """Add CORS headers to the response.
+
+        If the request's origin is in the list of allowed origins, add the
+        CORS headers to the response.
+        """
+        origin = state.request.headers.get('Origin', None)
+        if origin in self.allowed_origins:
+            state.response.headers['Access-Control-Allow-Origin'] = origin
+            state.response.headers['Access-Control-Allow-Methods'] = \
+                'GET, OPTIONS, PUT, POST'
+            state.response.headers['Access-Control-Allow-Headers'] = \
+                'origin, authorization, accept, content-type'
 
 
 def setup_app(config):
@@ -133,7 +163,7 @@ def setup_app(config):
         debug=CONF.api.app_dev_mode,
         static_root=static_root,
         template_path=template_path,
-        hooks=[JSONErrorHook(), pecan.hooks.RequestViewerHook(
+        hooks=[JSONErrorHook(), CORSHook(), pecan.hooks.RequestViewerHook(
             {'items': ['status', 'method', 'controller', 'path', 'body']},
             headers=False, writer=loggers.WritableLogger(LOG, logging.DEBUG)
         )]

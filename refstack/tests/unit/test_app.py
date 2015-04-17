@@ -20,6 +20,7 @@ import json
 import mock
 from oslo_config import fixture as config_fixture
 from oslotest import base
+import pecan
 import webob
 
 from refstack.api import app
@@ -107,6 +108,66 @@ class JSONErrorHookTestCase(base.BaseTestCase):
         )
 
 
+class CORSHookTestCase(base.BaseTestCase):
+    """
+    Tests for the CORS hook used by the application.
+    """
+
+    def setUp(self):
+        super(CORSHookTestCase, self).setUp()
+        self.config_fixture = config_fixture.Config()
+        self.CONF = self.useFixture(self.config_fixture).conf
+
+    def test_allowed_origin(self):
+        """Test when the origin is in the list of allowed origins."""
+        self.CONF.set_override('allowed_cors_origins', 'test.com', 'api')
+        hook = app.CORSHook()
+        request = pecan.core.Request({})
+        request.headers = {'Origin': 'test.com'}
+        state = pecan.core.RoutingState(request, pecan.core.Response(), None)
+        hook.after(state)
+
+        self.assertIn('Access-Control-Allow-Origin', state.response.headers)
+        allow_origin = state.response.headers['Access-Control-Allow-Origin']
+        self.assertEqual('test.com', allow_origin)
+
+        self.assertIn('Access-Control-Allow-Methods', state.response.headers)
+        allow_methods = state.response.headers['Access-Control-Allow-Methods']
+        self.assertEqual('GET, OPTIONS, PUT, POST', allow_methods)
+
+        self.assertIn('Access-Control-Allow-Headers', state.response.headers)
+        allow_headers = state.response.headers['Access-Control-Allow-Headers']
+        self.assertEqual('origin, authorization, accept, content-type',
+                         allow_headers)
+
+    def test_unallowed_origin(self):
+        """Test when the origin is not in the list of allowed origins."""
+        hook = app.CORSHook()
+        request_headers = {'Origin': 'test.com'}
+        request = pecan.core.Request({})
+        request.headers = request_headers
+        state = pecan.core.RoutingState(request, pecan.core.Response(), None)
+        hook.after(state)
+        self.assertNotIn('Access-Control-Allow-Origin', state.response.headers)
+        self.assertNotIn('Access-Control-Allow-Methods',
+                         state.response.headers)
+        self.assertNotIn('Access-Control-Allow-Headers',
+                         state.response.headers)
+
+    def test_no_origin_header(self):
+        """Test when there is no 'Origin' header in the request, in which case,
+        the request is not cross-origin and doesn't need the CORS headers."""
+        hook = app.CORSHook()
+        request = pecan.core.Request({})
+        state = pecan.core.RoutingState(request, pecan.core.Response(), None)
+        hook.after(state)
+        self.assertNotIn('Access-Control-Allow-Origin', state.response.headers)
+        self.assertNotIn('Access-Control-Allow-Methods',
+                         state.response.headers)
+        self.assertNotIn('Access-Control-Allow-Headers',
+                         state.response.headers)
+
+
 class SetupAppTestCase(base.BaseTestCase):
 
     def setUp(self):
@@ -116,10 +177,11 @@ class SetupAppTestCase(base.BaseTestCase):
 
     @mock.patch('pecan.hooks')
     @mock.patch.object(app, 'JSONErrorHook')
+    @mock.patch.object(app, 'CORSHook')
     @mock.patch('os.path.join')
     @mock.patch('pecan.make_app')
     def test_setup_app(self, make_app, os_join,
-                       json_error_hook, pecan_hooks):
+                       json_error_hook, cors_hook, pecan_hooks):
 
         self.CONF.set_override('app_dev_mode',
                                True,
@@ -134,6 +196,7 @@ class SetupAppTestCase(base.BaseTestCase):
         os_join.return_value = 'fake_project_root'
 
         json_error_hook.return_value = 'json_error_hook'
+        cors_hook.return_value = 'cors_hook'
         pecan_hooks.RequestViewerHook.return_value = 'request_viewer_hook'
         pecan_config = mock.Mock()
         pecan_config.app = {'root': 'fake_pecan_config'}
@@ -149,5 +212,5 @@ class SetupAppTestCase(base.BaseTestCase):
             debug=True,
             static_root='fake_static_root',
             template_path='fake_template_path',
-            hooks=['json_error_hook', 'request_viewer_hook']
+            hooks=['cors_hook', 'json_error_hook', 'request_viewer_hook']
         )

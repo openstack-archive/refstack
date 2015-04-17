@@ -116,6 +116,10 @@
 # relative the project root. (string value)
 #template_path = %(project_root)s/templates
 
+# List of sites allowed cross-origin resource access. If this is empty,
+# only same-origin requests are allowed.
+#allowed_cors_origins =  http://refstack.net, http://localhost:8080
+
 # Switch Refstack app into debug mode. Helpful for development. In
 # debug mode static file will be served by pecan application. Also,
 # server responses will contain some details with debug information.
