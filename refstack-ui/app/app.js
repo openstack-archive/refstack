@@ -35,6 +35,29 @@ refstackApp.config([
                 url: '/results/:testID',
                 templateUrl: '/components/results-report/resultsReport.html',
                 controller: 'resultsReportController'
+            }).
+            state('profile', {
+                url: '/profile',
+                templateUrl: '/components/profile/profile.html',
+                controller: 'profileController'
+            });
+    }
+]);
+
+/**
+ * Try to authenticate user
+ */
+
+refstackApp.run(['$http', '$rootScope', 'refstackApiUrl',
+    function($http, $rootScope, refstackApiUrl) {
+        'use strict';
+        var profile_url = refstackApiUrl + '/profile';
+        $http.get(profile_url, {withCredentials: true}).
+            success(function(data) {
+                $rootScope.currentUser = data;
+            }).
+            error(function() {
+                $rootScope.currentUser = null;
             });
     }
 ]);

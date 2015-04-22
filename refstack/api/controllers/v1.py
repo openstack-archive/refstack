@@ -24,10 +24,13 @@ from pecan import rest
 import re
 import requests
 import requests_cache
+from six.moves.urllib import parse
 
 from refstack import db
 from refstack.api import constants as const
 from refstack.api import utils as api_utils
+from refstack.api.controllers import auth
+from refstack.api.controllers import user
 from refstack.common import validators
 
 LOG = log.getLogger(__name__)
@@ -55,7 +58,8 @@ requests_cache.install_cache(cache_name='github_cache',
 
 class BaseRestControllerWithValidation(rest.RestController):
 
-    """
+    """Rest controller with validation.
+
     Controller provides validation for POSTed data
     exposed endpoints:
     POST base_url/
@@ -66,22 +70,24 @@ class BaseRestControllerWithValidation(rest.RestController):
     __validator__ = None
 
     def __init__(self):  # pragma: no cover
+        """Init."""
         if self.__validator__:
             self.validator = self.__validator__()
         else:
             raise ValueError("__validator__ is not defined")
 
     def get_item(self, item_id):  # pragma: no cover
-        """Handler for getting item"""
+        """Handler for getting item."""
         raise NotImplementedError
 
     def store_item(self, item_in_json):  # pragma: no cover
-        """Handler for storing item. Should return new item id"""
+        """Handler for storing item. Should return new item id."""
         raise NotImplementedError
 
     @pecan.expose('json')
     def get_one(self, arg):
         """Return test results in JSON format.
+
         :param arg: item ID in uuid4 format or action
         """
         if self.validator.assert_id(arg):
@@ -110,7 +116,7 @@ class ResultsController(BaseRestControllerWithValidation):
     __validator__ = validators.TestResultValidator
 
     def get_item(self, item_id):
-        """Handler for getting item"""
+        """Handler for getting item."""
         test_info = db.get_test(item_id)
         if not test_info:
             pecan.abort(404)
@@ -122,7 +128,7 @@ class ResultsController(BaseRestControllerWithValidation):
                 "results": test_name_list}
 
     def store_item(self, item_in_json):
-        """Handler for storing item. Should return new item id"""
+        """Handler for storing item. Should return new item id."""
         item = item_in_json.copy()
         if pecan.request.headers.get('X-Public-Key'):
             if 'metadata' not in item:
@@ -132,21 +138,21 @@ class ResultsController(BaseRestControllerWithValidation):
         test_id = db.store_results(item)
         LOG.debug(item)
         return {'test_id': test_id,
-                'url': CONF.api.test_results_url % test_id}
+                'url': parse.urljoin(CONF.ui_url,
+                                     CONF.api.test_results_url) % test_id}
 
     @pecan.expose('json')
     def get(self):
-        """
-            Get information of all uploaded test results in descending
-            chronological order.
-            Make it possible to specify some input parameters
-            for filtering.
-            For example:
-                /v1/results?page=<page number>&cpid=1234.
-            By default, page is set to page number 1,
-            if the page parameter is not specified.
-         """
+        """Get information of all uploaded test results.
 
+        Get information of all uploaded test results in descending
+        chronological order. Make it possible to specify some
+        input parameters for filtering.
+        For example:
+            /v1/results?page=<page number>&cpid=1234.
+        By default, page is set to page number 1,
+        if the page parameter is not specified.
+        """
         expected_input_params = [
             const.START_DATE,
             const.END_DATE,
@@ -192,8 +198,11 @@ class ResultsController(BaseRestControllerWithValidation):
 
 class CapabilitiesController(rest.RestController):
 
-    """/v1/capabilities handler. This acts as a proxy for retrieving
-       capability files from the openstack/defcore Github repository."""
+    """/v1/capabilities handler.
+
+    This acts as a proxy for retrieving capability files
+    from the openstack/defcore Github repository.
+    """
 
     @pecan.expose('json')
     def get(self):
@@ -248,3 +257,5 @@ class V1Controller(object):
 
     results = ResultsController()
     capabilities = CapabilitiesController()
+    auth = auth.AuthController()
+    profile = user.ProfileController()

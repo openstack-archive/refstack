@@ -20,6 +20,11 @@ Refstack
             <li ng-class="{ active: isActive('/capabilities')}"><a ui-sref="capabilities">DefCore Capabilities</a></li>
             <li ng-class="{ active: isActive('/results')}"><a ui-sref="results">Community Results</a></li>
           </ul>
+          <ul ng-controller="authController" class="nav navbar-nav navbar-right">
+            <li ng-class="{ active: isActive('/profile')}" ng-if="isAuthenticated()"><a ui-sref="profile">{{currentUser.fullname}}</a></li>
+            <li ng-if="isAuthenticated()"><a href="" ng-click="doSignOut()">Sign Out</a></li>
+            <li ng-if="!isAuthenticated()"><a href="" ng-click="doSignIn()">Sign In / Sign Up</a></li>
+          </ul>
         </div>
     </div>
 </nav>

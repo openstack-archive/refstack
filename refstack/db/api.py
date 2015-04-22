@@ -18,7 +18,6 @@
 Functions in this module are imported into the refstack.db namespace.
 Call these functions from refstack.db namespace, not the refstack.db.api
 namespace.
-
 """
 from oslo_config import cfg
 from oslo_db import api as db_api
@@ -37,8 +36,9 @@ _BACKEND_MAPPING = {'sqlalchemy': 'refstack.db.sqlalchemy.api'}
 IMPL = db_api.DBAPI.from_config(cfg.CONF, backend_mapping=_BACKEND_MAPPING,
                                 lazy=True)
 
+UserNotFound = IMPL.UserNotFound
 
-###################
+
 def store_results(results):
     """Storing results into database.
 
@@ -66,9 +66,9 @@ def get_test_results(test_id):
 def get_test_records(page_number, per_page, filters):
     """Get page with applied filters for uploaded test records.
 
-        :param page_number: The number of page.
-        :param per_page: The number of results for one page.
-        :param filters: (Dict) Filters that will be applied for records.
+    :param page_number: The number of page.
+    :param per_page: The number of results for one page.
+    :param filters: (Dict) Filters that will be applied for records.
     """
     return IMPL.get_test_records(page_number, per_page, filters)
 
@@ -76,6 +76,22 @@ def get_test_records(page_number, per_page, filters):
 def get_test_records_count(filters):
     """Get total pages number with applied filters for uploaded test records.
 
-        :param filters: (Dict) Filters that will be applied for records.
+    :param filters: (Dict) Filters that will be applied for records.
     """
     return IMPL.get_test_records_count(filters)
+
+
+def user_get(user_openid):
+    """Get user info.
+
+    :param user_openid: User openid
+    """
+    return IMPL.user_get(user_openid)
+
+
+def user_update_or_create(user_info):
+    """Create user DB record if it exists, otherwise record will be updated.
+
+    :param user_info: User record
+    """
+    return IMPL.user_update_or_create(user_info)

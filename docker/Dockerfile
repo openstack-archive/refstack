@@ -21,7 +21,6 @@ RUN \
 
 RUN \
     pip install virtualenv tox ipython ipdb httpie && \
-    npm install -g bower && \
     ln -s /usr/bin/nodejs /usr/bin/node
 
 ADD /docker/scripts/* /usr/bin/

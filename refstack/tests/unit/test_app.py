@@ -91,6 +91,15 @@ class JSONErrorHookTestCase(base.BaseTestCase):
         )
 
     @mock.patch.object(webob, 'Response')
+    def test_on_http_redirection(self, response):
+        self.CONF.set_override('app_dev_mode', False, 'api')
+
+        exc = mock.Mock(spec=webob.exc.HTTPRedirection)
+        hook = app.JSONErrorHook()
+        result = hook.on_error(mock.Mock(), exc)
+        self.assertEqual(result, None)
+
+    @mock.patch.object(webob, 'Response')
     def test_on_error_with_other_exceptions(self, response):
         self.CONF.set_override('app_dev_mode', False, 'api')
         exc = mock.Mock(status=500)
@@ -180,7 +189,9 @@ class SetupAppTestCase(base.BaseTestCase):
     @mock.patch.object(app, 'CORSHook')
     @mock.patch('os.path.join')
     @mock.patch('pecan.make_app')
-    def test_setup_app(self, make_app, os_join,
+    @mock.patch('refstack.api.app.SessionMiddleware')
+    @mock.patch('refstack.api.utils.get_token', return_value='42')
+    def test_setup_app(self, get_token, session_middleware, make_app, os_join,
                        json_error_hook, cors_hook, pecan_hooks):
 
         self.CONF.set_override('app_dev_mode',
@@ -201,10 +212,11 @@ class SetupAppTestCase(base.BaseTestCase):
         pecan_config = mock.Mock()
         pecan_config.app = {'root': 'fake_pecan_config'}
         make_app.return_value = 'fake_app'
+        session_middleware.return_value = 'fake_app_with_middleware'
 
         result = app.setup_app(pecan_config)
 
-        self.assertEqual(result, 'fake_app')
+        self.assertEqual(result, 'fake_app_with_middleware')
 
         app_conf = dict(pecan_config.app)
         make_app.assert_called_once_with(
@@ -213,4 +225,11 @@ class SetupAppTestCase(base.BaseTestCase):
             static_root='fake_static_root',
             template_path='fake_template_path',
             hooks=['cors_hook', 'json_error_hook', 'request_viewer_hook']
+        )
+        session_middleware.assert_called_once_with(
+            'fake_app',
+            {'session.key': 'refstack',
+             'session.type': 'memory',
+             'session.timeout': 604800,
+             'session.validate_key': get_token.return_value}
         )

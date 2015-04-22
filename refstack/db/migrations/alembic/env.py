@@ -14,6 +14,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+"""Alembic environment script."""
+
 from __future__ import with_statement
 
 from alembic import context
@@ -23,12 +25,11 @@ from refstack.db.sqlalchemy import models as db_models
 
 
 def run_migrations_online():
-
     """Run migrations in 'online' mode.
 
     In this scenario we need to create an Engine
-    and associate a connection with the context."""
-
+    and associate a connection with the context.
+    """
     engine = db_api.get_engine()
     connection = engine.connect()
     target_metadata = db_models.RefStackBase.metadata

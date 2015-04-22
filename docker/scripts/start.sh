@@ -41,7 +41,8 @@ build_refstack_env () {
     #Install some dev tools
     .venv/bin/pip install ipython ipdb httpie
     cd /home/dev/refstack
-    bower install --config.interactive=false
+    npm install
+#    bower install --config.interactive=false
 
     build_tmpl /refstack/docker/templates/config.json.tmpl /home/dev/refstack/refstack-ui/app/config.json
     build_tmpl /refstack/docker/templates/refstack.conf.tmpl /home/dev/refstack.conf

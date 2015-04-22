@@ -55,6 +55,18 @@ class DBAPITestCase(base.BaseTestCase):
         db.get_test_records_count(filters)
         mock_db.assert_called_once_with(filters)
 
+    @mock.patch.object(api, 'user_get')
+    def test_user_get(self, mock_db):
+        user_openid = 'user@example.com'
+        db.user_get(user_openid)
+        mock_db.assert_called_once_with(user_openid)
+
+    @mock.patch.object(api, 'user_update_or_create')
+    def test_user_update_or_create(self, mock_db):
+        user_info = 'user@example.com'
+        db.user_update_or_create(user_info)
+        mock_db.assert_called_once_with(user_info)
+
 
 class DBHelpersTestCase(base.BaseTestCase):
     """Test case for database backend helpers."""
@@ -261,3 +273,48 @@ class DBBackendTestCase(base.BaseTestCase):
         session.query.assert_called_once_with(mock_model.id)
         mock_apply.assert_called_once_with(query, filters)
         apply_result.count.assert_called_once_with()
+
+    @mock.patch.object(api, 'get_session',
+                       return_value=mock.Mock(name='session'),)
+    @mock.patch('refstack.db.sqlalchemy.models.User')
+    def test_user_get(self, mock_model, mock_get_session):
+        user_openid = 'user@example.com'
+        session = mock_get_session.return_value
+        query = session.query.return_value
+        filtered = query.filter_by.return_value
+        user = filtered.first.return_value
+
+        result = api.user_get(user_openid)
+        self.assertEqual(result, user)
+
+        session.query.assert_called_once_with(mock_model)
+        query.filter_by.assert_called_once_with(openid=user_openid)
+        filtered.first.assert_called_once_with()
+
+    @mock.patch.object(api, 'get_session',
+                       return_value=mock.Mock(name='session'),)
+    @mock.patch('refstack.db.sqlalchemy.models.User')
+    def test_user_get_none(self, mock_model, mock_get_session):
+        user_openid = 'user@example.com'
+        session = mock_get_session.return_value
+        query = session.query.return_value
+        filtered = query.filter_by.return_value
+        filtered.first.return_value = None
+        self.assertRaises(api.UserNotFound, api.user_get, user_openid)
+
+    @mock.patch.object(api, 'get_session')
+    @mock.patch('refstack.db.sqlalchemy.models.User')
+    @mock.patch.object(api, 'user_get', side_effect=api.UserNotFound)
+    def test_user_update_or_create(self, mock_get_user, mock_model,
+                                   mock_get_session):
+        user_info = {'openid': 'user@example.com'}
+        session = mock_get_session.return_value
+        user = mock_model.return_value
+        result = api.user_update_or_create(user_info)
+        self.assertEqual(result, user)
+
+        mock_model.assert_called_once_with()
+        mock_get_session.assert_called_once_with()
+        user.save.assert_called_once_with(session=session)
+        user.update.assert_called_once_with(user_info)
+        session.begin.assert_called_once_with()

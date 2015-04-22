@@ -40,14 +40,16 @@
 #log_dir = <None>
 
 # Use syslog for logging. Existing syslog format is DEPRECATED during
-# I, and will change in J to honor RFC5424. (boolean value)
+# I, and changed in J to honor RFC5424. (boolean value)
 #use_syslog = false
 
 # (Optional) Enables or disables syslog rfc5424 format for logging. If
 # enabled, prefixes the MSG part of the syslog message with APP-NAME
-# (RFC5424). The format without the APP-NAME is deprecated in I, and
-# will be removed in J. (boolean value)
-#use_syslog_rfc_format = false
+# (RFC5424). The format without the APP-NAME is deprecated in K, and
+# will be removed in M, along with this option. (boolean value)
+# This option is deprecated for removal.
+# Its value may be silently ignored in the future.
+#use_syslog_rfc_format = true
 
 # Syslog facility to receive log lines. (string value)
 #syslog_log_facility = LOG_USER
@@ -67,7 +69,7 @@
 
 # Prefix each line of exception output with this format. (string
 # value)
-#logging_exception_prefix = %(asctime)s.%(msecs)03d %(process)d TRACE %(name)s %(instance)s
+#logging_exception_prefix = %(asctime)s.%(msecs)03d %(process)d ERROR %(name)s %(instance)s
 
 # List of logger=LEVEL pairs. (list value)
 #default_log_levels = amqp=WARN,amqplib=WARN,boto=WARN,qpid=WARN,sqlalchemy=WARN,suds=INFO,oslo.messaging=INFO,iso8601=WARN,requests.packages.urllib3.connectionpool=WARN,urllib3.connectionpool=WARN,websocket=WARN,requests.packages.urllib3.util.retry=WARN,urllib3.util.retry=WARN,keystonemiddleware=WARN,routes.middleware=WARN,stevedore=WARN
@@ -86,9 +88,16 @@
 # (string value)
 #instance_uuid_format = "[instance: %(uuid)s] "
 
+# Enables or disables fatal status of deprecations. (boolean value)
+#fatal_deprecations = false
+
 #
 # From refstack
 #
+
+# Url of user interface for Refstack. Need for redirects after sign in
+# and sign out. (string value)
+#ui_url = http://refstack.net
 
 # The backend to use for database. (string value)
 #db_backend = sqlalchemy
@@ -99,6 +108,9 @@
 #
 # From refstack
 #
+
+# Url of public Refstack API. (string value)
+#api_url = http://api.refstack.net
 
 # The directory where your static files can be found. Pecan comes with
 # middleware that can be used to serve static files (like CSS and
@@ -116,9 +128,9 @@
 # relative the project root. (string value)
 #template_path = %(project_root)s/templates
 
-# List of sites allowed cross-origin resource access. If this is empty,
-# only same-origin requests are allowed.
-#allowed_cors_origins =  http://refstack.net, http://localhost:8080
+# List of sites allowed cross-site resource access. If this is empty,
+# only same-origin requests are allowed. (list value)
+#allowed_cors_origins =
 
 # Switch Refstack app into debug mode. Helpful for development. In
 # debug mode static file will be served by pecan application. Also,
@@ -127,7 +139,17 @@
 #app_dev_mode = false
 
 # Template for test result url. (string value)
-#test_results_url = http://refstack.net/output.html?test_id=%s
+#test_results_url = /#/results/%s
+
+# The GitHub API URL of the repository and location of the DefCore
+# capability files. This URL is used to get a listing of all
+# capability files. (string value)
+#github_api_capabilities_url = https://api.github.com/repos/openstack/defcore/contents
+
+# This is the base URL that is used for retrieving specific capability
+# files. Capability file names will be appended to this URL to get the
+# contents of that file. (string value)
+#github_raw_base_url = https://raw.githubusercontent.com/openstack/defcore/master/
 
 # Number of results for one page (integer value)
 #results_per_page = 20
@@ -135,15 +157,6 @@
 # The format for start_date and end_date parameters (string value)
 #input_date_format = %Y-%m-%d %H:%M:%S
 
-# The GitHub API URL of the repository and location of the DefCore
-# capability files. This URL is used to get a listing of all capability
-# files.
-#github_api_capabilities_url = https://api.github.com/repos/openstack/defcore/contents
-
-# The base URL that is used for retrieving specific capability files.
-# Capability file names will be appended to this URL to get the contents
-# of that file.
-#github_raw_base_url = https://raw.githubusercontent.com/openstack/defcore/master/
 
 [database]
 
@@ -249,3 +262,51 @@
 # error is raised. Set to -1 to specify an infinite retry count.
 # (integer value)
 #db_max_retries = 20
+
+
+[osid]
+
+#
+# From refstack
+#
+
+# OpenStackID Auth Server URI. (string value)
+#openstack_openid_endpoint = https://openstackid.org/accounts/openid2
+
+# Interaction mode. Specifies whether Openstack Id IdP may interact
+# with the user to determine the outcome of the request. (string
+# value)
+#openid_mode = checkid_setup
+
+# Protocol version. Value identifying the OpenID protocol version
+# being used. This value should be "http://specs.openid.net/auth/2.0".
+# (string value)
+#openid_ns = http://specs.openid.net/auth/2.0
+
+# Return endpoint in Refstack's API. Value indicating the endpoint
+# where the user should be returned to after signing in. Openstack Id
+# Idp only supports HTTPS address types. (string value)
+#openid_return_to = /v1/auth/signin_return
+
+# Claimed identifier. This value must be set to
+# "http://specs.openid.net/auth/2.0/identifier_select". or to user
+# claimed identity (user local identifier or user owned identity [ex:
+# custom html hosted on a owned domain set to html discover]). (string
+# value)
+#openid_claimed_id = http://specs.openid.net/auth/2.0/identifier_select
+
+# Alternate identifier. This value must be set to
+# http://specs.openid.net/auth/2.0/identifier_select. (string value)
+#openid_identity = http://specs.openid.net/auth/2.0/identifier_select
+
+# Indicates request for user attribute information. This value must be
+# set to "http://openid.net/extensions/sreg/1.1". (string value)
+#openid_ns_sreg = http://openid.net/extensions/sreg/1.1
+
+# Comma-separated list of field names which, if absent from the
+# response, will prevent the Consumer from completing the registration
+# without End User interation. The field names are those that are
+# specified in the Response Format, with the "openid.sreg." prefix
+# removed. Valid values include: "country", "email", "firstname",
+# "language", "lastname" (string value)
+#openid_sreg_required = email,fullname

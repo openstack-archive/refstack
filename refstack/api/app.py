@@ -19,20 +19,33 @@ import json
 import logging
 import os
 
+from beaker.middleware import SessionMiddleware
 from oslo_config import cfg
 from oslo_log import log
 from oslo_log import loggers
 import pecan
 import webob
 
+from refstack.api import utils as api_utils
 from refstack.common import validators
 
 LOG = log.getLogger(__name__)
 
 PROJECT_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                             os.pardir)
+UI_OPTS = [
+    cfg.StrOpt('ui_url',
+               default='http://refstack.net',
+               help='Url of user interface for Refstack. Need for redirects '
+                    'after sign in and sign out.'
+               ),
+]
 
 API_OPTS = [
+    cfg.StrOpt('api_url',
+               default='http://refstack.net',
+               help='Url of public Refstack API.'
+               ),
     cfg.StrOpt('static_root',
                default='%(project_root)s/static',
                help='The directory where your static files can '
@@ -65,7 +78,7 @@ API_OPTS = [
                      'contain some details with debug information.'
                 ),
     cfg.StrOpt('test_results_url',
-               default='http://refstack.net/#/results/%s',
+               default='/#/results/%s',
                help='Template for test result url.'
                ),
     cfg.StrOpt('github_api_capabilities_url',
@@ -89,6 +102,8 @@ CONF = cfg.CONF
 opt_group = cfg.OptGroup(name='api',
                          title='Options for the Refstack API')
 
+CONF.register_opts(UI_OPTS)
+
 CONF.register_group(opt_group)
 CONF.register_opts(API_OPTS, opt_group)
 
@@ -96,9 +111,8 @@ log.register_options(CONF)
 
 
 class JSONErrorHook(pecan.hooks.PecanHook):
-    """
-    A pecan hook that translates webob HTTP errors into a JSON format.
-    """
+
+    """A pecan hook that translates webob HTTP errors into a JSON format."""
 
     def __init__(self):
         """Hook init."""
@@ -106,7 +120,9 @@ class JSONErrorHook(pecan.hooks.PecanHook):
 
     def on_error(self, state, exc):
         """Request error handler."""
-        if isinstance(exc, webob.exc.HTTPError):
+        if isinstance(exc, webob.exc.HTTPRedirection):
+            return
+        elif isinstance(exc, webob.exc.HTTPError):
             status_code = exc.status_int
             body = {'title': exc.title}
         elif isinstance(exc, validators.ValidationError):
@@ -128,9 +144,8 @@ class JSONErrorHook(pecan.hooks.PecanHook):
 
 
 class CORSHook(pecan.hooks.PecanHook):
-    """
-    A pecan hook that handles Cross-Origin Resource Sharing.
-    """
+
+    """A pecan hook that handles Cross-Origin Resource Sharing."""
 
     def __init__(self):
         """Init the hook by getting the allowed origins."""
@@ -149,6 +164,7 @@ class CORSHook(pecan.hooks.PecanHook):
                 'GET, OPTIONS, PUT, POST'
             state.response.headers['Access-Control-Allow-Headers'] = \
                 'origin, authorization, accept, content-type'
+            state.response.headers['Access-Control-Allow-Credentials'] = 'true'
 
 
 def setup_app(config):
@@ -187,8 +203,16 @@ def setup_app(config):
         )]
     )
 
+    beaker_conf = {
+        'session.key': 'refstack',
+        'session.type': 'memory',
+        'session.timeout': 604800,
+        'session.validate_key': api_utils.get_token(),
+    }
+    app = SessionMiddleware(app, beaker_conf)
+
     if CONF.api.app_dev_mode:
-        LOG.debug('\n\n Refstack is served at %s \n\n',
-                  CONF.api.test_results_url.split('/#/')[0])
+        LOG.debug('\n\n <<< Refstack UI is available at %s >>>\n\n',
+                  CONF.ui_url)
 
     return app

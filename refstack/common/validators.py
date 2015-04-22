@@ -13,8 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-""" Validators module
-"""
+"""Validators module."""
 
 import binascii
 import uuid
@@ -30,7 +29,10 @@ ext_format_checker = jsonschema.FormatChecker()
 
 class ValidationError(Exception):
 
+    """Raise if request doesn't pass trough validation process."""
+
     def __init__(self, title, exc=None):
+        """Init."""
         super(ValidationError, self).__init__(title)
         self.exc = exc
         self.title = title
@@ -40,14 +42,16 @@ class ValidationError(Exception):
             if self.exc else self.title
 
     def __repr__(self):
+        """Repr method."""
         return self.details
 
     def __str__(self):
+        """Str method."""
         return self.__repr__()
 
 
 def is_uuid(inst):
-    """ Check that inst is a uuid_hex string. """
+    """Check that inst is a uuid_hex string."""
     try:
         uuid.UUID(hex=inst)
     except (TypeError, ValueError):
@@ -59,20 +63,20 @@ def is_uuid(inst):
                                  format='uuid_hex',
                                  raises=(TypeError, ValueError))
 def checker_uuid(inst):
-    """Checker 'uuid_hex' format for jsonschema validator"""
+    """Checker 'uuid_hex' format for jsonschema validator."""
     return is_uuid(inst)
 
 
 class Validator(object):
 
-    """Base class for validators"""
+    """Base class for validators."""
+
     def __init__(self):
+        """Init."""
         self.schema = {}  # pragma: no cover
 
     def validate(self, request):
-        """
-        :param json_data: data for validation
-        """
+        """Validate request."""
         try:
             body = json.loads(request.body)
         except (ValueError, TypeError) as e:
@@ -89,7 +93,7 @@ class TestResultValidator(Validator):
     """Validator for incoming test results."""
 
     def __init__(self):
-
+        """Init."""
         self.schema = {
             'type': 'object',
             'properties': {
@@ -122,6 +126,7 @@ class TestResultValidator(Validator):
         )
 
     def validate(self, request):
+        """Validate uploaded test results."""
         super(TestResultValidator, self).validate(request)
         if request.headers.get('X-Signature') or \
                 request.headers.get('X-Public-Key'):
@@ -142,5 +147,5 @@ class TestResultValidator(Validator):
 
     @staticmethod
     def assert_id(_id):
-        """ Check that _id is a valid uuid_hex string. """
+        """Check that _id is a valid uuid_hex string."""
         return is_uuid(_id)

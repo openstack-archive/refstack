@@ -74,7 +74,7 @@ class FunctionalTest(base.BaseTestCase):
         self.app.reset()
 
     def drop_all_tables_and_constraints(self):
-        """Drop tables and cyclical constraints between tables"""
+        """Drop tables and cyclical constraints between tables."""
         engine = create_engine(self.connection)
         conn = engine.connect()
         trans = conn.begin()

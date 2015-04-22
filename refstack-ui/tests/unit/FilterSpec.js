@@ -2,9 +2,16 @@
 describe('Refstack filters', function () {
     'use strict';
 
+    var fakeApiUrl = 'http://foo.bar/v1';
+    beforeEach(function () {
+        module(function ($provide) {
+            $provide.constant('refstackApiUrl', fakeApiUrl);
+        });
+        module('refstackApp');
+    });
+
     describe('Filter: arrayConverter', function () {
         var $filter;
-        beforeEach(module('refstackApp'));
         beforeEach(inject(function (_$filter_) {
             $filter = _$filter_('arrayConverter');
         }));
@@ -19,7 +26,6 @@ describe('Refstack filters', function () {
 
     describe('Filter: capitalize', function() {
         var $filter;
-        beforeEach(module('refstackApp'));
         beforeEach(inject(function(_$filter_) {
             $filter = _$filter_('capitalize');
         }));

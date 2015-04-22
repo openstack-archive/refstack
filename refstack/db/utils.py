@@ -22,14 +22,17 @@ LOG = log.getLogger(__name__)
 
 
 class PluggableBackend(object):
+
     """A pluggable backend loaded lazily based on some value."""
 
     def __init__(self, pivot, **backends):
+        """Init."""
         self.__backends = backends
         self.__pivot = pivot
         self.__backend = None
 
     def __get_backend(self):
+        """Get backend."""
         if not self.__backend:
             backend_name = CONF[self.__pivot]
             if backend_name not in self.__backends:  # pragma: no cover
@@ -48,5 +51,6 @@ class PluggableBackend(object):
         return self.__backend
 
     def __getattr__(self, key):
+        """Proxy interface to backend."""
         backend = self.__get_backend()
         return getattr(backend, key)

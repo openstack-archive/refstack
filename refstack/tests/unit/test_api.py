@@ -23,10 +23,14 @@ import mock
 from oslo_config import fixture as config_fixture
 from oslotest import base
 import requests
+from six.moves.urllib import parse
+import webob.exc
 
 from refstack.api import constants as const
 from refstack.api import utils as api_utils
+from refstack.api.controllers import auth
 from refstack.api.controllers import v1
+from refstack.api.controllers import user
 
 
 def safe_json_dump(content):
@@ -62,10 +66,12 @@ class ResultsControllerTestCase(base.BaseTestCase):
         self.controller = v1.ResultsController()
         self.config_fixture = config_fixture.Config()
         self.CONF = self.useFixture(self.config_fixture).conf
-        self.test_results_url = 'host?%s'
+        self.test_results_url = '/#/results/%s'
+        self.ui_url = 'host.org'
         self.CONF.set_override('test_results_url',
                                self.test_results_url,
                                'api')
+        self.CONF.set_override('ui_url', self.ui_url)
 
     @mock.patch('refstack.db.get_test')
     @mock.patch('refstack.db.get_test_results')
@@ -101,9 +107,12 @@ class ResultsControllerTestCase(base.BaseTestCase):
         mock_request.headers = {}
         mock_store_results.return_value = 'fake_test_id'
         result = self.controller.post()
-        self.assertEqual(result,
-                         {'test_id': 'fake_test_id',
-                          'url': self.test_results_url % 'fake_test_id'})
+        self.assertEqual(
+            result,
+            {'test_id': 'fake_test_id',
+             'url': parse.urljoin(self.ui_url,
+                                  self.test_results_url) % 'fake_test_id'}
+        )
         self.assertEqual(mock_response.status, 201)
         mock_store_results.assert_called_once_with({'answer': 42})
 
@@ -366,3 +375,152 @@ class BaseRestControllerWithValidationTestCase(base.BaseTestCase):
         self.validator.assert_id = mock.Mock(return_value=False)
         self.controller.get_one('fake_arg')
         mock_abort.assert_called_once_with(404)
+
+
+class ProfileControllerTestCase(base.BaseTestCase):
+
+    def setUp(self):
+        super(ProfileControllerTestCase, self).setUp()
+        self.controller = user.ProfileController()
+
+    @mock.patch('refstack.db.user_get',
+                return_value=mock.Mock(openid='foo@bar.org',
+                                       email='foo@bar.org',
+                                       fullname='Dobby'))
+    @mock.patch('refstack.api.utils.get_user_session',
+                return_value={const.USER_OPENID: 'foo@bar.org'})
+    @mock.patch('refstack.api.utils.is_authenticated', return_value=True)
+    def test_get(self, mock_is_authenticated, mock_get_user_session,
+                 mock_user_get):
+        actual_result = self.controller.get()
+        self.assertEqual({'openid': 'foo@bar.org',
+                          'email': 'foo@bar.org',
+                          'fullname': 'Dobby'}, actual_result)
+
+
+class AuthControllerTestCase(base.BaseTestCase):
+
+    def setUp(self):
+        super(AuthControllerTestCase, self).setUp()
+        self.controller = auth.AuthController()
+        self.config_fixture = config_fixture.Config()
+        self.CONF = self.useFixture(self.config_fixture).conf
+        self.CONF.set_override('app_dev_mode', True, 'api')
+        self.CONF.set_override('ui_url', '127.0.0.1')
+
+    @mock.patch('refstack.api.utils.get_user_session')
+    @mock.patch('refstack.api.utils.is_authenticated', return_value=True)
+    @mock.patch('pecan.redirect', side_effect=webob.exc.HTTPRedirection)
+    def test_signed_signin(self, mock_redirect, mock_is_authenticated,
+                           mock_get_user_session):
+        mock_session = mock.MagicMock(**{const.USER_OPENID: 'foo@bar.org'})
+        mock_get_user_session.return_value = mock_session
+        self.assertRaises(webob.exc.HTTPRedirection, self.controller.signin)
+        mock_redirect.assert_called_with('127.0.0.1')
+
+    @mock.patch('refstack.api.utils.get_user_session')
+    @mock.patch('refstack.api.utils.is_authenticated', return_value=False)
+    @mock.patch('pecan.redirect', side_effect=webob.exc.HTTPRedirection)
+    def test_unsigned_signin(self, mock_redirect, mock_is_authenticated,
+                             mock_get_user_session):
+        mock_session = mock.MagicMock(**{const.USER_OPENID: 'foo@bar.org'})
+        mock_get_user_session.return_value = mock_session
+        self.assertRaises(webob.exc.HTTPRedirection, self.controller.signin)
+        self.assertIn(self.CONF.osid.openstack_openid_endpoint,
+                      mock_redirect.call_args[1]['location'])
+
+    @mock.patch('socket.gethostbyname', return_value='1.1.1.1')
+    @mock.patch('pecan.request')
+    @mock.patch('refstack.api.utils.get_user_session')
+    @mock.patch('pecan.abort', side_effect=webob.exc.HTTPError)
+    def test_signin_return_failed(self, mock_abort, mock_get_user_session,
+                                  mock_request, mock_socket):
+        mock_session = mock.MagicMock(**{const.USER_OPENID: 'foo@bar.org',
+                                         const.CSRF_TOKEN: '42'})
+        mock_get_user_session.return_value = mock_session
+        mock_request.remote_addr = '1.1.1.2'
+
+        mock_request.GET = {
+            const.OPENID_ERROR: 'foo is not bar!!!'
+        }
+        mock_request.environ['beaker.session'] = {
+            const.CSRF_TOKEN: 42
+        }
+        self.assertRaises(webob.exc.HTTPError, self.controller.signin_return)
+        mock_abort.assert_called_once_with(
+            401, mock_request.GET[const.OPENID_ERROR])
+        self.assertNotIn(const.CSRF_TOKEN,
+                         mock_request.environ['beaker.session'])
+
+        mock_abort.reset_mock()
+        mock_request.environ['beaker.session'] = {
+            const.CSRF_TOKEN: 42
+        }
+        mock_request.GET = {
+            const.OPENID_MODE: 'cancel'
+        }
+        self.assertRaises(webob.exc.HTTPError, self.controller.signin_return)
+        mock_abort.assert_called_once_with(
+            401, 'Authentication canceled.')
+        self.assertNotIn(const.CSRF_TOKEN,
+                         mock_request.environ['beaker.session'])
+
+        mock_abort.reset_mock()
+        mock_request.environ['beaker.session'] = {
+            const.CSRF_TOKEN: 42
+        }
+        mock_request.GET = {}
+        self.assertRaises(webob.exc.HTTPError, self.controller.signin_return)
+        mock_abort.assert_called_once_with(
+            401, 'Authentication is failed. Try again.')
+        self.assertNotIn(const.CSRF_TOKEN,
+                         mock_request.environ['beaker.session'])
+
+        mock_abort.reset_mock()
+        mock_request.environ['beaker.session'] = {
+            const.CSRF_TOKEN: 42
+        }
+        mock_request.GET = {const.CSRF_TOKEN: '24'}
+        mock_request.remote_addr = '1.1.1.1'
+        self.assertRaises(webob.exc.HTTPError, self.controller.signin_return)
+        mock_abort.assert_called_once_with(
+            401, 'Authentication is failed. Try again.')
+        self.assertNotIn(const.CSRF_TOKEN,
+                         mock_request.environ['beaker.session'])
+
+    @mock.patch('refstack.api.utils.verify_openid_request', return_value=True)
+    @mock.patch('refstack.db.user_update_or_create')
+    @mock.patch('pecan.request')
+    @mock.patch('refstack.api.utils.get_user_session')
+    @mock.patch('pecan.redirect', side_effect=webob.exc.HTTPRedirection)
+    def test_signin_return_success(self, mock_redirect, mock_get_user_session,
+                                   mock_request, mock_user, mock_verify):
+        mock_session = mock.MagicMock(**{const.USER_OPENID: 'foo@bar.org',
+                                         const.CSRF_TOKEN: 42})
+        mock_session.get = mock.Mock(return_value=42)
+        mock_get_user_session.return_value = mock_session
+
+        mock_request.GET = {
+            const.OPENID_CLAIMED_ID: 'foo@bar.org',
+            const.OPENID_NS_SREG_EMAIL: 'foo@bar.org',
+            const.OPENID_NS_SREG_FULLNAME: 'foo',
+            const.CSRF_TOKEN: 42
+        }
+        mock_request.environ['beaker.session'] = {
+            const.CSRF_TOKEN: 42
+        }
+        self.assertRaises(webob.exc.HTTPRedirection,
+                          self.controller.signin_return)
+
+    @mock.patch('pecan.request')
+    @mock.patch('refstack.api.utils.is_authenticated', return_value=True)
+    @mock.patch('pecan.redirect', side_effect=webob.exc.HTTPRedirection)
+    def test_signout(self, mock_redirect, mock_is_authenticated,
+                     mock_request):
+        mock_request.environ['beaker.session'] = {
+            const.CSRF_TOKEN: 42
+        }
+        self.assertRaises(webob.exc.HTTPRedirection, self.controller.signout)
+        mock_redirect.assert_called_with('127.0.0.1')
+        self.assertNotIn(const.CSRF_TOKEN,
+                         mock_request.environ['beaker.session'])

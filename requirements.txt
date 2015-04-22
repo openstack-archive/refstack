@@ -1,5 +1,6 @@
 SQLAlchemy>=0.8.3
 alembic==0.5.0
+beaker==1.6.5.post1
 #gunicorn 19.1.1 has a bug with threading module
 gunicorn==18
 oslo.config>=1.6.0 # Apache-2.0

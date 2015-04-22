@@ -12,9 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-"""
-Implementation of SQLAlchemy backend.
-"""
+"""Implementation of SQLAlchemy backend."""
 import sys
 import uuid
 
@@ -35,6 +33,7 @@ db_options.set_defaults(cfg.CONF)
 
 
 def _create_facade_lazily():
+    """Create DB facade lazily."""
     global _FACADE
     if _FACADE is None:
         _FACADE = db_session.EngineFacade.from_config(CONF)
@@ -42,25 +41,24 @@ def _create_facade_lazily():
 
 
 def get_engine():
+    """Get DB engine."""
     facade = _create_facade_lazily()
     return facade.get_engine()
 
 
 def get_session(**kwargs):
+    """Get DB session."""
     facade = _create_facade_lazily()
     return facade.get_session(**kwargs)
 
 
 def get_backend():
     """The backend is this module itself."""
-
     return sys.modules[__name__]
 
 
-###################
-
-
 def store_results(results):
+    """Store test results."""
     test = models.Test()
     test_id = str(uuid.uuid4())
     test.id = test_id
@@ -83,6 +81,7 @@ def store_results(results):
 
 
 def get_test(test_id):
+    """Get test info."""
     session = get_session()
     test_info = session.query(models.Test).\
         filter_by(id=test_id).\
@@ -91,6 +90,7 @@ def get_test(test_id):
 
 
 def get_test_results(test_id):
+    """Get test results."""
     session = get_session()
     results = session.query(models.TestResults.name).\
         filter_by(test_id=test_id).\
@@ -99,6 +99,7 @@ def get_test_results(test_id):
 
 
 def _apply_filters_for_query(query, filters):
+    """Apply filters for DB query."""
     start_date = filters.get(api_const.START_DATE)
     if start_date:
         query = query.filter(models.Test.created_at >= start_date)
@@ -115,6 +116,7 @@ def _apply_filters_for_query(query, filters):
 
 
 def get_test_records(page, per_page, filters):
+    """Get page with list of test records."""
     session = get_session()
     query = session.query(models.Test.id,
                           models.Test.created_at,
@@ -128,8 +130,39 @@ def get_test_records(page, per_page, filters):
 
 
 def get_test_records_count(filters):
+    """Get total test records count."""
     session = get_session()
     query = session.query(models.Test.id)
     records_count = _apply_filters_for_query(query, filters).count()
 
     return records_count
+
+
+class UserNotFound(Exception):
+
+    """Raise if user not found."""
+
+    pass
+
+
+def user_get(user_openid):
+    """Get user info by openid."""
+    session = get_session()
+    user = session.query(models.User).filter_by(openid=user_openid).first()
+    if user is None:
+        raise UserNotFound('User with OpenID %s not found' % user_openid)
+    return user
+
+
+def user_update_or_create(user_info):
+    """Create user DB record if it exists, otherwise record will be updated."""
+    try:
+        user = user_get(user_info['openid'])
+    except UserNotFound:
+        user = models.User()
+
+    session = get_session()
+    with session.begin():
+        user.update(user_info)
+        user.save(session=session)
+        return user

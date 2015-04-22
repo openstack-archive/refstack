@@ -19,9 +19,11 @@ import mock
 from oslo_config import fixture as config_fixture
 from oslo_utils import timeutils
 from oslotest import base
+from six.moves.urllib import parse
 
 from refstack.api import constants as const
 from refstack.api import utils as api_utils
+from refstack import db
 
 
 class APIUtilsTestCase(base.BaseTestCase):
@@ -255,3 +257,75 @@ class APIUtilsTestCase(base.BaseTestCase):
 
         self.assertEqual(page_number, 2)
         self.assertEqual(total_pages, total_records / per_page)
+
+    def test_set_query_params(self):
+        url = 'http://e.io/path#fragment'
+        new_url = api_utils.set_query_params(url, {'foo': 'bar', '?': 42})
+        self.assertEqual(parse.parse_qs(parse.urlparse(new_url)[4]),
+                         {'foo': ['bar'], '?': ['42']})
+
+    def test_get_token(self):
+        token = api_utils.get_token(42)
+        self.assertRegexpMatches(token, "[a-z]{42}")
+
+    @mock.patch.object(api_utils, 'get_user_session')
+    def test_delete_params_from_user_session(self, mock_get_user_session):
+        mock_session = mock.MagicMock(**{'foo': 'bar', 'answer': 42})
+        mock_get_user_session.return_value = mock_session
+        api_utils.delete_params_from_user_session(('foo', 'answer'))
+        self.assertNotIn('foo', mock_session.__dir__)
+        self.assertNotIn('answer', mock_session.__dir__)
+        mock_session.save.called_once_with()
+
+    @mock.patch('pecan.request')
+    def test_get_user_session(self, mock_request):
+        mock_request.environ = {'beaker.session': 42}
+        session = api_utils.get_user_session()
+        self.assertEqual(42, session)
+
+    @mock.patch.object(api_utils, 'get_user_session')
+    @mock.patch.object(api_utils, 'db')
+    def test_is_authenticated(self, mock_db, mock_get_user_session):
+        mock_session = mock.MagicMock(**{const.USER_OPENID: 'foo@bar.com'})
+        mock_get_user_session.return_value = mock_session
+        mock_get_user = mock_db.user_get
+        mock_get_user.return_value = 'Dobby'
+        self.assertEqual(True, api_utils.is_authenticated())
+        mock_db.user_get.called_once_with(mock_session)
+        mock_db.UserNotFound = db.UserNotFound
+        mock_get_user.side_effect = mock_db.UserNotFound
+        self.assertEqual(False, api_utils.is_authenticated())
+
+    @mock.patch('requests.post')
+    @mock.patch('pecan.abort')
+    def test_verify_openid_request(self, mock_abort, mock_post):
+        mock_response = mock.Mock()
+        mock_response.content = ('is_valid:true\n'
+                                 'ns:http://specs.openid.net/auth/2.0\n')
+        mock_response.status_code = 200
+        mock_post.return_value = mock_response
+        mock_request = mock.Mock()
+        mock_request.params = {
+            const.OPENID_NS_SREG_EMAIL: 'foo@bar.org',
+            const.OPENID_NS_SREG_FULLNAME: 'foo'
+        }
+        self.assertEqual(True, api_utils.verify_openid_request(mock_request))
+
+        mock_response.content = ('is_valid:false\n'
+                                 'ns:http://specs.openid.net/auth/2.0\n')
+        api_utils.verify_openid_request(mock_request)
+        mock_abort.assert_called_once_with(
+            401, 'Authentication is failed. Try again.'
+        )
+
+        mock_abort.reset_mock()
+        mock_response.content = ('is_valid:true\n'
+                                 'ns:http://specs.openid.net/auth/2.0\n')
+        mock_request.params = {
+            const.OPENID_NS_SREG_EMAIL: 'foo@bar.org',
+        }
+        api_utils.verify_openid_request(mock_request)
+        mock_abort.assert_called_once_with(
+            401, 'Authentication is failed. '
+                 'Please permit access to your name.'
+        )

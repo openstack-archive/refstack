@@ -13,9 +13,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-"""
-SQLAlchemy models for Refstack data.
-"""
+"""SQLAlchemy models for Refstack data."""
 
 from oslo_config import cfg
 from oslo_db.sqlalchemy import models
@@ -82,3 +80,15 @@ class TestMeta(BASE, RefStackBase):
                         index=True, nullable=False, unique=False)
     meta_key = sa.Column(sa.String(64), index=True, nullable=False)
     value = sa.Column(sa.Text())
+
+
+class User(BASE, RefStackBase):
+
+    """User information."""
+
+    __tablename__ = 'user'
+    _id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
+    openid = sa.Column(sa.String(128), nullable=False, unique=True,
+                       index=True)
+    email = sa.Column(sa.String(128))
+    fullname = sa.Column(sa.String(128))

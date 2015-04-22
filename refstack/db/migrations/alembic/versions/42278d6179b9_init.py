@@ -1,4 +1,4 @@
-"""Init
+"""Init.
 
 Revision ID: 42278d6179b9
 Revises: None
@@ -16,6 +16,7 @@ import sqlalchemy as sa
 
 
 def upgrade():
+    """Upgrade DB."""
     op.create_table(
         'test',
         sa.Column('updated_at', sa.DateTime()),
@@ -67,6 +68,7 @@ def upgrade():
 
 
 def downgrade():
+    """Downgrade DB."""
     op.drop_table('results')
     op.drop_table('meta')
     op.drop_table('test')

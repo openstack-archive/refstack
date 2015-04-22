@@ -15,12 +15,18 @@
 
 """Refstack API's utils."""
 import copy
+import random
+import requests
+import string
 
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import timeutils
 import pecan
+import six
+from six.moves.urllib import parse
 
+from refstack import db
 from refstack.api import constants as const
 
 LOG = log.getLogger(__name__)
@@ -28,14 +34,17 @@ CONF = cfg.CONF
 
 
 class ParseInputsError(Exception):
+
+    """Raise if input params are invalid."""
+
     pass
 
 
 def _get_input_params_from_request(expected_params):
     """Get input parameters from request.
 
-        :param expecred_params: (array) Expected input
-                                params specified in constants.
+    :param expecred_params: (array) Expected input
+                            params specified in constants.
     """
     filters = {}
     for param in expected_params:
@@ -53,9 +62,8 @@ def _get_input_params_from_request(expected_params):
 def parse_input_params(expected_input_params):
     """Parse input parameters from request.
 
-        :param expecred_params: (array) Expected input
-                                params specified in constants.
-
+    :param expecred_params: (array) Expected input
+                            params specified in constants.
     """
     raw_filters = _get_input_params_from_request(expected_input_params)
     filters = copy.deepcopy(raw_filters)
@@ -83,8 +91,9 @@ def parse_input_params(expected_input_params):
 
 def _calculate_pages_number(per_page, records_count):
     """Return pages number.
-        :param per_page: (int) results number fot one page.
-        :param records_count: (int) total records count.
+
+    :param per_page: (int) results number fot one page.
+    :param records_count: (int) total records count.
     """
     quotient, remainder = divmod(records_count, per_page)
     if remainder > 0:
@@ -93,8 +102,9 @@ def _calculate_pages_number(per_page, records_count):
 
 
 def get_page_number(records_count):
-    """Get page number from request
-        :param records_count: (int) total records count.
+    """Get page number from request.
+
+    :param records_count: (int) total records count.
     """
     page_number = pecan.request.GET.get(const.PAGE)
     per_page = CONF.api.results_per_page
@@ -121,3 +131,80 @@ def get_page_number(records_count):
                                'is greater than the total number of pages.')
 
     return (page_number, total_pages)
+
+
+def set_query_params(url, params):
+    """Set params in given query."""
+    url_parts = parse.urlparse(url)
+    url = parse.urlunparse((
+        url_parts.scheme,
+        url_parts.netloc,
+        url_parts.path,
+        url_parts.params,
+        parse.urlencode(params),
+        url_parts.fragment))
+    return url
+
+
+def get_token(length=30):
+    """Get random token."""
+    return ''.join(random.choice(string.ascii_lowercase)
+                   for i in range(length))
+
+
+def delete_params_from_user_session(params):
+    """Delete params from user session."""
+    session = get_user_session()
+    for param in params:
+        if session.get(param):
+            del session[param]
+    session.save()
+
+
+def get_user_session():
+    """Return user session."""
+    return pecan.request.environ['beaker.session']
+
+
+def is_authenticated():
+    """Return True if user is authenticated."""
+    session = get_user_session()
+    if session.get(const.USER_OPENID):
+        try:
+            if db.user_get(session.get(const.USER_OPENID)):
+                return True
+        except db.UserNotFound:
+            pass
+    return False
+
+
+def verify_openid_request(request):
+    """Verify OpenID returned request in OpenID."""
+    verify_params = dict(request.params.copy())
+    verify_params["openid.mode"] = "check_authentication"
+
+    verify_response = requests.post(
+        CONF.osid.openstack_openid_endpoint, data=verify_params,
+        verify=not CONF.api.app_dev_mode
+    )
+    verify_data_tokens = verify_response.content.split()
+    verify_dict = dict((token.split(":")[0], token.split(":")[1])
+                       for token in verify_data_tokens)
+
+    if (verify_response.status_code / 100 != 2
+            or verify_dict['is_valid'] != 'true'):
+        pecan.abort(401, 'Authentication is failed. Try again.')
+
+    # Is the data we've received within our required parameters?
+    required_parameters = {
+        const.OPENID_NS_SREG_EMAIL: 'Please permit access to '
+                                    'your email address.',
+        const.OPENID_NS_SREG_FULLNAME: 'Please permit access to '
+                                       'your name.',
+    }
+
+    for name, error in six.iteritems(required_parameters):
+        if name not in verify_params or not verify_params[name]:
+            pecan.abort(401, 'Authentication is failed. %s' % error)
+
+    return True

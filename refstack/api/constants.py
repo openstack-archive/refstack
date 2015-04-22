@@ -12,12 +12,27 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-"""
-Constants for Refstack API
-"""
+"""Constants for Refstack API."""
 
 # Names of input parameters for request
 START_DATE = 'start_date'
 END_DATE = 'end_date'
 CPID = 'cpid'
 PAGE = 'page'
+
+# OpenID parameters
+OPENID_MODE = 'openid.mode'
+OPENID_NS = 'openid.ns'
+OPENID_RETURN_TO = 'openid.return_to'
+OPENID_CLAIMED_ID = 'openid.claimed_id'
+OPENID_IDENTITY = 'openid.identity'
+OPENID_REALM = 'openid.realm'
+OPENID_NS_SREG = 'openid.ns.sreg'
+OPENID_NS_SREG_REQUIRED = 'openid.sreg.required'
+OPENID_NS_SREG_EMAIL = 'openid.sreg.email'
+OPENID_NS_SREG_FULLNAME = 'openid.sreg.fullname'
+OPENID_ERROR = 'openid.error'
+
+# User session parameters
+CSRF_TOKEN = 'csrf_token'
+USER_OPENID = 'user_openid'
