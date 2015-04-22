@@ -65,7 +65,7 @@ class TestResults(BASE, RefStackBase):
     _id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     test_id = sa.Column(sa.String(36), sa.ForeignKey('test.id'),
                         index=True, nullable=False, unique=False)
-    name = sa.Column(sa.String(512))
+    name = sa.Column(sa.String(512, collation='latin1_swedish_ci'),)
     uuid = sa.Column(sa.String(36))
 
 
