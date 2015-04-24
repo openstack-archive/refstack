@@ -123,7 +123,8 @@ class ResultsController(BaseRestControllerWithValidation):
                 pecan.request.headers.get('X-Public-Key')
         test_id = db.store_results(item)
         LOG.debug(item)
-        return {'test_id': test_id}
+        return {'test_id': test_id,
+                'url': CONF.api.test_results_url % test_id}
 
     @pecan.expose('json')
     def get(self):
@@ -164,7 +165,8 @@ class ResultsController(BaseRestControllerWithValidation):
                 results.append({
                     'test_id': r.id,
                     'created_at': r.created_at,
-                    'cpid': r.cpid
+                    'cpid': r.cpid,
+                    'url': CONF.api.test_results_url % r.id
                 })
 
             page = {'results': results,

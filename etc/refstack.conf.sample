@@ -126,6 +126,9 @@
 # (boolean value)
 #app_dev_mode = false
 
+# Template for test result url. (string value)
+#test_results_url = http://refstack.net/output.html?test_id=%s
+
 # Number of results for one page (integer value)
 #results_per_page = 20
 

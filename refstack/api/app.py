@@ -64,6 +64,10 @@ API_OPTS = [
                      'by pecan application. Also, server responses will '
                      'contain some details with debug information.'
                 ),
+    cfg.StrOpt('test_results_url',
+               default='http://refstack.net/output.html?test_id=%s',
+               help='Template for test result url.'
+               ),
 ]
 
 CONF = cfg.CONF

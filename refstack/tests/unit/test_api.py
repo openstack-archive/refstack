@@ -43,6 +43,10 @@ class ResultsControllerTestCase(base.BaseTestCase):
         self.controller = v1.ResultsController()
         self.config_fixture = config_fixture.Config()
         self.CONF = self.useFixture(self.config_fixture).conf
+        self.test_results_url = 'host?%s'
+        self.CONF.set_override('test_results_url',
+                               self.test_results_url,
+                               'api')
 
     @mock.patch('refstack.db.get_test')
     @mock.patch('refstack.db.get_test_results')
@@ -78,7 +82,9 @@ class ResultsControllerTestCase(base.BaseTestCase):
         mock_request.headers = {}
         mock_store_results.return_value = 'fake_test_id'
         result = self.controller.post()
-        self.assertEqual(result, {'test_id': 'fake_test_id'})
+        self.assertEqual(result,
+                         {'test_id': 'fake_test_id',
+                          'url': self.test_results_url % 'fake_test_id'})
         self.assertEqual(mock_response.status, 201)
         mock_store_results.assert_called_once_with({'answer': 42})
 
@@ -95,7 +101,9 @@ class ResultsControllerTestCase(base.BaseTestCase):
         }
         mock_store_results.return_value = 'fake_test_id'
         result = self.controller.post()
-        self.assertEqual(result, {'test_id': 'fake_test_id'})
+        self.assertEqual(result,
+                         {'test_id': 'fake_test_id',
+                          'url': self.test_results_url % 'fake_test_id'})
         self.assertEqual(mock_response.status, 201)
         mock_store_results.assert_called_once_with(
             {'answer': 42, 'metadata': {'public_key': 'fake-key'}}
@@ -201,7 +209,8 @@ class ResultsControllerTestCase(base.BaseTestCase):
             'results': [{
                 'test_id': record.id,
                 'created_at': record.created_at,
-                'cpid': record.cpid
+                'cpid': record.cpid,
+                'url': self.test_results_url % record.id
             }],
             'pagination': {
                 'current_page': page_number,
