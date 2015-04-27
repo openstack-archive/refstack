@@ -49,7 +49,8 @@
     <a ng-click="hideTests = !hideTests">Tests ({{capability.tests.length}})</a>
     <ul collapse="hideTests">
         <li ng-repeat="test in capability.tests">
-           <span ng-class="{'flagged': capability.flagged.indexOf(test) > -1}"> {{test}}</span>
+           <span ng-class="{'glyphicon glyphicon-flag text-warning': capability.flagged.indexOf(test) > -1}"></span>
+           {{test}}
         </li>
     </ul>
   </li>

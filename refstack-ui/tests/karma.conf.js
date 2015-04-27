@@ -9,6 +9,8 @@ module.exports = function(config){
       'app/assets/lib/angular-ui-router/release/angular-ui-router.js',
       'app/assets/lib/angular-bootstrap/ui-bootstrap.min.js',
       'app/assets/lib/angular-mocks/angular-mocks.js',
+      'app/assets/lib/angular-bootstrap/ui-bootstrap-tpls.min.js',
+      'app/assets/lib/angular-busy/dist/angular-busy.min.js',
 
       // JS files.
       'app/app.js',

@@ -100,11 +100,6 @@ h1, h2, h3, h4, h5, h6 {
   content: '\00BB';
 }
 
-.flagged:before {
-  color: #E6A100;
-  content: '\2691';
-}
-
 .program-about {
   font-size: .8em;
 }
@@ -127,4 +122,11 @@ h1, h2, h3, h4, h5, h6 {
 .jumbotron img {
   width: 70%;
   height: 70%;
+}
+
+.result-filters {
+  padding-bottom: 10px;
+  border-top: 2px solid #C9C9C9;
+  border-bottom: 2px solid #C9C9C9;
+  margin-bottom: 15px;
 }

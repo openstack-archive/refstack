@@ -1,0 +1,179 @@
+<h3>Test Run Results</h3>
+
+<div cg-busy="{promise:resultsRequest,message:'Loading'}"></div>
+<div ng-show="resultsData" class="test-report">
+    <strong>Test ID:</strong> {{testId}} <br />
+    <strong>Upload Date:</strong> {{resultsData.created_at}} UTC<br />
+    <strong>Duration:</strong> {{resultsData.duration_seconds}} seconds<br />
+    <strong>Total Number of Passed Tests:</strong> {{resultsData.results.length}} <br />
+
+    <hr>
+
+    <p>See how these results stack up against DefCore capabilities and OpenStack
+        <a target="_blank" href="http://www.openstack.org/brand/interop/">target marketing programs.</a>
+    </p>
+
+    <div class="row">
+        <div class="col-md-3">
+            <strong>Capabilities Version:</strong>
+            <select ng-model="version" ng-change="updateCapabilities()" class="form-control">
+                <option value="2015.03">2015.03</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <strong>Target Program:</strong>
+            <select ng-model="target" class="form-control" ng-change="buildCapabilityObject()">
+                <option value="platform">OpenStack Powered Platform</option>
+                <option value="compute">OpenStack Powered Compute</option>
+                <option value="object">OpenStack Powered Object Storage</option>
+            </select>
+        </div>
+    </div>
+</div>
+<br />
+<div ng-show="capabilityData && resultsData">
+    <strong>Status:</strong>
+    <div class="progress">
+        <div class="progress-bar"
+             role="progressbar"
+             aria-valuenow="{{caps.required.passedCount*100/caps.required.count | number:1}}"
+             aria-valuemin="0"
+             aria-valuemax="100"
+             style="min-width: 3em; width: {{caps.required.passedCount*100/caps.required.count}}%;">
+
+            {{caps.required.passedCount*100/caps.required.count | number:1}}%
+        </div>
+    </div>
+    <p>This cloud passes <strong>{{caps.required.passedCount*100/caps.required.count | number:1}}% </strong>({{caps.required.passedCount}}/{{caps.required.count}})
+       of the <strong>{{version}}</strong> capability tests required by the <strong>{{targetMappings[target]}}</strong> program.</p>
+
+    <h4>Capability Overview</h4>
+
+    <accordion close-others=false>
+        <accordion-group heading="Required" is-open="requiredOpen" is-disabled="caps.required.caps.length == 0">
+            <accordion-heading>
+                Required <small>({{caps.required.caps.length}} capabilities)</small>
+                <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': requiredOpen, 'glyphicon-chevron-right': !requiredOpen}"></i>
+            </accordion-heading>
+            <ol class="capabilities">
+                <li ng-repeat="capability in caps.required.caps">
+                    <a ng-click="hideTests = !hideTests">{{capability.id}} </a>
+                    <span ng-class="{'text-success': (capability.passedTests.length > 0 && capability.notPassedTests.length == 0),
+                                     'text-danger': (capability.passedTests.length == 0 && capability.notPassedTests.length > 0),
+                                     'text-warning': (capability.passedTests.length > 0 && capability.notPassedTests.length > 0)}">
+                        [{{capability.passedTests.length}}/{{capability.passedTests.length + capability.notPassedTests.length}}]
+                    </span>
+
+                    <ul class="list-unstyled" collapse="hideTests">
+                        <li ng-repeat="test in capability.passedTests">
+                            <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+                            <span ng-class="{'glyphicon glyphicon-flag text-warning': capabilityData.capabilities[capability.id].flagged.indexOf(test) > -1}"></span>
+                            {{test}}
+                        </li>
+                        <li ng-repeat="test in capability.notPassedTests">
+                            <span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span>
+                            <span ng-class="{'glyphicon glyphicon-flag text-warning': capabilityData.capabilities[capability.id].flagged.indexOf(test) > -1}"></span>
+                            {{test}}
+                        </li>
+                    </ul>
+                </li>
+            </ol>
+        </accordion-group>
+
+        <accordion-group heading="Advisory" is-open="advisoryOpen" is-disabled="caps.advisory.caps.length == 0">
+            <accordion-heading>
+                Advisory <small>({{caps.advisory.caps.length}} capabilities)</small>
+                <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': advisoryOpen, 'glyphicon-chevron-right': !advisoryOpen}"></i>
+            </accordion-heading>
+            <ol class="capabilities">
+                <li ng-repeat="capability in caps.advisory.caps">
+                    <a ng-click="hideTests = !hideTests">{{capability.id}} </a>
+                    <span ng-class="{'text-success': (capability.passedTests.length > 0 && capability.notPassedTests.length == 0),
+                                     'text-danger': (capability.passedTests.length == 0 && capability.notPassedTests.length > 0),
+                                     'text-warning': (capability.passedTests.length > 0 && capability.notPassedTests.length > 0)}">
+                        [{{capability.passedTests.length}}/{{capability.passedTests.length + capability.notPassedTests.length}}]
+                    </span>
+
+                    <ul class="list-unstyled" collapse="hideTests">
+                        <li ng-repeat="test in capability.passedTests">
+                            <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+                            <span ng-class="{'glyphicon glyphicon-flag text-warning': capabilityData.capabilities[capability.id].flagged.indexOf(test) > -1}"></span>
+                            {{test}}
+                        </li>
+                        <li ng-repeat="test in capability.notPassedTests">
+                            <span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span>
+                            <span ng-class="{'glyphicon glyphicon-flag text-warning': capabilityData.capabilities[capability.id].flagged.indexOf(test) > -1}"></span>
+                            {{test}}
+                        </li>
+                    </ul>
+                </li>
+            </ol>
+        </accordion-group>
+
+        <accordion-group heading="Deprecated" is-open="deprecatedOpen" is-disabled="caps.deprecated.caps.length == 0">
+            <accordion-heading>
+                Deprecated <small>({{caps.deprecated.caps.length}} capabilities)</small>
+                <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': deprecatedOpen, 'glyphicon-chevron-right': !deprecatedOpen}"></i>
+            </accordion-heading>
+            <ol class="capabilities">
+                <li ng-repeat="capability in caps.deprecated.caps">
+                    <a ng-click="hideTests = !hideTests">{{capability.id}} </a>
+                    <span ng-class="{'text-success': (capability.passedTests.length > 0 && capability.notPassedTests.length == 0),
+                                     'text-danger': (capability.passedTests.length == 0 && capability.notPassedTests.length > 0),
+                                     'text-warning': (capability.passedTests.length > 0 && capability.notPassedTests.length > 0)}">
+                        [{{capability.passedTests.length}}/{{capability.passedTests.length + capability.notPassedTests.length}}]
+                    </span>
+
+                    <ul class="list-unstyled" collapse="hideTests">
+                        <li ng-repeat="test in capability.passedTests">
+                            <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+                            <span ng-class="{'glyphicon glyphicon-flag text-warning': capabilityData.capabilities[capability.id].flagged.indexOf(test) > -1}"></span>
+                            {{test}}
+                        </li>
+                        <li ng-repeat="test in capability.notPassedTests">
+                            <span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span>
+                            <span ng-class="{'glyphicon glyphicon-flag text-warning': capabilityData.capabilities[capability.id].flagged.indexOf(test) > -1}"></span>
+                            {{test}}
+                        </li>
+                    </ul>
+                </li>
+            </ol>
+        </accordion-group>
+
+        <accordion-group is-open="removedOpen" is-disabled="caps.removed.caps.length == 0">
+            <accordion-heading>
+                Removed <small>({{caps.removed.caps.length}} capabilities)</small>
+                <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': removedOpen, 'glyphicon-chevron-right': !removedOpen}"></i>
+            </accordion-heading>
+            <ol class="capabilities">
+                <li ng-repeat="capability in caps.removed.caps">
+                    <a ng-click="hideTests = !hideTests">{{capability.id}} </a>
+                    <span ng-class="{'text-success': (capability.passedTests.length > 0 && capability.notPassedTests.length == 0),
+                                     'text-danger': (capability.passedTests.length == 0 && capability.notPassedTests.length > 0),
+                                     'text-warning': (capability.passedTests.length > 0 && capability.notPassedTests.length > 0)}">
+                        [{{capability.passedTests.length}}/{{capability.passedTests.length + capability.notPassedTests.length}}]
+                    </span>
+
+                    <ul class="list-unstyled" collapse="hideTests">
+                        <li ng-repeat="test in capability.passedTests">
+                            <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+                            <span ng-class="{'glyphicon glyphicon-flag text-warning': capabilityData.capabilities[capability.id].flagged.indexOf(test) > -1}"></span>
+                            {{test}}
+                        </li>
+                        <li ng-repeat="test in capability.notPassedTests">
+                            <span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span>
+                            <span ng-class="{'glyphicon glyphicon-flag text-warning': capabilityData.capabilities[capability.id].flagged.indexOf(test) > -1}"></span>
+                            {{test}}
+                        </li>
+                    </ul>
+                </li>
+            </ol>
+        </accordion-group>
+    </accordion>
+</div>
+
+<div ng-show="showError" class="alert alert-danger" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    <span class="sr-only">Error:</span>
+    {{error}}
+</div>

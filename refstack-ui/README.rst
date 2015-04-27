@@ -7,6 +7,10 @@ User interface for interacting with the Refstack API.
 Setup
 =====
 
+Create a config.json file and specify your API endpoint inside this file:
+
+:code:`cp app/config.json.sample app/config.json`
+
 You can start a development server by doing the following:
 
 Install NodeJS and NPM:
