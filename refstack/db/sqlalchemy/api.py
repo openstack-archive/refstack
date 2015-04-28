@@ -72,7 +72,7 @@ def store_results(results):
             test_result = models.TestResults()
             test_result.test_id = test_id
             test_result.name = result['name']
-            test_result.uid = result.get('uuid', None)
+            test_result.uuid = result.get('uuid', None)
             test.results.append(test_result)
         for k, v in six.iteritems(results.get('metadata', {})):
             meta = models.TestMeta()
