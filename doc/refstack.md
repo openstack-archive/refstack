@@ -61,7 +61,7 @@ Refstack Quickstart
 - At the minimum the value of the `connection` field in the `[database]`
   section should be updated. For example, if the backend database is MySQL
   then update: `#connection = <None>` to
-  `connection = mysql://refstack:<your password>@x.x.x.x/refstack`
+  `connection = mysql+pymysql://refstack:<your password>@x.x.x.x/refstack`
 
 ####Database sync
 

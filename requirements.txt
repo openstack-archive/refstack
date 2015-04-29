@@ -10,3 +10,4 @@ pyOpenSSL==0.13
 pycrypto>=2.6
 requests==1.2.3
 jsonschema>=2.0.0,<3.0.0
+PyMySQL>=0.6.2,!=0.6.4
