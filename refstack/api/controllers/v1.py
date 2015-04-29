@@ -16,10 +16,14 @@
 """Version 1 of the API."""
 
 import json
+
 from oslo_config import cfg
 from oslo_log import log
 import pecan
 from pecan import rest
+import re
+import requests
+import requests_cache
 
 from refstack import db
 from refstack.api import constants as const
@@ -43,6 +47,8 @@ CTRLS_OPTS = [
 CONF = cfg.CONF
 
 CONF.register_opts(CTRLS_OPTS, group='api')
+# Cached requests will expire after 10 minutes.
+requests_cache.install_cache(cache_name='github_cache', expire_after=600)
 
 
 class BaseRestControllerWithValidation(rest.RestController):
@@ -182,8 +188,62 @@ class ResultsController(BaseRestControllerWithValidation):
         return page
 
 
+class CapabilitiesController(rest.RestController):
+
+    """/v1/capabilities handler. This acts as a proxy for retrieving
+       capability files from the openstack/defcore Github repository."""
+
+    @pecan.expose('json')
+    def get(self):
+        """Get a list of all available capabilities."""
+        try:
+            response = requests.get(CONF.api.github_api_capabilities_url)
+            LOG.debug("Response Status: %s / Used Requests Cache: %s" %
+                      (response.status_code,
+                       getattr(response, 'from_cache', False)))
+            if response.status_code == 200:
+                json = response.json()
+                regex = re.compile('^[0-9]{4}\.[0-9]{2}\.json$')
+                capability_files = []
+                for rfile in json:
+                    if rfile["type"] == "file" and regex.search(rfile["name"]):
+                        capability_files.append(rfile["name"])
+                return capability_files
+            else:
+                LOG.warning('Github returned non-success HTTP '
+                            'code: %s' % response.status_code)
+                pecan.abort(response.status_code)
+
+        except requests.exceptions.RequestException as e:
+            LOG.warning('An error occurred trying to get GitHub '
+                        'repository contents: %s' % e)
+            pecan.abort(500)
+
+    @pecan.expose('json')
+    def get_one(self, file_name):
+        """Handler for getting contents of specific capability file."""
+        github_url = ''.join((CONF.api.github_raw_base_url.rstrip('/'),
+                              '/', file_name, ".json"))
+        try:
+            response = requests.get(github_url)
+            LOG.debug("Response Status: %s / Used Requests Cache: %s" %
+                      (response.status_code,
+                       getattr(response, 'from_cache', False)))
+            if response.status_code == 200:
+                return response.json()
+            else:
+                LOG.warning('Github returned non-success HTTP '
+                            'code: %s' % response.status_code)
+                pecan.abort(response.status_code)
+        except requests.exceptions.RequestException as e:
+            LOG.warning('An error occurred trying to get GitHub '
+                        'capability file contents: %s' % e)
+            pecan.abort(500)
+
+
 class V1Controller(object):
 
     """Version 1 API controller root."""
 
     results = ResultsController()
+    capabilities = CapabilitiesController()

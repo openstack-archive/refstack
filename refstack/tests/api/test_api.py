@@ -18,6 +18,7 @@
 import json
 import uuid
 
+import httmock
 from oslo_config import fixture as config_fixture
 import six
 import webtest.app
@@ -220,3 +221,37 @@ class TestResultsController(api.FunctionalTest):
             self.assertEqual(len(filtering_results), 3)
             for r in slice_results:
                 self.assertEqual(r, filtering_results)
+
+
+class TestCapabilitiesController(api.FunctionalTest):
+    """Test case for CapabilitiesController."""
+
+    URL = '/v1/capabilities/'
+
+    def test_get_capability_list(self):
+        @httmock.all_requests
+        def github_api_mock(url, request):
+            headers = {'content-type': 'application/json'}
+            content = [{'name': '2015.03.json', 'type': 'file'},
+                       {'name': '2015.next.json', 'type': 'file'},
+                       {'name': '2015.03', 'type': 'dir'}]
+            content = json.dumps(content)
+            return httmock.response(200, content, headers, None, 5, request)
+
+        with httmock.HTTMock(github_api_mock):
+            actual_response = self.get_json(self.URL)
+
+        expected_response = ['2015.03.json']
+        self.assertEqual(expected_response, actual_response)
+
+    def test_get_capability_file(self):
+        @httmock.all_requests
+        def github_mock(url, request):
+            content = {'foo': 'bar'}
+            return httmock.response(200, content, None, None, 5, request)
+        url = self.URL + "2015.03"
+        with httmock.HTTMock(github_mock):
+            actual_response = self.get_json(url)
+
+        expected_response = {'foo': 'bar'}
+        self.assertEqual(expected_response, actual_response)
