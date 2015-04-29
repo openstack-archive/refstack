@@ -14,7 +14,7 @@
  License for the specific language governing permissions and limitations
  under the License.
 -->
-<html ng-app="refstackApp">
+<html id="ng-app">
     <head>
         <meta charset="utf-8">
         <meta name="description" content="Refstack">
@@ -24,17 +24,22 @@
         <link rel="shorcut icon" href="favicon.ico">
 
         <link rel="stylesheet" href="assets/lib/bootstrap/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="assets/lib/angular-busy/dist/angular-busy.min.css">
         <link rel="stylesheet" href="assets/css/style.css">
 
         <script src="assets/lib/angular/angular.js"></script>
         <script src="assets/lib/angular-ui-router/release/angular-ui-router.js"></script>
         <script src="assets/lib/angular-bootstrap/ui-bootstrap.min.js"></script>
+        <script src="assets/lib/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+        <script src="assets/lib/angular-busy/dist/angular-busy.min.js"></script>
         <script src="app.js"></script>
         <script src="assets/js/refstack.js"></script>
 
         <!-- Controllers -->
         <script src="shared/header/headerController.js"></script>
         <script src="components/capabilities/capabilitiesController.js"></script>
+        <script src="components/results/resultsController.js"></script>
+        <script src="components/results-report/resultsReportController.js"></script>
 
         <!-- Filters -->
         <script src="shared/filters.js"></script>

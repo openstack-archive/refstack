@@ -91,4 +91,121 @@ describe('Refstack controllers', function() {
             expect(scope.filterProgram({'id': 'cap_id_5'})).toBe(false);
         });
     });
+
+    describe('resultsController', function() {
+        var scope, ctrl, $httpBackend, refstackApiUrl;
+        var fakeResponse = {'pagination': {'current_page': 1, 'total_pages': 2},
+                            'results': [{'created_at': '2015-03-09 01:23:45',
+                                         'test_id': 'some-id',
+                                         'cpid': 'some-cpid'}]};
+
+        beforeEach(function() {
+            module('refstackApp');
+            module(function($provide) {
+                $provide.constant('refstackApiUrl', 'http://foo.bar/v1');
+            });
+        });
+
+        beforeEach(inject(function(_$httpBackend_, $rootScope, $controller) {
+            $httpBackend = _$httpBackend_;
+            scope = $rootScope.$new();
+            ctrl = $controller('resultsController', {$scope: scope});
+        }));
+
+        it('should fetch the first page of results with proper URL args', function() {
+            // Initial results should be page 1 of all results.
+            $httpBackend.expectGET('http://foo.bar/v1/results?page=1').respond(fakeResponse);
+            $httpBackend.flush();
+            expect(scope.data).toEqual(fakeResponse);
+            expect(scope.currentPage).toBe(1);
+
+            // Simulate the user adding date filters.
+            scope.startDate = new Date('2015-03-10T11:51:00');
+            scope.endDate = new Date('2015-04-10T11:51:00');
+            scope.update();
+            $httpBackend.expectGET('http://foo.bar/v1/results?page=1&start_date=2015-03-10 00:00:00&end_date=2015-04-10 23:59:59').respond(fakeResponse);
+            $httpBackend.flush();
+            expect(scope.data).toEqual(fakeResponse);
+            expect(scope.currentPage).toBe(1);
+        });
+
+        it('should set an error when results cannot be retrieved', function() {
+            $httpBackend.expectGET('http://foo.bar/v1/results?page=1').respond(404, {'detail': 'Not Found'});
+            $httpBackend.flush();
+            expect(scope.data).toBe(null);
+            expect(scope.error).toEqual('Error retrieving results listing from server: {"detail":"Not Found"}');
+            expect(scope.totalItems).toBe(0);
+            expect(scope.showError).toBe(true);
+        });
+
+        it('should have an function to clear filters and update the view', function() {
+            $httpBackend.expectGET('http://foo.bar/v1/results?page=1').respond(fakeResponse);
+            scope.startDate = "some date";
+            scope.endDate = "some other date";
+            scope.clearFilters();
+            expect(scope.startDate).toBe(null);
+            expect(scope.endDate).toBe(null);
+            $httpBackend.expectGET('http://foo.bar/v1/results?page=1').respond(fakeResponse);
+            $httpBackend.flush();
+            expect(scope.data).toEqual(fakeResponse);
+        });
+    });
+
+    describe('resultsReportController', function() {
+        var scope, ctrl, $httpBackend, refstackApiUrl, stateparams;
+        var fakeResultResponse = {'results': ['test_id_1']}
+        var fakeCapabilityResponse = {'platform': {'required': ['compute']},
+                                      'components': {
+                                          'compute': {
+                                              'required': ['cap_id_1'],
+                                              'advisory': [],
+                                              'deprecated': [],
+                                              'removed': []
+                                           }
+                                       },
+                                       'capabilities': {
+                                           'cap_id_1': {
+                                               'status': 'required',
+                                               'flagged': [],
+                                               'tests': ['test_id_1', 'test_id_2']
+                                            }
+                                        }
+                                      };
+
+        beforeEach(function() {
+            module('refstackApp');
+            module(function($provide) {
+                $provide.constant('refstackApiUrl', 'http://foo.bar/v1');
+            });
+        });
+
+        beforeEach(inject(function(_$httpBackend_, $rootScope, $controller) {
+            $httpBackend = _$httpBackend_;
+            stateparams = {testID: 1234};
+            scope = $rootScope.$new();
+            ctrl = $controller('resultsReportController', {$scope: scope, $stateParams: stateparams});
+        }));
+
+        it('should get the results for a specific test ID and also the relevant capabilities', function() {
+            $httpBackend.expectGET('http://foo.bar/v1/results/1234').respond(fakeResultResponse);
+            $httpBackend.expectGET('assets/capabilities/2015.03.json').respond(fakeCapabilityResponse);
+            $httpBackend.flush();
+            expect(scope.resultsData).toEqual(fakeResultResponse);
+            expect(scope.capabilityData).toEqual(fakeCapabilityResponse);
+        });
+
+        it('should be able to sort the results into a capability object', function() {
+            scope.resultsData = fakeResultResponse;
+            scope.capabilityData = fakeCapabilityResponse;
+            scope.buildCapabilityObject();
+            var expectedCapsObject = {'required': {'caps': [{'id': 'cap_id_1',
+                                                              'passedTests': ['test_id_1'],
+                                                              'notPassedTests': ['test_id_2']}],
+                                                    'count': 2, 'passedCount': 1},
+                                      'advisory': {'caps': [], 'count': 0, 'passedCount': 0},
+                                      'deprecated': {'caps': [], 'count': 0, 'passedCount': 0},
+                                      'removed': {'caps': [], 'count': 0, 'passedCount': 0}};
+            expect(scope.caps).toEqual(expectedCapsObject);
+        });
+    });
 });
