@@ -15,14 +15,28 @@
 
 """Tests for API's controllers"""
 
+import json
+import sys
+
+import httmock
 import mock
 from oslo_config import fixture as config_fixture
 from oslotest import base
+import requests
 
 from refstack.api import constants as const
 from refstack.api import utils as api_utils
 from refstack.api.controllers import root
 from refstack.api.controllers import v1
+
+
+def safe_json_dump(content):
+    if isinstance(content, (dict, list)):
+        if sys.version_info[0] == 3:
+            content = bytes(json.dumps(content), 'utf-8')
+        else:
+            content = json.dumps(content)
+    return content
 
 
 class RootControllerTestCase(base.BaseTestCase):
@@ -228,6 +242,81 @@ class ResultsControllerTestCase(base.BaseTestCase):
         get_page.assert_called_once_with(records_count)
 
         db_get_test.assert_called_once_with(page_number, per_page, filters)
+
+
+class CapabilitiesControllerTestCase(base.BaseTestCase):
+
+    def setUp(self):
+        super(CapabilitiesControllerTestCase, self).setUp()
+        self.controller = v1.CapabilitiesController()
+
+    def test_get_capabilities(self):
+        """Test when getting a list of all capability files."""
+        @httmock.all_requests
+        def github_api_mock(url, request):
+            headers = {'content-type': 'application/json'}
+            content = [{'name': '2015.03.json', 'type': 'file'},
+                       {'name': '2015.next.json', 'type': 'file'},
+                       {'name': '2015.03', 'type': 'dir'}]
+            content = safe_json_dump(content)
+            return httmock.response(200, content, headers, None, 5, request)
+
+        with httmock.HTTMock(github_api_mock):
+            result = self.controller.get()
+        self.assertEqual(['2015.03.json'], result)
+
+    @mock.patch('pecan.abort')
+    def test_get_capabilities_error_code(self, mock_abort):
+        """Test when the HTTP status code isn't a 200 OK. The status should
+           be propogated."""
+        @httmock.all_requests
+        def github_api_mock(url, request):
+            content = {'title': 'Not Found'}
+            return httmock.response(404, content, None, None, 5, request)
+
+        with httmock.HTTMock(github_api_mock):
+            self.controller.get()
+        mock_abort.assert_called_with(404)
+
+    @mock.patch('requests.get')
+    @mock.patch('pecan.abort')
+    def test_get_capabilities_exception(self, mock_abort, mock_request):
+        """Test when the GET request raises an exception."""
+        mock_request.side_effect = requests.exceptions.RequestException()
+        self.controller.get()
+        mock_abort.assert_called_with(500)
+
+    def test_get_capability_file(self):
+        """Test when getting a specific capability file"""
+        @httmock.all_requests
+        def github_mock(url, request):
+            content = {'foo': 'bar'}
+            return httmock.response(200, content, None, None, 5, request)
+
+        with httmock.HTTMock(github_mock):
+            result = self.controller.get_one('2015.03')
+        self.assertEqual({'foo': 'bar'}, result)
+
+    @mock.patch('pecan.abort')
+    def test_get_capability_file_error_code(self, mock_abort):
+        """Test when the HTTP status code isn't a 200 OK. The status should
+           be propogated."""
+        @httmock.all_requests
+        def github_api_mock(url, request):
+            content = {'title': 'Not Found'}
+            return httmock.response(404, content, None, None, 5, request)
+
+        with httmock.HTTMock(github_api_mock):
+            self.controller.get_one('2010.03')
+        mock_abort.assert_called_with(404)
+
+    @mock.patch('requests.get')
+    @mock.patch('pecan.abort')
+    def test_get_capability_file_exception(self, mock_abort, mock_request):
+        """Test when the GET request raises an exception."""
+        mock_request.side_effect = requests.exceptions.RequestException()
+        self.controller.get_one('2010.03')
+        mock_abort.assert_called_with(500)
 
 
 class BaseRestControllerWithValidationTestCase(base.BaseTestCase):

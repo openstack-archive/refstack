@@ -135,6 +135,15 @@
 # The format for start_date and end_date parameters (string value)
 #input_date_format = %Y-%m-%d %H:%M:%S
 
+# The GitHub API URL of the repository and location of the DefCore
+# capability files. This URL is used to get a listing of all capability
+# files.
+#github_api_capabilities_url = https://api.github.com/repos/openstack/defcore/contents
+
+# The base URL that is used for retrieving specific capability files.
+# Capability file names will be appended to this URL to get the contents
+# of that file.
+#github_raw_base_url = https://raw.githubusercontent.com/openstack/defcore/master/
 
 [database]
 

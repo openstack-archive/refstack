@@ -9,3 +9,4 @@ ChangeLog
 build/
 cover/
 dist
+*.sqlite
