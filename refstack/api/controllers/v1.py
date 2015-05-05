@@ -48,7 +48,9 @@ CONF = cfg.CONF
 
 CONF.register_opts(CTRLS_OPTS, group='api')
 # Cached requests will expire after 10 minutes.
-requests_cache.install_cache(cache_name='github_cache', expire_after=600)
+requests_cache.install_cache(cache_name='github_cache',
+                             backend='memory',
+                             expire_after=600)
 
 
 class BaseRestControllerWithValidation(rest.RestController):
@@ -202,10 +204,9 @@ class CapabilitiesController(rest.RestController):
                       (response.status_code,
                        getattr(response, 'from_cache', False)))
             if response.status_code == 200:
-                json = response.json()
                 regex = re.compile('^[0-9]{4}\.[0-9]{2}\.json$')
                 capability_files = []
-                for rfile in json:
+                for rfile in response.json():
                     if rfile["type"] == "file" and regex.search(rfile["name"]):
                         capability_files.append(rfile["name"])
                 return capability_files
