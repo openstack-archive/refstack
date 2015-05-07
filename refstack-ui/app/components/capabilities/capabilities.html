@@ -1,7 +1,7 @@
 <h3>DefCore Capabilities</h3>
 <strong>Version:</strong>
 <select ng-model="version" ng-change="update()">
-    <option value="2015.03">2015.03</option>
+    <option ng-repeat="versionFile in versionList" value="{{versionFile}}">{{versionFile.slice(0, -5)}}</option>
 </select>
 <br /><br />
 <strong>Target Program:</strong>
@@ -32,9 +32,11 @@
     <span class="removed">Removed</span>
     </label>
 </div>
-<p><small>Tests marked with <span class="flagged"></span> are tests flagged by DefCore.</small></p>
+<p><small>Tests marked with <span class="glyphicon glyphicon-flag text-warning"></span> are tests flagged by DefCore.</small></p>
 
-<ol class="capabilities">
+<div cg-busy="{promise:versionsRequest,message:'Loading versions'}"></div>
+<div cg-busy="{promise:capsRequest,message:'Loading capabilities'}"></div>
+<ol ng-show="capabilities" class="capabilities">
   <li class="capability-list-item" ng-repeat="capability in capabilities.capabilities | arrayConverter | filter:filterProgram | filter:filterStatus">
     <span class="capability-name">{{capability.name}}</span><br />
     <em>{{capability.description}}</em><br />
@@ -55,9 +57,9 @@
     </ul>
   </li>
 </ol>
-<hr>
 
-<div class="criteria">
+<div ng-show="capabilities" class="criteria">
+    <hr>
     <h4><a ng-click="hideCriteria = !hideCriteria">Criteria</a></h4>
     <div collapse="hideCriteria">
         <ul>
@@ -69,4 +71,9 @@
         </ul>
     </div>
 </div>
-<br /><br />
+
+<div ng-show="showError" class="alert alert-danger" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    <span class="sr-only">Error:</span>
+    {{error}}
+</div>

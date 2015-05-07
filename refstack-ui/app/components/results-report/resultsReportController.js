@@ -7,7 +7,6 @@ var refstackApp = angular.module('refstackApp');
 refstackApp.controller('resultsReportController', ['$scope', '$http', '$stateParams', 'refstackApiUrl',
     function($scope, $http, $stateParams, refstackApiUrl) {
         $scope.testId = $stateParams.testID
-        $scope.version = '2015.03';
         $scope.hideTests = true;
         $scope.target = 'platform';
         $scope.requiredOpen = true;
@@ -18,23 +17,38 @@ refstackApp.controller('resultsReportController', ['$scope', '$http', '$statePar
             'object': 'OpenStack Powered Object Storage'
         }
 
-        var content_url = refstackApiUrl +'/results/' + $scope.testId;
-        $scope.resultsRequest = $http.get(content_url).success(function(data) {
-            $scope.resultsData = data;
-            $scope.updateCapabilities();
-        }).error(function(error) {
-            $scope.showError = true;
-            $scope.resultsData = null;
-            $scope.error = "Error retrieving results from server: " + JSON.stringify(error);
+        var getResults = function() {
+            var content_url = refstackApiUrl +'/results/' + $scope.testId;
+            $scope.resultsRequest = $http.get(content_url).success(function(data) {
+                $scope.resultsData = data;
+                getVersionList();
+            }).error(function(error) {
+                $scope.showError = true;
+                $scope.resultsData = null;
+                $scope.error = "Error retrieving results from server: " + JSON.stringify(error);
 
-        });
+            });
+        };
+
+        var getVersionList = function() {
+            var content_url = refstackApiUrl + '/capabilities';
+            $scope.versionsRequest = $http.get(content_url).success(function(data) {
+                $scope.versionList = data.sort().reverse();
+                $scope.version = $scope.versionList[0];
+                $scope.updateCapabilities();
+            }).error(function(error) {
+                $scope.showError = true;
+                $scope.resultsData = null;
+                $scope.error = "Error retrieving version list: " + JSON.stringify(error);;
+            });
+        };
 
         $scope.updateCapabilities = function() {
             $scope.showError = false;
-            var content_url = 'assets/capabilities/'.concat($scope.version, '.json');
-            $http.get(content_url).success(function(data) {
+            var content_url = refstackApiUrl + '/capabilities/' + $scope.version;
+            $scope.capsRequest = $http.get(content_url).success(function(data) {
                 $scope.capabilityData = data;
-                $scope.buildCapabilityObject($scope.capabilityData, $scope.resultsData.results);
+                $scope.buildCapabilityObject();
             }).error(function(error) {
                 $scope.showError = true;
                 $scope.capabilityData = null;
@@ -87,5 +101,7 @@ refstackApp.controller('resultsReportController', ['$scope', '$http', '$statePar
             });
             $scope.caps = caps;
         }
+
+        getResults();
     }
 ]);

@@ -4,8 +4,7 @@
 
 var refstackApp = angular.module('refstackApp');
 
-refstackApp.controller('capabilitiesController', ['$scope', '$http', function($scope, $http) {
-    $scope.version = '2015.03';
+refstackApp.controller('capabilitiesController', ['$scope', '$http', 'refstackApiUrl', function($scope, $http, refstackApiUrl) {
     $scope.hideAchievements = true;
     $scope.hideTests = true;
     $scope.target = 'platform';
@@ -16,20 +15,30 @@ refstackApp.controller('capabilitiesController', ['$scope', '$http', function($s
         removed: ''
     };
 
+    $scope.getVersionList = function() {
+        var content_url = refstackApiUrl + '/capabilities';
+        $scope.versionsRequest = $http.get(content_url).success(function(data) {
+            $scope.versionList = data.sort().reverse();
+            $scope.version = $scope.versionList[0];
+            $scope.update();
+        }).error(function(error) {
+            $scope.showError = true;
+            $scope.error = 'Error retrieving version list: ' + JSON.stringify(error);
+        });
+    };
+
     $scope.update = function() {
-        // Rate-limiting is an issue with this URL. Using a local copy for now.
-        // var content_url = 'https://api.github.com/repos/openstack/defcore/contents/'.concat($scope.version, '.json');
-        var content_url = 'assets/capabilities/'.concat($scope.version, '.json');
-        $http.get(content_url).success(function(data) {
-            //$scope.data = data;
-            //$scope.capabilities = JSON.parse(atob($scope.data.content.replace(/\s/g, '')));
+        var content_url = refstackApiUrl + '/capabilities/' + $scope.version;
+        $scope.capsRequest = $http.get(content_url).success(function(data) {
             $scope.capabilities = data;
         }).error(function(error) {
-            console.log(error);
-            $scope.capabilities = 'Error retrieving capabilities.';
+            $scope.showError = true;
+            $scope.capabilities = null;
+            $scope.error = 'Error retrieving capabilities: ' + JSON.stringify(error);
         });
-    }
-    $scope.update()
+    };
+
+    $scope.getVersionList();
 
     $scope.filterProgram = function(capability){
         var components = $scope.capabilities.components;

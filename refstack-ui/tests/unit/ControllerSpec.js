@@ -30,8 +30,14 @@ describe('Refstack controllers', function() {
     });
 
     describe('capabilitiesController', function() {
-        var scope, ctrl, $httpBackend;
-        beforeEach(module('refstackApp'));
+        var scope, ctrl, $httpBackend, refstackApiUrl;
+        var fakeApiUrl = "http://foo.bar/v1";
+        beforeEach(function() {
+            module('refstackApp');
+            module(function($provide) {
+                $provide.constant('refstackApiUrl', fakeApiUrl);
+            });
+        });
 
         beforeEach(inject(function(_$httpBackend_, $rootScope, $controller) {
             $httpBackend = _$httpBackend_;
@@ -42,16 +48,18 @@ describe('Refstack controllers', function() {
         it('should set default states', function() {
             expect(scope.hideAchievements).toBe(true);
             expect(scope.hideTests).toBe(true);
-            expect(scope.version).toBe('2015.03');
             expect(scope.target).toBe('platform');
             expect(scope.status).toEqual({required: 'required', advisory: '',
                                           deprecated: '', removed: ''});
-
         });
 
         it('should fetch the selected capabilities version', function() {
-            $httpBackend.expectGET('assets/capabilities/2015.03.json').respond({'foo': 'bar'});
+            $httpBackend.expectGET(fakeApiUrl+'/capabilities').respond(['2015.03.json', '2015.04.json']);
+            // Should call request with latest version.
+            $httpBackend.expectGET(fakeApiUrl+'/capabilities/2015.04.json').respond({'foo': 'bar'});
             $httpBackend.flush();
+            // The version list should be sorted latest first.
+            expect(scope.versionList).toEqual(['2015.04.json', '2015.03.json']);
             expect(scope.capabilities).toEqual({'foo': 'bar'});
         });
 
@@ -94,6 +102,7 @@ describe('Refstack controllers', function() {
 
     describe('resultsController', function() {
         var scope, ctrl, $httpBackend, refstackApiUrl;
+        var fakeApiUrl = "http://foo.bar/v1";
         var fakeResponse = {'pagination': {'current_page': 1, 'total_pages': 2},
                             'results': [{'created_at': '2015-03-09 01:23:45',
                                          'test_id': 'some-id',
@@ -102,7 +111,7 @@ describe('Refstack controllers', function() {
         beforeEach(function() {
             module('refstackApp');
             module(function($provide) {
-                $provide.constant('refstackApiUrl', 'http://foo.bar/v1');
+                $provide.constant('refstackApiUrl', fakeApiUrl);
             });
         });
 
@@ -114,7 +123,7 @@ describe('Refstack controllers', function() {
 
         it('should fetch the first page of results with proper URL args', function() {
             // Initial results should be page 1 of all results.
-            $httpBackend.expectGET('http://foo.bar/v1/results?page=1').respond(fakeResponse);
+            $httpBackend.expectGET(fakeApiUrl+'/results?page=1').respond(fakeResponse);
             $httpBackend.flush();
             expect(scope.data).toEqual(fakeResponse);
             expect(scope.currentPage).toBe(1);
@@ -123,14 +132,14 @@ describe('Refstack controllers', function() {
             scope.startDate = new Date('2015-03-10T11:51:00');
             scope.endDate = new Date('2015-04-10T11:51:00');
             scope.update();
-            $httpBackend.expectGET('http://foo.bar/v1/results?page=1&start_date=2015-03-10 00:00:00&end_date=2015-04-10 23:59:59').respond(fakeResponse);
+            $httpBackend.expectGET(fakeApiUrl+'/results?page=1&start_date=2015-03-10 00:00:00&end_date=2015-04-10 23:59:59').respond(fakeResponse);
             $httpBackend.flush();
             expect(scope.data).toEqual(fakeResponse);
             expect(scope.currentPage).toBe(1);
         });
 
         it('should set an error when results cannot be retrieved', function() {
-            $httpBackend.expectGET('http://foo.bar/v1/results?page=1').respond(404, {'detail': 'Not Found'});
+            $httpBackend.expectGET(fakeApiUrl+'/results?page=1').respond(404, {'detail': 'Not Found'});
             $httpBackend.flush();
             expect(scope.data).toBe(null);
             expect(scope.error).toEqual('Error retrieving results listing from server: {"detail":"Not Found"}');
@@ -139,13 +148,13 @@ describe('Refstack controllers', function() {
         });
 
         it('should have an function to clear filters and update the view', function() {
-            $httpBackend.expectGET('http://foo.bar/v1/results?page=1').respond(fakeResponse);
+            $httpBackend.expectGET(fakeApiUrl+'/results?page=1').respond(fakeResponse);
             scope.startDate = "some date";
             scope.endDate = "some other date";
             scope.clearFilters();
             expect(scope.startDate).toBe(null);
             expect(scope.endDate).toBe(null);
-            $httpBackend.expectGET('http://foo.bar/v1/results?page=1').respond(fakeResponse);
+            $httpBackend.expectGET(fakeApiUrl+'/results?page=1').respond(fakeResponse);
             $httpBackend.flush();
             expect(scope.data).toEqual(fakeResponse);
         });
@@ -153,6 +162,7 @@ describe('Refstack controllers', function() {
 
     describe('resultsReportController', function() {
         var scope, ctrl, $httpBackend, refstackApiUrl, stateparams;
+        var fakeApiUrl = "http://foo.bar/v1";
         var fakeResultResponse = {'results': ['test_id_1']}
         var fakeCapabilityResponse = {'platform': {'required': ['compute']},
                                       'components': {
@@ -175,7 +185,7 @@ describe('Refstack controllers', function() {
         beforeEach(function() {
             module('refstackApp');
             module(function($provide) {
-                $provide.constant('refstackApiUrl', 'http://foo.bar/v1');
+                $provide.constant('refstackApiUrl', fakeApiUrl);
             });
         });
 
@@ -186,11 +196,15 @@ describe('Refstack controllers', function() {
             ctrl = $controller('resultsReportController', {$scope: scope, $stateParams: stateparams});
         }));
 
-        it('should get the results for a specific test ID and also the relevant capabilities', function() {
-            $httpBackend.expectGET('http://foo.bar/v1/results/1234').respond(fakeResultResponse);
-            $httpBackend.expectGET('assets/capabilities/2015.03.json').respond(fakeCapabilityResponse);
+        it('should make all necessary API requests to get results and capabilities', function() {
+            $httpBackend.expectGET(fakeApiUrl+'/results/1234').respond(fakeResultResponse);
+            $httpBackend.expectGET(fakeApiUrl+'/capabilities').respond(['2015.03.json', '2015.04.json']);
+            // Should call request with latest version.
+            $httpBackend.expectGET(fakeApiUrl+'/capabilities/2015.04.json').respond(fakeCapabilityResponse);
             $httpBackend.flush();
             expect(scope.resultsData).toEqual(fakeResultResponse);
+            // The version list should be sorted latest first.
+            expect(scope.versionList).toEqual(['2015.04.json', '2015.03.json']);
             expect(scope.capabilityData).toEqual(fakeCapabilityResponse);
         });
 

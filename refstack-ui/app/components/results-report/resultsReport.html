@@ -1,23 +1,26 @@
 <h3>Test Run Results</h3>
 
-<div cg-busy="{promise:resultsRequest,message:'Loading'}"></div>
 <div ng-show="resultsData" class="test-report">
-    <strong>Test ID:</strong> {{testId}} <br />
+    <strong>Test ID:</strong> {{testId}}<br />
     <strong>Upload Date:</strong> {{resultsData.created_at}} UTC<br />
     <strong>Duration:</strong> {{resultsData.duration_seconds}} seconds<br />
-    <strong>Total Number of Passed Tests:</strong> {{resultsData.results.length}} <br />
-
+    <strong>Total Number of Passed Tests:</strong> {{resultsData.results.length}}<br />
     <hr>
+</div>
 
+<div cg-busy="{promise:versionsRequest,message:'Loading versions'}"></div>
+<div cg-busy="{promise:capsRequest,message:'Loading capabilities'}"></div>
+<div cg-busy="{promise:resultsRequest,message:'Loading results'}"></div>
+
+<div ng-show="capabilityData && resultsData">
     <p>See how these results stack up against DefCore capabilities and OpenStack
         <a target="_blank" href="http://www.openstack.org/brand/interop/">target marketing programs.</a>
     </p>
-
     <div class="row">
         <div class="col-md-3">
             <strong>Capabilities Version:</strong>
-            <select ng-model="version" ng-change="updateCapabilities()" class="form-control">
-                <option value="2015.03">2015.03</option>
+            <select ng-model="version" ng-change="update()" class="form-control">
+                <option ng-repeat="versionFile in versionList" value="{{versionFile}}">{{versionFile.slice(0, -5)}}</option>
             </select>
         </div>
         <div class="col-md-4">
@@ -29,9 +32,6 @@
             </select>
         </div>
     </div>
-</div>
-<br />
-<div ng-show="capabilityData && resultsData">
     <strong>Status:</strong>
     <div class="progress">
         <div class="progress-bar"
@@ -45,7 +45,7 @@
         </div>
     </div>
     <p>This cloud passes <strong>{{caps.required.passedCount*100/caps.required.count | number:1}}% </strong>({{caps.required.passedCount}}/{{caps.required.count}})
-       of the <strong>{{version}}</strong> capability tests required by the <strong>{{targetMappings[target]}}</strong> program.</p>
+       of the <strong>{{version.slice(0, -5)}}</strong> capability tests required by the <strong>{{targetMappings[target]}}</strong> program.</p>
 
     <h4>Capability Overview</h4>
 
