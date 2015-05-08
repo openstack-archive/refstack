@@ -1,0 +1,2 @@
+#!/bin/bash
+/home/dev/refstack/.venv/bin/python /home/dev/refstack/bin/refstack-manage version 2>/dev/null

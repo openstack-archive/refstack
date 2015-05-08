@@ -1,0 +1,5 @@
+#!/bin/bash
+[[ ${DEBUG_MODE} ]] && set -x
+api-sync
+cd /home/dev/refstack
+.venv/bin/pecan serve refstack/api/config.py > /dev/null

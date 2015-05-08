@@ -65,7 +65,7 @@ API_OPTS = [
                      'contain some details with debug information.'
                 ),
     cfg.StrOpt('test_results_url',
-               default='http://refstack.net/output.html?test_id=%s',
+               default='http://refstack.net/#/results/%s',
                help='Template for test result url.'
                ),
     cfg.StrOpt('github_api_capabilities_url',
@@ -186,5 +186,9 @@ def setup_app(config):
             headers=False, writer=loggers.WritableLogger(LOG, logging.DEBUG)
         )]
     )
+
+    if CONF.api.app_dev_mode:
+        LOG.debug('\n\n Refstack is served at %s \n\n',
+                  CONF.api.test_results_url.split('/#/')[0])
 
     return app

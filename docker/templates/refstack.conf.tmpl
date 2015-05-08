@@ -1,0 +1,12 @@
+[DEFAULT]
+debug = true
+verbose = true
+
+[api]
+static_root = /home/dev/refstack/refstack-ui/app
+template_path = /home/dev/refstack/refstack-ui/app
+app_dev_mode = true
+test_results_url = https://${REFSTACK_HOST:-127.0.0.1}/#/results/%s
+
+[database]
+connection = ${REFSTACK_MYSQL_URL}

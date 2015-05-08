@@ -1,0 +1,5 @@
+#!/bin/bash
+[[ ${DEBUG_MODE} ]] && set -x
+mysql --no-defaults -S ${SQL_DIR}/mysql.socket -e 'CREATE DATABASE refstack;'
+cd /home/dev/refstack
+.venv/bin/python bin/refstack-manage upgrade --revision head

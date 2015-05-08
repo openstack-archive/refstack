@@ -1,0 +1,153 @@
+#!/bin/bash
+TAG=$(BRANCH=$(git status -bs| grep "##" | awk '{print $2}'); echo ${BRANCH##*/})
+IMAGE="refstack:${TAG}"
+CONTAINER="refstack_${TAG}"
+PROJ_DIR=$(git rev-parse --show-toplevel)
+
+function usage () {
+set +x
+echo "Usage: $0 [OPTIONS] [COMMAND]"
+echo "Build '${IMAGE}' image if it is does not exist."
+echo "Run '${CONTAINER}' container and execute COMMAND in it."
+echo "Default COMMAND is 'api-up'"
+echo "If container '${CONTAINER}' exists (running or stopped) it will be reused."
+echo "If you want to get access to your local Refstack not only from localhost, "
+echo "please specify public Refstack host:port in env[REFSTACK_HOST]."
+echo "You can customize Refstack API config by editing docker/refstack.conf.tmpl."
+echo "It is bash template. You can use \${SOME_ENV_VARIABLE} in it."
+echo "Default is 127.0.0.1:8000"
+echo ""
+echo "  -r    Force delete '${CONTAINER}' container and run it again."
+echo "        Main usecase for it - updating config from templates"
+echo "  -b    Force delete '${IMAGE}' image and build it again"
+echo "        Main usecase for it - force build new python/js env"
+echo "  -i    Run container with isolated MySQL data."
+echo "        By default MySQL data stores in refstack_data_DATA-BASE-REVISON container"
+echo "        It reuses if such container exists. If you want to drop DB data, just execute"
+echo "        sudo docker rm refstack_data_DATA-BASE-REVISON"
+echo "  -d    Turn on debug information"
+echo "  -h    Print this usage message"
+echo ""
+echo ""
+echo "Using examples:"
+echo ""
+echo "Run Refstack API:"
+echo "$ ./run-in-docker"
+echo ""
+echo "Run Refstack API by hands:"
+echo "$ ./run-in-docker bash"
+echo "$ activate"
+echo "$ pecan serve refstack/api/config.py"
+echo ""
+echo "Open shell in container:"
+echo "$ ./run-in-docker bash"
+echo ""
+echo "Open mysql console in container:"
+echo "$ ./run-in-docker bash"
+echo "$ mysql"
+}
+
+build_image () {
+sudo docker rm -f ${CONTAINER}
+PREV_ID=$(sudo docker images refstack | grep ${TAG} | awk '{print $3}')
+echo "Try to build ${IMAGE} image"
+sudo docker build -t ${IMAGE} -f ${PROJ_DIR}/docker/Dockerfile ${PROJ_DIR} || exit $?
+NEW_ID=$(sudo docker images refstack | grep ${TAG} | awk '{print $3}')
+if [[ ${PREV_ID} ]] && [[ ! ${PREV_ID} == ${NEW_ID} ]]; then
+    sudo docker rmi -f ${PREV_ID} && echo "Previous image removed"
+fi
+}
+
+wait_ready() {
+while true; do
+    echo "Wait while container is not ready"
+    sudo docker exec ${CONTAINER} [ ! -e /tmp/is-not-ready ] && \
+        echo "Container ${CONTAINER} is running!" && break
+    sleep 1
+done
+}
+
+run_container (){
+echo "Stop all other refstack containers"
+for id in $(sudo docker ps -q); do
+    NAME=$(sudo docker inspect --format='{{.Name}}' $id)
+    if [[ ${NAME} == /refstack_* ]] && [[ ! ${NAME} == "/${CONTAINER}" ]]; then
+        echo "Stopped container ${NAME}" && sudo docker stop $id
+    fi
+done
+if [[ $(sudo docker ps -a | grep "${CONTAINER}") ]]; then
+    echo "Container ${CONTAINER} exists it is reused"
+    sudo docker start ${CONTAINER}
+    wait_ready
+else
+    echo "Try to run container ${CONTAINER}"
+    sudo docker run -d \
+        -e REFSTACK_HOST=${REFSTACK_HOST:-127.0.0.1} \
+        -e DEBUG_MODE=${DEBUG_MODE} \
+        -v ${PROJ_DIR}:/refstack:ro -p 443:443 --name ${CONTAINER} \
+        ${IMAGE} start.sh -s
+    wait_ready
+    if [[ ! ${ISOLATED_DB} ]]; then
+        DB_VERSION=$(sudo docker exec -it ${CONTAINER} api-db-version)
+        DB_CONTAINER=refstack_data_${DB_VERSION::-1}
+        sudo docker rm -f ${CONTAINER}
+        if [[ ! $(sudo docker ps -a | grep "${DB_CONTAINER}") ]]; then
+            sudo docker run -v /home/dev/mysql --name ${DB_CONTAINER} ubuntu /bin/true
+            echo "Container with mysql data ${DB_CONTAINER} created"
+            sudo docker run -d \
+                -e REFSTACK_HOST=${REFSTACK_HOST:-127.0.0.1} \
+                -e DEBUG_MODE=${DEBUG_MODE} \
+                -v ${PROJ_DIR}:/refstack:ro --volumes-from ${DB_CONTAINER} -p 443:443 \
+                --name ${CONTAINER} ${IMAGE}
+            wait_ready
+            sudo docker exec ${CONTAINER} api-init-db
+            echo "DB init done"
+        else
+            sudo docker run -d \
+                -e REFSTACK_HOST=${REFSTACK_HOST:-127.0.0.1} \
+                -e DEBUG_MODE=${DEBUG_MODE} \
+                -v ${PROJ_DIR}:/refstack:ro --volumes-from ${DB_CONTAINER} -p 443:443 \
+                --name ${CONTAINER} ${IMAGE}
+            echo "Container with mysql data ${DB_CONTAINER} attached to ${CONTAINER}"
+            wait_ready
+        fi
+
+
+    fi
+fi
+}
+
+COMMAND=""
+while [[ $1 ]]
+do
+    case "$1" in
+        -h) usage
+            exit 0;;
+        -r) echo "Try to remove old ${CONTAINER} container"
+            sudo docker rm -f ${CONTAINER}
+            shift;;
+        -i) echo "Run container with isolated MySQL data."
+            echo "By default MySQL data stores in refstack_data_[DATA-BASE-REVISON] container"
+            echo "It reuses if such container exists. If you want to drop DB data, just execute"
+            echo "sudo docker rm ${DB_CONTAINER}"
+            ISOLATED_DB=true
+            shift;;
+        -b) FORCE_BUILD=true
+            shift;;
+        -d) DEBUG_MODE=true
+            shift;;
+        *) COMMAND="${COMMAND} $1"
+           shift;;
+    esac
+done
+
+[[ ${DEBUG_MODE} ]] && set -x
+
+#Build proper image if it does not exist of force rebuild fired
+if [[ ${FORCE_BUILD} ]] || [[ ! $(sudo docker images refstack | grep ${TAG}) ]]; then
+    build_image
+fi
+#Run or start(if it exists) proper container
+[[ ! $(sudo docker ps | grep ${CONTAINER}) ]] && run_container
+
+sudo docker exec -it ${CONTAINER} ${COMMAND:-api-up}

@@ -1,0 +1,5 @@
+#!/bin/bash
+[[ ${DEBUG_MODE} ]] && set -x
+echo "Syncing project files..."
+rsync -avr /refstack /home/dev --exclude-from '/refstack/.gitignore' > /dev/null && \
+echo "Done!"
