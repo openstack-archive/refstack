@@ -19,7 +19,7 @@
     <div class="row">
         <div class="col-md-3">
             <strong>Capabilities Version:</strong>
-            <select ng-model="version" ng-change="update()" class="form-control">
+            <select ng-model="version" ng-change="updateCapabilities()" class="form-control">
                 <option ng-repeat="versionFile in versionList" value="{{versionFile}}">{{versionFile.slice(0, -5)}}</option>
             </select>
         </div>
