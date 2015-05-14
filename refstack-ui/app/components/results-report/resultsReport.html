@@ -32,6 +32,15 @@
             </select>
         </div>
     </div>
+
+    <br />
+    <strong>Corresponding OpenStack Releases:</strong>
+    <ul class="list-inline">
+        <li ng-repeat="release in capabilityData.releases">
+            {{release | capitalize}}
+        </li>
+    </ul>
+
     <strong>Status:</strong>
     <div class="progress">
         <div class="progress-bar"

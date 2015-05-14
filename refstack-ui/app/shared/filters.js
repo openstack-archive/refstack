@@ -16,3 +16,14 @@ refstackApp.filter('arrayConverter', function () {
         return array;
     };
 });
+
+/**
+ *  Angular filter that will capitalize the first letter of a string.
+ */
+refstackApp.filter('capitalize', function() {
+    'use strict';
+
+    return function (string) {
+        return string.substring(0, 1).toUpperCase() + string.substring(1);
+    };
+});

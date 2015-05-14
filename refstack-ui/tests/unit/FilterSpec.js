@@ -17,4 +17,21 @@ describe('Refstack filters', function () {
             expect($filter(object)).toEqual(expected);
         });
     });
+
+    describe('Filter: capitalize', function() {
+        var $filter;
+        beforeEach(module('refstackApp'));
+        beforeEach(inject(function(_$filter_) {
+            $filter = _$filter_('capitalize');
+        }));
+
+        it('should capitalize the first letter', function () {
+            var string1 = 'somestring';
+            var string2 = 'someString';
+            var string3 = 'SOMESTRING';
+            expect($filter(string1)).toEqual('Somestring');
+            expect($filter(string2)).toEqual('SomeString');
+            expect($filter(string3)).toEqual(string3);
+        });
+    });
 });
