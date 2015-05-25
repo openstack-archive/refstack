@@ -26,7 +26,6 @@ import requests
 
 from refstack.api import constants as const
 from refstack.api import utils as api_utils
-from refstack.api.controllers import root
 from refstack.api.controllers import v1
 
 
@@ -41,10 +40,16 @@ def safe_json_dump(content):
 
 class RootControllerTestCase(base.BaseTestCase):
 
-    def test_index(self):
+    @mock.patch('pecan.expose', return_value=lambda f: f)
+    def test_index(self, expose_mock):
+        config = config_fixture.Config()
+        CONF = self.useFixture(config).conf
+        CONF.set_override('app_dev_mode', True, 'api')
+        from refstack.api.controllers import root
         controller = root.RootController()
         result = controller.index()
-        self.assertEqual(result, {'Root': 'OK'})
+        self.assertEqual({}, result)
+        expose_mock.assert_called_with(generic=True, template='index.html')
 
 
 class ResultsControllerTestCase(base.BaseTestCase):

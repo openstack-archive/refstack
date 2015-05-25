@@ -16,8 +16,11 @@
 """Root controller."""
 
 from pecan import expose
+from oslo_config import cfg
 
 from refstack.api.controllers import v1
+
+CONF = cfg.CONF
 
 
 class RootController(object):
@@ -26,7 +29,7 @@ class RootController(object):
 
     v1 = v1.V1Controller()
 
-    @expose('json')
-    def index(self):
-        """root response."""
-        return {'Root': 'OK'}
+    if CONF.api.app_dev_mode:
+        @expose(generic=True, template='index.html')
+        def index(self):
+            return dict()

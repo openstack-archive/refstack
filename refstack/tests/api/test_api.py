@@ -37,18 +37,6 @@ FAKE_TESTS_RESULT = {
 }
 
 
-class TestRootController(api.FunctionalTest):
-    """Test case for RootController."""
-
-    URL = '/'
-
-    def test_root_controller(self):
-        """Test request to root."""
-        actual_response = self.get_json(self.URL)
-        expected_response = {'Root': 'OK'}
-        self.assertEqual(expected_response, actual_response)
-
-
 class TestResultsController(api.FunctionalTest):
     """Test case for ResultsController."""
 
