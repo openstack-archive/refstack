@@ -1,44 +1,46 @@
-module.exports = function(config){
-  config.set({
+module.exports = function (config) {
+    'use strict';
 
-    basePath : '../',
+    config.set({
 
-    files : [
-      // Angular libraries.
-      'app/assets/lib/angular/angular.js',
-      'app/assets/lib/angular-ui-router/release/angular-ui-router.js',
-      'app/assets/lib/angular-bootstrap/ui-bootstrap.min.js',
-      'app/assets/lib/angular-mocks/angular-mocks.js',
-      'app/assets/lib/angular-bootstrap/ui-bootstrap-tpls.min.js',
-      'app/assets/lib/angular-busy/dist/angular-busy.min.js',
+        basePath: '../',
 
-      // JS files.
-      'app/app.js',
-      'app/components/**/*.js',
-      'app/shared/*.js',
-      'app/shared/**/*.js',
-      'app/assets/js/*.js',
+        files: [
+            // Angular libraries.
+            'app/assets/lib/angular/angular.js',
+            'app/assets/lib/angular-ui-router/release/angular-ui-router.js',
+            'app/assets/lib/angular-bootstrap/ui-bootstrap.min.js',
+            'app/assets/lib/angular-mocks/angular-mocks.js',
+            'app/assets/lib/angular-bootstrap/ui-bootstrap-tpls.min.js',
+            'app/assets/lib/angular-busy/dist/angular-busy.min.js',
 
-      // Test Specs.
-      'tests/unit/*.js'
-    ],
+            // JS files.
+            'app/app.js',
+            'app/components/**/*.js',
+            'app/shared/*.js',
+            'app/shared/**/*.js',
+            'app/assets/js/*.js',
 
-    autoWatch : true,
+            // Test Specs.
+            'tests/unit/*.js'
+        ],
 
-    frameworks: ['jasmine'],
+        autoWatch: true,
 
-    browsers : ['Firefox'],
+        frameworks: ['jasmine'],
 
-    plugins : [
+        browsers: ['Firefox'],
+
+        plugins: [
             'karma-chrome-launcher',
             'karma-firefox-launcher',
-            'karma-jasmine',
-            ],
+            'karma-jasmine'
+        ],
 
-    junitReporter : {
-      outputFile: 'test_out/unit.xml',
-      suite: 'unit'
-    }
+        junitReporter: {
+            outputFile: 'test_out/unit.xml',
+            suite: 'unit'
+        }
 
-  });
+    });
 };

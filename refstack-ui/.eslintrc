@@ -1,0 +1,58 @@
+{
+  // For a detailed list of all options, please see here:
+  // http://eslint.org/docs/configuring/
+  "ecmaFeatures": {
+    "arrowFunctions": false,
+    "binaryLiterals": false,
+    "blockBindings": false,
+    "defaultParams": false,
+    "forOf": false,
+    "generators": false,
+    "objectLiteralComputedProperties": false,
+    "objectLiteralDuplicateProperties": false,
+    "objectLiteralShorthandProperties": false,
+    "octalLiterals": false,
+    "regexUFlag": false,
+    "superInFunctions": false,
+    "templateStrings": false,
+    "unicodeCodePointEscapes": false,
+    "globalReturn": false,
+    "jsx": false
+  },
+
+  "env": {
+    "browser": true,
+    "node": false,
+    "amd": false,
+    "mocha": false,
+    "jasmine": true,
+    "phantomjs": false,
+    "jquery": false,
+    "prototypejs": false,
+    "shelljs": false
+  },
+
+  "globals": {
+    "require": false,
+    "exports": false,
+    "angular": false, // AngularJS
+    "module": false,
+    "inject": false,
+    "element": false,
+    "by": false,
+    "browser": false
+  },
+
+  "rules": {
+    "quotes": [2, "single"],
+    "eol-last": 2,
+    "no-trailing-spaces": 2,
+    "camelcase": 0,
+    "no-extra-boolean-cast": 0,
+
+    // Stylistic
+    "indent": [2, 4],
+    "max-len": [2, 80],
+    "no-undefined": 2
+  }
+}

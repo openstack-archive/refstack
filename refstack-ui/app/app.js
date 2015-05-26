@@ -1,15 +1,16 @@
-'use strict';
-
 /* App Module */
 
 var refstackApp = angular.module('refstackApp', [
-  'ui.router', 'ui.bootstrap', 'cgBusy']);
+    'ui.router', 'ui.bootstrap', 'cgBusy']);
 
 /*
  * Handle application routing.
  */
-refstackApp.config(['$stateProvider', '$urlRouterProvider',
-    function($stateProvider, $urlRouterProvider) {
+refstackApp.config([
+    '$stateProvider', '$urlRouterProvider',
+    function ($stateProvider, $urlRouterProvider) {
+        'use strict';
+
         $urlRouterProvider.otherwise('/');
         $stateProvider.
             state('home', {
@@ -34,7 +35,7 @@ refstackApp.config(['$stateProvider', '$urlRouterProvider',
                 url: '/results/:testID',
                 templateUrl: '/components/results-report/resultsReport.html',
                 controller: 'resultsReportController'
-            })
+            });
     }
 ]);
 
@@ -42,7 +43,10 @@ refstackApp.config(['$stateProvider', '$urlRouterProvider',
  * Load Config and start up the angular application.
  */
 angular.element(document).ready(function () {
+    'use strict';
+
     var $http = angular.injector(['ng']).get('$http');
+
     function startApp(config) {
         // Add config options as constants.
         for (var key in config) {
@@ -51,9 +55,9 @@ angular.element(document).ready(function () {
         angular.bootstrap(document, ['refstackApp']);
     }
 
-    $http.get('config.json').success(function(data) {
+    $http.get('config.json').success(function (data) {
         startApp(data);
-    }).error(function(error) {
+    }).error(function () {
         startApp({});
     });
 });
