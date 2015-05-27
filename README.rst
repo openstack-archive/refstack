@@ -59,4 +59,4 @@ after their software has been incorporated into the distro or cloud.
 * IRC: #refstack on Freenode
 * Dev Meetings: Mondays @ 19:00 UTC in #openstack-meeting-alt on Freenode
 * Web-site: http://refstack.net
-* Wiki: https://wiki.OpenStack.org/wiki/refstack
+* Wiki: https://wiki.OpenStack.org/wiki/RefStack
