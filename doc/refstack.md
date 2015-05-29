@@ -50,7 +50,7 @@ Refstack Quickstart
 
 ####Install Refstack application (on ubuntu 14.x)..
 
-- `python setup.py install`
+- `pip install .`
 
 ####Configuration file preparation
 
@@ -76,7 +76,7 @@ Refstack Quickstart
 
   - `test_results_url`
 
-   Updated to your API server address.  For example:
+     Updated to your API server address.  For example:
     `test_results_url = http://192.168.56.104:8000/output.html?test_id=%s`  
 
 ####Database sync
@@ -95,7 +95,7 @@ Refstack Quickstart
 
    `refstack-manage --config-file /path/to/refstack.conf version`
 
-   Now it should be `42278d6179b9`.
+    Now it should be `42278d6179b9`.
 
 
 ####Start Refstack
@@ -107,7 +107,6 @@ gunicorn:
 
 Now available:
 
-- `http://localhost:8000/` with JSON response {'Root': 'OK'};
 - `http://localhost:8000/v1/results` with response JSON including records consisted of `<test run id>`, `<upload date>` and `<cloud cpid>` of the test runs. The default response is limited to one page of the most recent uploaded test run records. The number of records per page is configurable via the Refstack configuration file. Filtering parameters such as page, start_date, end_date ... can also be used to specify the desired records. For example: get `http://localhost:8000/v1/results?page=n` will return page n of the data.
 
 - `http://localhost:8000/v1/results/<test run id>` with response JSON including the detail test results of the specified `<test run id>`
