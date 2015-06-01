@@ -58,7 +58,7 @@ class ResultsControllerTestCase(base.BaseTestCase):
         super(ResultsControllerTestCase, self).setUp()
         self.validator = mock.Mock()
         v1.ResultsController.__validator__ = \
-            mock.Mock(return_value=self.validator)
+            mock.Mock(exposed=False, return_value=self.validator)
         self.controller = v1.ResultsController()
         self.config_fixture = config_fixture.Config()
         self.CONF = self.useFixture(self.config_fixture).conf
@@ -330,7 +330,7 @@ class BaseRestControllerWithValidationTestCase(base.BaseTestCase):
         super(BaseRestControllerWithValidationTestCase, self).setUp()
         self.validator = mock.Mock()
         v1.BaseRestControllerWithValidation.__validator__ = \
-            mock.Mock(return_value=self.validator)
+            mock.Mock(exposed=False, return_value=self.validator)
         self.controller = v1.BaseRestControllerWithValidation()
 
     @mock.patch('pecan.response')
