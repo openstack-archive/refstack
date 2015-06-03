@@ -124,9 +124,33 @@ h1, h2, h3, h4, h5, h6 {
   height: 70%;
 }
 
+.jumbotron .openstack-intro__logo {
+  width: 100%;
+}
+
 .result-filters {
   padding-bottom: 10px;
   border-top: 2px solid #C9C9C9;
   border-bottom: 2px solid #C9C9C9;
   margin-bottom: 15px;
+}
+
+@media (min-width: 450px) {
+  .jumbotron .openstack-intro__logo {
+    width: 30%;
+  }
+  .openstack-intro__logo img {
+    float: right;
+  }
+  .openstack-intro__content > *:first-child {
+    margin-top: 0;
+  }
+  .openstack-intro__content > *:last-child {
+    margin-bottom: 0;
+  }
+}
+@media (min-width: 768px) {
+  .jumbotron.openstack-intro {
+    padding: 40px;
+  }
 }
