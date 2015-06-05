@@ -23,7 +23,7 @@
     "start": "http-server ./refstack-ui/app -a 0.0.0.0 -p 8080",
     "pretest": "npm install",
     "test": "karma start ./refstack-ui/tests/karma.conf.js --single-run",
-    "test-single-run": "karma start ./refstack-ui/tests/karma.conf.js --single-run",
+    "test-auto-watch": "karma start ./refstack-ui/tests/karma.conf.js --auto-watch",
     "lint": "eslint -c ./.eslintrc --no-color ./refstack-ui"
   }
 }
