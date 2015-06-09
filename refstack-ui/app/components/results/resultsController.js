@@ -1,19 +1,45 @@
-/* Refstack Results Controller */
-
 var refstackApp = angular.module('refstackApp');
 
+/**
+ * Refstack Results Controller
+ * This controller is for the '/results' page where a user can browse
+ * a listing of community uploaded results.
+ */
 refstackApp.controller('resultsController',
     ['$scope', '$http', '$filter', 'refstackApiUrl',
      function ($scope, $http, $filter, refstackApiUrl) {
          'use strict';
 
+         /** Initial page to be on. */
          $scope.currentPage = 1;
+
+         /**
+          * How many results should display on each page. Since pagination
+          * is server-side implemented, this value should match the
+          * 'results_per_page' configuration of the Refstack server which
+          * defaults to 20.
+          */
          $scope.itemsPerPage = 20;
+
+         /**
+          * How many page buttons should be displayed at max before adding
+          * the '...' button.
+          */
          $scope.maxSize = 5;
+
+         /** The upload date lower limit to be used in filtering results. */
          $scope.startDate = '';
+
+         /** The upload date upper limit to be used in filtering results. */
          $scope.endDate = '';
+
+         /**
+          * This will contact the Refstack API to get a listing of test run
+          * results.
+          */
          $scope.update = function () {
              $scope.showError = false;
+             // Construct the API URL based on user-specified filters.
              var content_url = refstackApiUrl + '/results?page=' +
                  $scope.currentPage;
              var start = $filter('date')($scope.startDate, 'yyyy-MM-dd');
@@ -44,13 +70,23 @@ refstackApp.controller('resultsController',
 
          $scope.update();
 
-         // This is called when a date filter calendar is opened.
+         /**
+          * This is called when the date filter calendar is opened. It
+          * does some event handling, and sets a scope variable so the UI
+          * knows which calendar was opened.
+          * @param {Object} $event - The Event object
+          * @param {String} openVar - Tells which calendar was opened
+          */
          $scope.open = function ($event, openVar) {
              $event.preventDefault();
              $event.stopPropagation();
              $scope[openVar] = true;
          };
 
+         /**
+          * This function will clear all filters and update the results
+          * listing.
+          */
          $scope.clearFilters = function () {
              $scope.startDate = null;
              $scope.endDate = null;

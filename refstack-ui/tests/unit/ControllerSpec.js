@@ -1,4 +1,4 @@
-/* Jasmine specs for Refstack controllers */
+/** Jasmine specs for Refstack controllers */
 describe('Refstack controllers', function () {
     'use strict';
 

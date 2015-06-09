@@ -1,9 +1,11 @@
-/* Refstack Filters */
-
 var refstackApp = angular.module('refstackApp');
 
-// Convert an object of objects to an array of objects to use with ng-repeat
-// filters.
+/** Refstack AngularJS Filters */
+
+/**
+ * Convert an object of objects to an array of objects to use with ng-repeat
+ * filters.
+ */
 refstackApp.filter('arrayConverter', function () {
     'use strict';
 

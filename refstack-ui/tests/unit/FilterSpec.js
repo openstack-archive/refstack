@@ -1,5 +1,4 @@
-
-/* Jasmine specs for Refstack filters */
+/** Jasmine specs for Refstack filters */
 describe('Refstack filters', function () {
     'use strict';
 

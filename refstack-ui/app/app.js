@@ -1,10 +1,10 @@
-/* App Module */
-
+/** Main app module where application dependencies are listed. */
 var refstackApp = angular.module('refstackApp', [
     'ui.router', 'ui.bootstrap', 'cgBusy']);
 
-/*
- * Handle application routing.
+/**
+ * Handle application routing. Specific templates and controllers will be
+ * used based on the URL route.
  */
 refstackApp.config([
     '$stateProvider', '$urlRouterProvider',
@@ -39,8 +39,8 @@ refstackApp.config([
     }
 ]);
 
-/*
- * Load Config and start up the angular application.
+/**
+ * Load config and start up the angular application.
  */
 angular.element(document).ready(function () {
     'use strict';
