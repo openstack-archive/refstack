@@ -81,53 +81,16 @@ describe('Refstack controllers', function () {
             expect(scope.hideTests).toBe(true);
             expect(scope.target).toBe('platform');
             expect(scope.status).toEqual({
-                required: 'required', advisory: '',
-                deprecated: '', removed: ''
+                required: true, advisory: false,
+                deprecated: false, removed: false
             });
         });
 
-        it('should fetch the selected capabilities version', function () {
-            $httpBackend.expectGET(fakeApiUrl +
-            '/profile').respond(401);
-            $httpBackend.expectGET(fakeApiUrl +
-            '/capabilities').respond(['2015.03.json', '2015.04.json']);
-            // Should call request with latest version.
-            $httpBackend.expectGET(fakeApiUrl +
-            '/capabilities/2015.04.json').respond({'foo': 'bar'});
-            $httpBackend.flush();
-            // The version list should be sorted latest first.
-            expect(scope.versionList).toEqual(['2015.04.json', '2015.03.json']);
-            expect(scope.capabilities).toEqual({'foo': 'bar'});
-        });
-
-        it('should have a function to check if a status filter is selected',
+        it('should fetch the selected capabilities version and sort a ' +
+           'program\'s capabilities into an object',
             function () {
-                expect(scope.filterStatus({'status': 'required'}))
-                    .toBe(true);
-                expect(scope.filterStatus({'status': 'advisory'}))
-                    .toBe(false);
-                expect(scope.filterStatus({'status': 'deprecated'}))
-                    .toBe(false);
-                expect(scope.filterStatus({'status': 'removed'}))
-                    .toBe(false);
-
-                scope.status = {
-                    required: 'required',
-                    advisory: 'advisory',
-                    deprecated: 'deprecated',
-                    removed: 'removed'
-                };
-
-                expect(scope.filterStatus({'status': 'required'})).toBe(true);
-                expect(scope.filterStatus({'status': 'advisory'})).toBe(true);
-                expect(scope.filterStatus({'status': 'deprecated'})).toBe(true);
-                expect(scope.filterStatus({'status': 'removed'})).toBe(true);
-            });
-
-        it('should have a function to check if a capability belongs' +
-            ' to a program',
-            function () {
-                scope.capabilities = {
+                var fakeCaps = {
+                    'schema': '1.3',
                     'platform': {'required': ['compute']},
                     'components': {
                         'compute': {
@@ -138,11 +101,71 @@ describe('Refstack controllers', function () {
                         }
                     }
                 };
-                expect(scope.filterProgram({'id': 'cap_id_1'})).toBe(true);
-                expect(scope.filterProgram({'id': 'cap_id_2'})).toBe(true);
-                expect(scope.filterProgram({'id': 'cap_id_3'})).toBe(true);
-                expect(scope.filterProgram({'id': 'cap_id_4'})).toBe(true);
-                expect(scope.filterProgram({'id': 'cap_id_5'})).toBe(false);
+
+                $httpBackend.expectGET(fakeApiUrl +
+                '/profile').respond(401);
+                $httpBackend.expectGET(fakeApiUrl +
+                '/capabilities').respond(['2015.03.json', '2015.04.json']);
+                // Should call request with latest version.
+                $httpBackend.expectGET(fakeApiUrl +
+                '/capabilities/2015.04.json').respond(fakeCaps);
+                $httpBackend.flush();
+                // The version list should be sorted latest first.
+                expect(scope.versionList).toEqual(['2015.04.json',
+                                                   '2015.03.json']);
+                expect(scope.capabilities).toEqual(fakeCaps);
+                var expectedTemplate = 'components/capabilities/partials/' +
+                                       'capabilityDetailsV1.3.html';
+                expect(scope.detailsTemplate).toEqual(expectedTemplate);
+                var expectedTargetCaps = {
+                    'cap_id_1': 'required',
+                    'cap_id_2': 'advisory',
+                    'cap_id_3': 'deprecated',
+                    'cap_id_4': 'removed'
+                };
+                expect(scope.targetCapabilities).toEqual(expectedTargetCaps);
+            });
+
+        it('should have a function to check if a capability status is selected',
+            function () {
+                scope.targetCapabilities = {
+                    'cap_id_1': 'required',
+                    'cap_id_2': 'advisory',
+                    'cap_id_3': 'deprecated',
+                    'cap_id_4': 'removed'
+                };
+
+                // Expect only the required capability to return true.
+                expect(scope.filterStatus({'id': 'cap_id_1'})).toBe(true);
+                expect(scope.filterStatus({'id': 'cap_id_2'})).toBe(false);
+                expect(scope.filterStatus({'id': 'cap_id_3'})).toBe(false);
+                expect(scope.filterStatus({'id': 'cap_id_4'})).toBe(false);
+
+                scope.status = {
+                    required: true,
+                    advisory: true,
+                    deprecated: true,
+                    removed: true
+                };
+
+                // Every capability should return true now.
+                expect(scope.filterStatus({'id': 'cap_id_1'})).toBe(true);
+                expect(scope.filterStatus({'id': 'cap_id_2'})).toBe(true);
+                expect(scope.filterStatus({'id': 'cap_id_3'})).toBe(true);
+                expect(scope.filterStatus({'id': 'cap_id_4'})).toBe(true);
+            });
+
+        it('should have a function to get the length of an object/dict',
+            function () {
+                var testObject = {
+                    'test_id_1': {
+                        'idempotent_id': 'id-1234'
+                    },
+                    'test_id_2': {
+                        'idempotent_id': 'id-5678'
+                    }
+                };
+                expect(scope.getObjectLength(testObject)).toBe(2);
             });
     });
 
@@ -221,6 +244,7 @@ describe('Refstack controllers', function () {
         var fakeResultResponse = {'results': ['test_id_1']};
         var fakeCapabilityResponse = {
             'platform': {'required': ['compute']},
+            'schema': '1.2',
             'components': {
                 'compute': {
                     'required': ['cap_id_1'],
@@ -231,7 +255,6 @@ describe('Refstack controllers', function () {
             },
             'capabilities': {
                 'cap_id_1': {
-                    'status': 'required',
                     'flagged': [],
                     'tests': ['test_id_1', 'test_id_2']
                 }
@@ -263,13 +286,48 @@ describe('Refstack controllers', function () {
                 expect(scope.versionList).toEqual(['2015.04.json',
                                                    '2015.03.json']);
                 expect(scope.capabilityData).toEqual(fakeCapabilityResponse);
+                expect(scope.schemaVersion).toEqual('1.2');
+                expect(scope.detailsTemplate).toEqual('components/results-' +
+                                                      'report/partials/' +
+                                                      'reportDetailsV1.2.html');
             });
 
-        it('should be able to sort the results into a capability object',
+        it('should have a method that creates an object containing each ' +
+           'relevant capability and its highest priority status',
+            function () {
+                scope.capabilityData = {
+                    'schema': '1.3',
+                    'platform': {'required': ['compute', 'object']},
+                    'components': {
+                        'compute': {
+                            'required': ['cap_id_1'],
+                            'advisory': ['cap_id_2'],
+                            'deprecated': ['cap_id_3'],
+                            'removed': []
+                        },
+                        'object': {
+                            'required': ['cap_id_2'],
+                            'advisory': ['cap_id_1', 'cap_id_3'],
+                            'deprecated': [],
+                            'removed': []
+                        }
+                    }
+                };
+                var expected = {
+                    'cap_id_1': 'required',
+                    'cap_id_2': 'required',
+                    'cap_id_3': 'advisory'
+                };
+                expect(scope.getTargetCapabilitites()).toEqual(expected);
+            });
+
+        it('should be able to sort the results into a capability object for ' +
+            'schema version 1.2',
             function () {
                 scope.resultsData = fakeResultResponse;
                 scope.capabilityData = fakeCapabilityResponse;
-                scope.buildCapabilityObject();
+                scope.schemaVersion = '1.2';
+                scope.buildCapabilitiesObject();
                 var expectedCapsObject = {
                     'required': {
                         'caps': [{
@@ -284,6 +342,55 @@ describe('Refstack controllers', function () {
                     'removed': {'caps': [], 'count': 0, 'passedCount': 0}
                 };
                 expect(scope.caps).toEqual(expectedCapsObject);
+                expect(scope.requiredPassPercent).toEqual(50);
+            });
+
+        it('should be able to sort the results into a capability object for ' +
+            'schema version 1.3',
+            function () {
+                scope.resultsData = fakeResultResponse;
+                scope.capabilityData = {
+                    'platform': {'required': ['compute']},
+                    'schema': '1.3',
+                    'components': {
+                        'compute': {
+                            'required': ['cap_id_1'],
+                            'advisory': [],
+                            'deprecated': [],
+                            'removed': []
+                        }
+                    },
+                    'capabilities': {
+                        'cap_id_1': {
+                            'flagged': [],
+                            'tests': {
+                                'test_id_1': {
+                                    'idempotent_id': 'id-1234'
+                                },
+                                'test_id_2': {
+                                    'idempotent_id': 'id-5678'
+                                }
+                            }
+                        }
+                    }
+                };
+                scope.schemaVersion = '1.3';
+                scope.buildCapabilitiesObject();
+                var expectedCapsObject = {
+                    'required': {
+                        'caps': [{
+                            'id': 'cap_id_1',
+                            'passedTests': ['test_id_1'],
+                            'notPassedTests': ['test_id_2']
+                        }],
+                        'count': 2, 'passedCount': 1
+                    },
+                    'advisory': {'caps': [], 'count': 0, 'passedCount': 0},
+                    'deprecated': {'caps': [], 'count': 0, 'passedCount': 0},
+                    'removed': {'caps': [], 'count': 0, 'passedCount': 0}
+                };
+                expect(scope.caps).toEqual(expectedCapsObject);
+                expect(scope.requiredPassPercent).toEqual(50);
             });
     });
 });

@@ -25,11 +25,17 @@ refstackApp.controller('capabilitiesController',
           * capabilities will be shown.
           */
          $scope.status = {
-             required: 'required',
-             advisory: '',
-             deprecated: '',
-             removed: ''
+             required: true,
+             advisory: false,
+             deprecated: false,
+             removed: false
          };
+
+         /**
+          * The template to load for displaying capability details. The value
+          * of this depends on the schema version of the capabilities file.
+          */
+         $scope.detailsTemplate = null;
 
          /**
           * Retrieve an array of available capability files from the Refstack
@@ -64,6 +70,10 @@ refstackApp.controller('capabilitiesController',
              $scope.capsRequest =
                  $http.get(content_url).success(function (data) {
                      $scope.capabilities = data;
+                     $scope.detailsTemplate = 'components/capabilities/' +
+                                              'partials/capabilityDetailsV' +
+                                              data.schema + '.html';
+                     $scope.updateTargetCapabilities();
                  }).error(function (error) {
                      $scope.showError = true;
                      $scope.capabilities = null;
@@ -72,43 +82,68 @@ refstackApp.controller('capabilitiesController',
                  });
          };
 
-         $scope.getVersionList();
-
          /**
-          * This is a filter that will check if a specific capability belongs
-          * to the selected OpenStack marketing program (programs typically
-          * correspond to 'components' in the DefCore schema). This filter
-          * is meant to be used with the ng-repeat directive.
-          * @param {Object} A capability object from the capabilities JSON
-          * @returns {Boolean} True if capability belongs to program
+          * This will update the scope's 'targetCapabilities' object with
+          * capabilities belonging to the selected OpenStack marketing program
+          * (programs typically correspond to 'components' in the DefCore
+          * schema). Each capability will have its status mapped to it.
           */
-         $scope.filterProgram = function (capability) {
+         $scope.updateTargetCapabilities = function () {
+             $scope.targetCapabilities = {};
              var components = $scope.capabilities.components;
-             var cap_array = [];
+             var targetCaps = $scope.targetCapabilities;
 
              // The 'platform' target is comprised of multiple components, so
              // we need to get the capabilities belonging to each of its
              // components.
              if ($scope.target === 'platform') {
                  var platform_components =
-                         $scope.capabilities.platform.required;
+                     $scope.capabilities.platform.required;
+
+                 // This will contain status priority values, where lower
+                 // values mean higher priorities.
+                 var statusMap = {
+                     required: 1,
+                     advisory: 2,
+                     deprecated: 3,
+                     removed: 4
+                 };
+
                  // For each component required for the platform program.
                  angular.forEach(platform_components, function (component) {
-                     // Get each capability belonging to each status.
+                     // Get each capability list belonging to each status.
                      angular.forEach(components[component],
-                         function (capabilities) {
-                             cap_array = cap_array.concat(capabilities);
+                         function (caps, status) {
+                             // For each capability.
+                             angular.forEach(caps, function(cap) {
+                                 // If the capability has already been added.
+                                 if (cap in targetCaps) {
+                                     // If the status priority value is less
+                                     // than the saved priority value, update
+                                     // the value.
+                                     if (statusMap[status] <
+                                         statusMap[targetCaps[cap]]) {
+                                         targetCaps[cap] = status;
+                                     }
+                                 }
+                                 else {
+                                     targetCaps[cap] = status;
+                                 }
+                             });
                          });
                  });
              }
              else {
                  angular.forEach(components[$scope.target],
-                     function (capabilities) {
-                         cap_array = cap_array.concat(capabilities);
+                     function (caps, status) {
+                         angular.forEach(caps, function(cap) {
+                             targetCaps[cap] = status;
+                         });
                      });
              }
-             return (cap_array.indexOf(capability.id) > -1);
          };
+
+         $scope.getVersionList();
 
          /**
           * This filter will check if a capability's status corresponds
@@ -118,9 +153,24 @@ refstackApp.controller('capabilitiesController',
           * @returns {Boolean} True if capability's status is selected
           */
          $scope.filterStatus = function (capability) {
-             return capability.status === $scope.status.required ||
-                 capability.status === $scope.status.advisory ||
-                 capability.status === $scope.status.deprecated ||
-                 capability.status === $scope.status.removed;
+             var caps = $scope.targetCapabilities;
+             return ($scope.status.required &&
+                     caps[capability.id] === 'required') ||
+                    ($scope.status.advisory &&
+                     caps[capability.id] === 'advisory') ||
+                    ($scope.status.deprecated &&
+                     caps[capability.id] === 'deprecated') ||
+                    ($scope.status.removed &&
+                     caps[capability.id] === 'removed');
+         };
+
+         /**
+          * This function will get the length of an Object/dict based on
+          * the number of keys it has.
+          * @param {Object} object
+          * @returns {Number} length of object
+          */
+         $scope.getObjectLength = function (object) {
+             return Object.keys(object).length;
          };
      }]);

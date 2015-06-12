@@ -1,0 +1,42 @@
+<!--
+HTML for capabilites page when the Defcore capabilities schema is 1.3.
+This expects the JSON data of the capability file to be stored in scope
+variable 'capabilities'.
+-->
+
+<ol ng-show="capabilities" class="capabilities">
+  <li class="capability-list-item" ng-repeat="capability in capabilities.capabilities | arrayConverter | filter:filterStatus">
+    <span class="capability-name">{{capability.id}}</span><br />
+    <em>{{capability.description}}</em><br />
+    Status: <span class="{{targetCapabilities[capability.id]}}">{{targetCapabilities[capability.id]}}</span><br />
+    Project: {{capability.project | capitalize}}<br />
+    <a ng-click="hideAchievements = !hideAchievements">Achievements ({{capability.achievements.length}})</a><br />
+    <ol collapse="hideAchievements" class="list-inline">
+        <li ng-repeat="achievement in capability.achievements">
+            {{achievement}}
+        </li>
+    </ol>
+
+    <a ng-click="hideTests = !hideTests">Tests ({{getObjectLength(capability.tests)}})</a>
+    <ul collapse="hideTests">
+        <li ng-repeat="(testName, testDetails) in capability.tests">
+           <span ng-class="{'glyphicon glyphicon-flag text-warning': testDetails.flag}" title="{{testDetails.flag.reason}}"></span>
+           {{testName}}
+        </li>
+    </ul>
+  </li>
+</ol>
+
+<div ng-show="capabilities" class="criteria">
+    <hr>
+    <h4><a ng-click="hideCriteria = !hideCriteria">Criteria</a></h4>
+    <div collapse="hideCriteria">
+        <ul>
+            <li ng-repeat="(key, criterion) in capabilities.criteria">
+                <span class="criterion-name">{{criterion.name}}</span><br />
+                <em>{{criterion.Description}}</em><br />
+                Weight: {{criterion.weight}}
+            </li>
+        </ul>
+    </div>
+</div>

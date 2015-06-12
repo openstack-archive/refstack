@@ -19,15 +19,15 @@ refstackApp.controller('resultsReportController',
          /** The target OpenStack marketing program to compare against. */
          $scope.target = 'platform';
 
-         /** Whether the required capabilities accordian should be open. */
-         $scope.requiredOpen = true;
-
          /** Mappings of DefCore components to marketing program names. */
          $scope.targetMappings = {
              'platform': 'Openstack Powered Platform',
              'compute': 'OpenStack Powered Compute',
              'object': 'OpenStack Powered Object Storage'
          };
+
+         /** The schema version of the currently selected capabilities data. */
+         $scope.schemaVersion = null;
 
          /**
           * Retrieve an array of available capability files from the Refstack
@@ -80,13 +80,18 @@ refstackApp.controller('resultsReportController',
           * date will be called upon successful retrieval.
           */
          $scope.updateCapabilities = function () {
+             $scope.capabilityData = null;
              $scope.showError = false;
              var content_url = refstackApiUrl + '/capabilities/' +
                  $scope.version;
              $scope.capsRequest =
                  $http.get(content_url).success(function (data) {
                      $scope.capabilityData = data;
-                     $scope.buildCapabilityObject();
+                     $scope.schemaVersion = data.schema;
+                     $scope.detailsTemplate = 'components/results-report/' +
+                                              'partials/reportDetailsV' +
+                                              data.schema + '.html';
+                     $scope.buildCapabilitiesObject();
                  }).error(function (error) {
                      $scope.showError = true;
                      $scope.capabilityData = null;
@@ -96,70 +101,165 @@ refstackApp.controller('resultsReportController',
          };
 
          /**
-          * This will build an object based on the capability data retrieved
-          * from the Refstack API server. This object will contain the
-          * information needed to form a report in the HTML template.
+          * This will get all the capabilities relevant to the target and
+          * their corresponding statuses.
+          * @returns {Object} Object containing each capability and their status
           */
-         $scope.buildCapabilityObject = function () {
-             var capabilities = $scope.capabilityData.capabilities;
-             // This is the object template where 'count' is the number of
-             // total tests that fall under the given status, and 'passedCount'
-             // is the number of tests passed. The 'caps' array will contain
-             // objects with details regarding each capability.
-             var caps = {
-                 'required': {'caps': [], 'count': 0, 'passedCount': 0},
-                 'advisory': {'caps': [], 'count': 0, 'passedCount': 0},
-                 'deprecated': {'caps': [], 'count': 0, 'passedCount': 0},
-                 'removed': {'caps': [], 'count': 0, 'passedCount': 0}
-             };
+         $scope.getTargetCapabilitites = function () {
              var components = $scope.capabilityData.components;
-             var cap_array = [];
-             // First determine which capabilities are relevant to the target.
+             var targetCaps = {};
+
+             // The 'platform' target is comprised of multiple components, so
+             // we need to get the capabilities belonging to each of its
+             // components.
              if ($scope.target === 'platform') {
                  var platform_components =
-                         $scope.capabilityData.platform.required;
+                     $scope.capabilityData.platform.required;
+
+                 // This will contain status priority values, where lower
+                 // values mean higher priorities.
+                 var statusMap = {
+                     required: 1,
+                     advisory: 2,
+                     deprecated: 3,
+                     removed: 4
+                 };
+
                  // For each component required for the platform program.
                  angular.forEach(platform_components, function (component) {
-                     // Get each capability belonging to each status.
+                     // Get each capability list belonging to each status.
                      angular.forEach(components[component],
-                         function (compCapabilities) {
-                             cap_array = cap_array.concat(compCapabilities);
+                         function (caps, status) {
+                             // For each capability.
+                             angular.forEach(caps, function(cap) {
+                                 // If the capability has already been added.
+                                 if (cap in targetCaps) {
+                                     // If the status priority value is less
+                                     // than the saved priority value, update
+                                     // the value.
+                                     if (statusMap[status] <
+                                         statusMap[targetCaps[cap]]) {
+                                         targetCaps[cap] = status;
+                                     }
+                                 }
+                                 else {
+                                     targetCaps[cap] = status;
+                                 }
+                             });
                          });
                  });
              }
              else {
                  angular.forEach(components[$scope.target],
-                     function (compCapabilities) {
-                         cap_array = cap_array.concat(compCapabilities);
+                     function (caps, status) {
+                         angular.forEach(caps, function(cap) {
+                             targetCaps[cap] = status;
+                         });
                      });
              }
+             return targetCaps;
+         };
 
-             // Loop through each capability.
-             angular.forEach(capabilities, function (value, key) {
-                 // If the capability is target-relevant.
-                 if (cap_array.indexOf(key) > -1) {
-                     var cap = {
-                         'id': key,
-                         'passedTests': [],
-                         'notPassedTests': []
-                     };
-                     caps[value.status].count += value.tests.length;
-                     // Loop through each test belonging to the capability.
-                     angular.forEach(value.tests, function (test_id) {
-                         // If the test ID is in the results' test list, add
-                         // it to the passedTests array.
-                         if ($scope.resultsData.results.indexOf(test_id) > -1) {
-                             cap.passedTests.push(test_id);
-                         }
-                         else {
-                             cap.notPassedTests.push(test_id);
-                         }
-                     });
-                     caps[value.status].passedCount += cap.passedTests.length;
-                     caps[value.status].caps.push(cap);
-                 }
+         /**
+          * This will build the a capability object for schema version 1.2.
+          * This object will contain the information needed to form a report in
+          * the HTML template.
+          * @param {String} capID capability ID
+          */
+         $scope.buildCapabilityV1_2 = function (capId) {
+             var cap = {
+                 'id': capId,
+                 'passedTests': [],
+                 'notPassedTests': []
+             };
+             // Loop through each test belonging to the capability.
+             angular.forEach($scope.capabilityData.capabilities[capId].tests,
+                 function (testId) {
+                     // If the test ID is in the results' test list, add
+                     // it to the passedTests array.
+                     if ($scope.resultsData.results.indexOf(testId) > -1) {
+                         cap.passedTests.push(testId);
+                     }
+                     else {
+                         cap.notPassedTests.push(testId);
+                     }
+                 });
+             return cap;
+         };
+
+         /**
+          * This will build the a capability object for schema version 1.3.
+          * This object will contain the information needed to form a report in
+          * the HTML template.
+          * @param {String} capID capability ID
+          */
+         $scope.buildCapabilityV1_3 = function (capId) {
+             var cap = {
+                 'id': capId,
+                 'passedTests': [],
+                 'notPassedTests': []
+             };
+             // Loop through each test belonging to the capability.
+             angular.forEach($scope.capabilityData.capabilities[capId].tests,
+                 function (details, testId) {
+                     // If the test ID is in the results' test list, add
+                     // it to the passedTests array.
+                     if ($scope.resultsData.results.indexOf(testId) > -1) {
+                         cap.passedTests.push(testId);
+                     }
+                     else {
+                         cap.notPassedTests.push(testId);
+                     }
+                 });
+             return cap;
+         };
+
+         /**
+          * This will check the schema version of the current capabilities file,
+          * and will call the correct method to build an object based on the
+          * capability data retrieved from the Refstack API server.
+          */
+         $scope.buildCapabilitiesObject = function () {
+             // This is the object template where 'count' is the number of
+             // total tests that fall under the given status, and 'passedCount'
+             // is the number of tests passed. The 'caps' array will contain
+             // objects with details regarding each capability.
+             $scope.caps = {
+                 'required': {'caps': [], 'count': 0, 'passedCount': 0},
+                 'advisory': {'caps': [], 'count': 0, 'passedCount': 0},
+                 'deprecated': {'caps': [], 'count': 0, 'passedCount': 0},
+                 'removed': {'caps': [], 'count': 0, 'passedCount': 0}
+             };
+
+             switch ($scope.schemaVersion) {
+                 case '1.2':
+                     var capMethod = 'buildCapabilityV1_2';
+                     break;
+                 case '1.3':
+                     capMethod = 'buildCapabilityV1_3';
+                     break;
+                 default:
+                     $scope.showError = true;
+                     $scope.capabilityData = null;
+                     $scope.error = 'The schema version for the capabilities ' +
+                                    'file selected (' + $scope.schemaVersion +
+                                    ') is currently not supported.';
+                     return;
+             }
+
+             // Get test details for each relevant capability and store
+             // them in the scope's 'caps' object.
+             var targetCaps = $scope.getTargetCapabilitites();
+             angular.forEach(targetCaps, function(status, capId) {
+                 var cap = $scope[capMethod](capId);
+                 $scope.caps[status].count +=
+                     cap.passedTests.length + cap.notPassedTests.length;
+                 $scope.caps[status].passedCount += cap.passedTests.length;
+                 $scope.caps[status].caps.push(cap);
              });
-             $scope.caps = caps;
+
+             $scope.requiredPassPercent = ($scope.caps.required.passedCount *
+                 100 / $scope.caps.required.count);
          };
 
          getResults();
