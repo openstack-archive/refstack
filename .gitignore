@@ -9,3 +9,9 @@ ChangeLog
 build/
 cover/
 dist
+
+.tmp
+node_modules
+npm-debug.log
+refstack-ui/app/assets/lib
+refstack-ui/app/config.json

@@ -20,10 +20,10 @@
   "scripts": {
     "postinstall": "bower install --config.interactive=false",
     "prestart": "npm install",
-    "start": "http-server ./app -a 0.0.0.0 -p 8080",
+    "start": "http-server ./refstack-ui/app -a 0.0.0.0 -p 8080",
     "pretest": "npm install",
-    "test": "karma start tests/karma.conf.js",
-    "test-single-run": "karma start tests/karma.conf.js --single-run",
-    "lint": "eslint --no-color ./"
+    "test": "karma start ./refstack-ui/tests/karma.conf.js",
+    "test-single-run": "karma start ./refstack-ui/tests/karma.conf.js --single-run",
+    "lint": "eslint -c ./.eslintrc --no-color ./refstack-ui"
   }
 }
