@@ -1,17 +1,31 @@
 <h3>DefCore Capabilities</h3>
-<strong>Version:</strong>
-<select ng-model="version" ng-change="update()">
-    <option ng-repeat="versionFile in versionList" value="{{versionFile}}">{{versionFile.slice(0, -5)}}</option>
-</select>
-<br /><br />
-<strong>Target Program:</strong>
-<select ng-model="target" >
-    <option value="platform">OpenStack Powered Platform</option>
-    <option value="compute">OpenStack Powered Compute</option>
-    <option value="object">OpenStack Powered Object Storage</option>
-</select>
-<span class="program-about"><a target="_blank" href="http://www.openstack.org/brand/interop/">About</a></span>
-<br /><br />
+
+<div class="row">
+    <div class="col-md-3">
+        <strong>Version:</strong>
+        <select ng-model="version" ng-change="update()" class="form-control">
+            <option ng-repeat="versionFile in versionList" value="{{versionFile}}">{{versionFile.slice(0, -5)}}</option>
+        </select>
+    </div>
+    <div class="col-md-4">
+        <strong>Target Program:</strong>
+        <span class="program-about"><a target="_blank" href="http://www.openstack.org/brand/interop/">About</a></span>
+        <select ng-model="target" class="form-control">
+            <option value="platform">OpenStack Powered Platform</option>
+            <option value="compute">OpenStack Powered Compute</option>
+            <option value="object">OpenStack Powered Object Storage</option>
+        </select>
+    </div>
+</div>
+<br />
+<div ng-show="capabilities">
+    <strong>Corresponding OpenStack Releases:</strong>
+    <ul class="list-inline">
+        <li ng-repeat="release in capabilities.releases">
+            {{release | capitalize}}
+        </li>
+    </ul>
+</div>
 
 <strong>Capability Status:</strong>
 <div class="checkbox">
