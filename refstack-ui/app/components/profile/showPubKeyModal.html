@@ -1,0 +1,10 @@
+<div class="modal-header">
+    <h4>Public key</h4>
+</div>
+<div class="modal-body container-fluid">
+    <textarea type="text" rows="10" cols="67" readonly="readonly">{{::rawKey}}</textarea>
+    <div class="modal-footer">
+        <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+        <button type="button" class="btn btn-danger btn-sm" ng-click="deletePubKey()">Delete</button>
+    </div>
+</div>

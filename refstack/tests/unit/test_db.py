@@ -61,10 +61,10 @@ class DBAPITestCase(base.BaseTestCase):
         db.user_get(user_openid)
         mock_db.assert_called_once_with(user_openid)
 
-    @mock.patch.object(api, 'user_update_or_create')
-    def test_user_update_or_create(self, mock_db):
+    @mock.patch.object(api, 'user_save')
+    def test_user_save(self, mock_db):
         user_info = 'user@example.com'
-        db.user_update_or_create(user_info)
+        db.user_save(user_info)
         mock_db.assert_called_once_with(user_info)
 
 
@@ -310,7 +310,7 @@ class DBBackendTestCase(base.BaseTestCase):
         user_info = {'openid': 'user@example.com'}
         session = mock_get_session.return_value
         user = mock_model.return_value
-        result = api.user_update_or_create(user_info)
+        result = api.user_save(user_info)
         self.assertEqual(result, user)
 
         mock_model.assert_called_once_with()

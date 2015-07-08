@@ -13,6 +13,7 @@ module.exports = function (config) {
             'app/assets/lib/angular-mocks/angular-mocks.js',
             'app/assets/lib/angular-bootstrap/ui-bootstrap-tpls.min.js',
             'app/assets/lib/angular-busy/dist/angular-busy.min.js',
+            'app/assets/lib/angular-resource/angular-resource.min.js',
 
             // JS files.
             'app/app.js',

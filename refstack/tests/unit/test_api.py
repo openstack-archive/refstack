@@ -29,7 +29,9 @@ import webob.exc
 from refstack.api import constants as const
 from refstack.api import utils as api_utils
 from refstack.api.controllers import auth
-from refstack.api.controllers import v1
+from refstack.api.controllers import capabilities
+from refstack.api.controllers import results
+from refstack.api.controllers import validation
 from refstack.api.controllers import user
 
 
@@ -61,9 +63,9 @@ class ResultsControllerTestCase(base.BaseTestCase):
     def setUp(self):
         super(ResultsControllerTestCase, self).setUp()
         self.validator = mock.Mock()
-        v1.ResultsController.__validator__ = \
+        results.ResultsController.__validator__ = \
             mock.Mock(exposed=False, return_value=self.validator)
-        self.controller = v1.ResultsController()
+        self.controller = results.ResultsController()
         self.config_fixture = config_fixture.Config()
         self.CONF = self.useFixture(self.config_fixture).conf
         self.test_results_url = '/#/results/%s'
@@ -76,7 +78,6 @@ class ResultsControllerTestCase(base.BaseTestCase):
     @mock.patch('refstack.db.get_test')
     @mock.patch('refstack.db.get_test_results')
     def test_get(self, mock_get_test_res, mock_get_test):
-        self.validator.assert_id = mock.Mock(return_value=True)
 
         test_info = mock.Mock()
         test_info.cpid = 'foo'
@@ -97,7 +98,6 @@ class ResultsControllerTestCase(base.BaseTestCase):
         self.assertEqual(actual_result, expected_result)
         mock_get_test_res.assert_called_once_with('fake_arg')
         mock_get_test.assert_called_once_with('fake_arg')
-        self.validator.assert_id.assert_called_once_with('fake_arg')
 
     @mock.patch('refstack.db.store_results')
     @mock.patch('pecan.response')
@@ -262,7 +262,7 @@ class CapabilitiesControllerTestCase(base.BaseTestCase):
 
     def setUp(self):
         super(CapabilitiesControllerTestCase, self).setUp()
-        self.controller = v1.CapabilitiesController()
+        self.controller = capabilities.CapabilitiesController()
 
     def test_get_capabilities(self):
         """Test when getting a list of all capability files."""
@@ -338,9 +338,9 @@ class BaseRestControllerWithValidationTestCase(base.BaseTestCase):
     def setUp(self):
         super(BaseRestControllerWithValidationTestCase, self).setUp()
         self.validator = mock.Mock()
-        v1.BaseRestControllerWithValidation.__validator__ = \
+        validation.BaseRestControllerWithValidation.__validator__ = \
             mock.Mock(exposed=False, return_value=self.validator)
-        self.controller = v1.BaseRestControllerWithValidation()
+        self.controller = validation.BaseRestControllerWithValidation()
 
     @mock.patch('pecan.response')
     @mock.patch('pecan.request')
@@ -361,20 +361,13 @@ class BaseRestControllerWithValidationTestCase(base.BaseTestCase):
         result = self.controller.get_one('fake_arg')
 
         self.assertEqual(result, 'fake_item')
-        self.validator.assert_id.assert_called_once_with('fake_arg')
         self.controller.get_item.assert_called_once_with(item_id='fake_arg')
 
     def test_get_one_return_schema(self):
         self.validator.assert_id = mock.Mock(return_value=False)
         self.validator.schema = 'fake_schema'
-        result = self.controller.get_one('schema')
+        result = self.controller.schema()
         self.assertEqual(result, 'fake_schema')
-
-    @mock.patch('pecan.abort')
-    def test_get_one_abort(self, mock_abort):
-        self.validator.assert_id = mock.Mock(return_value=False)
-        self.controller.get_one('fake_arg')
-        mock_abort.assert_called_once_with(404)
 
 
 class ProfileControllerTestCase(base.BaseTestCase):
@@ -489,7 +482,7 @@ class AuthControllerTestCase(base.BaseTestCase):
                          mock_request.environ['beaker.session'])
 
     @mock.patch('refstack.api.utils.verify_openid_request', return_value=True)
-    @mock.patch('refstack.db.user_update_or_create')
+    @mock.patch('refstack.db.user_save')
     @mock.patch('pecan.request')
     @mock.patch('refstack.api.utils.get_user_session')
     @mock.patch('pecan.redirect', side_effect=webob.exc.HTTPRedirection)

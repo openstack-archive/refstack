@@ -89,9 +89,24 @@ def user_get(user_openid):
     return IMPL.user_get(user_openid)
 
 
-def user_update_or_create(user_info):
+def user_save(user_info):
     """Create user DB record if it exists, otherwise record will be updated.
 
     :param user_info: User record
     """
-    return IMPL.user_update_or_create(user_info)
+    return IMPL.user_save(user_info)
+
+
+def store_pubkey(pubkey_info):
+    """Store public key in to DB."""
+    return IMPL.store_pubkey(pubkey_info)
+
+
+def delete_pubkey(pubkey_id):
+    """Delete public key from DB."""
+    return IMPL.delete_pubkey(pubkey_id)
+
+
+def get_user_pubkeys(user_openid):
+    """Get public pubkeys for specified user."""
+    return IMPL.get_user_pubkeys(user_openid)

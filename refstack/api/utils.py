@@ -166,12 +166,21 @@ def get_user_session():
     return pecan.request.environ['beaker.session']
 
 
+def get_user_id():
+    """Return authenticated user id."""
+    return get_user_session().get(const.USER_OPENID)
+
+
+def get_user():
+    """Return db record for authenticated user."""
+    return db.user_get(get_user_id())
+
+
 def is_authenticated():
     """Return True if user is authenticated."""
-    session = get_user_session()
-    if session.get(const.USER_OPENID):
+    if get_user_id():
         try:
-            if db.user_get(session.get(const.USER_OPENID)):
+            if get_user():
                 return True
         except db.UserNotFound:
             pass

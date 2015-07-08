@@ -1,6 +1,6 @@
 /** Main app module where application dependencies are listed. */
 var refstackApp = angular.module('refstackApp', [
-    'ui.router', 'ui.bootstrap', 'cgBusy']);
+    'ui.router', 'ui.bootstrap', 'cgBusy', 'ngResource']);
 
 /**
  * Handle application routing. Specific templates and controllers will be

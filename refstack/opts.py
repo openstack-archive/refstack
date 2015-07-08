@@ -49,6 +49,6 @@ def list_opts():
         ('DEFAULT', itertools.chain(refstack.api.app.UI_OPTS,
                                     refstack.db.api.db_opts)),
         ('api', itertools.chain(refstack.api.app.API_OPTS,
-                                refstack.api.controllers.v1.CTRLS_OPTS)),
+                                refstack.api.controllers.CTRLS_OPTS)),
         ('osid', refstack.api.controllers.auth.OPENID_OPTS),
     ]

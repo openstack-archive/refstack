@@ -12,26 +12,80 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 """User profile controller."""
+
 import pecan
 from pecan import rest
 from pecan.secure import secure
 
-from refstack.api import constants as const
 from refstack.api import utils as api_utils
+from refstack.api.controllers import validation
+from refstack.common import validators
 from refstack import db
+
+
+class PublicKeysController(validation.BaseRestControllerWithValidation):
+
+    """/v1/profile/pubkeys handler."""
+
+    __validator__ = validators.PubkeyValidator
+
+    # We don't need expose GET url <pubkeys endpoint>/<id>
+    def get_item(self, item_id):
+        """Handler for getting item."""
+        pecan.abort(404)
+
+    @secure(api_utils.is_authenticated)
+    @pecan.expose('json')
+    def post(self, ):
+        """Handler for uploading public pubkeys."""
+        return super(PublicKeysController, self).post()
+
+    def store_item(self, body):
+        """Handler for storing item."""
+        pubkey = {'openid': api_utils.get_user_id()}
+        parts = body['raw_key'].strip().split()
+        if len(parts) == 2:
+            parts.append('')
+        pubkey['format'], pubkey['key'], pubkey['comment'] = parts
+        pubkey_id = db.store_pubkey(pubkey)
+        return pubkey_id
+
+    @secure(api_utils.is_authenticated)
+    @pecan.expose('json')
+    def get(self):
+        """Retrieve all user's public pubkeys."""
+        user_openid = api_utils.get_user_id()
+        return db.get_user_pubkeys(user_openid)
+
+    @secure(api_utils.is_authenticated)
+    @pecan.expose('json')
+    def delete(self, pubkey_id):
+        """Delete public key."""
+        pubkeys = db.get_user_pubkeys(api_utils.get_user_id())
+        for key in pubkeys:
+            if key['id'] == pubkey_id:
+                db.delete_pubkey(pubkey_id)
+                return
+        else:
+            pecan.abort(404)
 
 
 class ProfileController(rest.RestController):
 
-    """Controller provides user information in OpenID 2.0 IdP."""
+    """Controller provides user information in OpenID 2.0 IdP.
+
+    /v1/profile handler
+    """
+
+    pubkeys = PublicKeysController()
 
     @secure(api_utils.is_authenticated)
     @pecan.expose('json')
     def get(self):
         """Handle get request on user info."""
-        session = api_utils.get_user_session()
-        user = db.user_get(session.get(const.USER_OPENID))
+        user = api_utils.get_user()
         return {
             "openid": user.openid,
             "email": user.email,

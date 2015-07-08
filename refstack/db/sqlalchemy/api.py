@@ -12,13 +12,18 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 """Implementation of SQLAlchemy backend."""
+
+import base64
+import hashlib
 import sys
 import uuid
 
 from oslo_config import cfg
 from oslo_db import options as db_options
 from oslo_db.sqlalchemy import session as db_session
+from oslo_db.exception import DBDuplicateEntry
 import six
 
 from refstack.api import constants as api_const
@@ -154,7 +159,7 @@ def user_get(user_openid):
     return user
 
 
-def user_update_or_create(user_info):
+def user_save(user_info):
     """Create user DB record if it exists, otherwise record will be updated."""
     try:
         user = user_get(user_info['openid'])
@@ -166,3 +171,52 @@ def user_update_or_create(user_info):
         user.update(user_info)
         user.save(session=session)
         return user
+
+
+def store_pubkey(pubkey_info):
+    """Store public key in to DB."""
+    pubkey = models.PubKey()
+    pubkey.openid = pubkey_info['openid']
+    pubkey.format = pubkey_info['format']
+    pubkey.pubkey = pubkey_info['key']
+    pubkey.md5_hash = hashlib.md5(
+        base64.b64decode(
+            pubkey_info['key'].encode('ascii')
+        )
+    ).hexdigest()
+    pubkey.comment = pubkey_info['comment']
+    session = get_session()
+    with session.begin():
+        pubkeys_collision = (session.
+                             query(models.PubKey).
+                             filter_by(md5_hash=pubkey.md5_hash).
+                             filter_by(pubkey=pubkey.pubkey).all())
+        if not pubkeys_collision:
+            pubkey.save(session)
+        else:
+            raise DBDuplicateEntry(columns=['pubkeys.pubkey'],
+                                   value=pubkey.pubkey)
+    return pubkey.id
+
+
+def delete_pubkey(id):
+    """Delete public key from DB."""
+    session = get_session()
+    with session.begin():
+        key = session.query(models.PubKey).filter_by(id=id).first()
+        session.delete(key)
+
+
+def get_user_pubkeys(user_openid):
+    """Get public pubkeys for specified user."""
+    session = get_session()
+    pubkeys = session.query(models.PubKey).filter_by(openid=user_openid).all()
+    result = []
+    for pubkey in pubkeys:
+        result.append({
+            'id': pubkey.id,
+            'format': pubkey.format,
+            'key': pubkey.pubkey,
+            'comment': pubkey.comment
+        })
+    return result

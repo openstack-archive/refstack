@@ -13,10 +13,14 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 """SQLAlchemy models for Refstack data."""
+
+import uuid
 
 from oslo_config import cfg
 from oslo_db.sqlalchemy import models
+import six
 import sqlalchemy as sa
 from sqlalchemy import orm
 from sqlalchemy.ext.declarative import declarative_base
@@ -92,3 +96,20 @@ class User(BASE, RefStackBase):
                        index=True)
     email = sa.Column(sa.String(128))
     fullname = sa.Column(sa.String(128))
+    pubkeys = orm.relationship('PubKey', backref='user')
+
+
+class PubKey(BASE, RefStackBase):
+
+    """User public pubkeys."""
+
+    __tablename__ = 'pubkeys'
+
+    id = sa.Column(sa.String(36), primary_key=True,
+                   default=lambda: six.text_type(uuid.uuid4()))
+    openid = sa.Column(sa.String(128), sa.ForeignKey('user.openid'),
+                       nullable=False, unique=True, index=True)
+    format = sa.Column(sa.String(24), nullable=False)
+    pubkey = sa.Column(sa.Text(), nullable=False)
+    comment = sa.Column(sa.String(128))
+    md5_hash = sa.Column(sa.String(32), nullable=False, index=True)

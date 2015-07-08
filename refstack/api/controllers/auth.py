@@ -12,7 +12,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 """Authentication controller."""
+
 from oslo_config import cfg
 from oslo_log import log
 import pecan
@@ -154,7 +156,7 @@ class AuthController(rest.RestController):
             'email': pecan.request.GET.get(const.OPENID_NS_SREG_EMAIL),
             'fullname': pecan.request.GET.get(const.OPENID_NS_SREG_FULLNAME)
         }
-        user = db.user_update_or_create(user_info)
+        user = db.user_save(user_info)
 
         api_utils.delete_params_from_user_session([const.CSRF_TOKEN])
         session[const.USER_OPENID] = user.openid

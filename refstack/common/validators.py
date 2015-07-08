@@ -67,13 +67,19 @@ def checker_uuid(inst):
     return is_uuid(inst)
 
 
-class Validator(object):
+class BaseValidator(object):
 
     """Base class for validators."""
 
+    schema = {}
+
     def __init__(self):
         """Init."""
-        self.schema = {}  # pragma: no cover
+        jsonschema.Draft4Validator.check_schema(self.schema)
+        self.validator = jsonschema.Draft4Validator(
+            self.schema,
+            format_checker=ext_format_checker
+        )
 
     def validate(self, request):
         """Validate request."""
@@ -88,42 +94,35 @@ class Validator(object):
             raise ValidationError('Request doesn''t correspond to schema', e)
 
 
-class TestResultValidator(Validator):
+class TestResultValidator(BaseValidator):
 
     """Validator for incoming test results."""
 
-    def __init__(self):
-        """Init."""
-        self.schema = {
-            'type': 'object',
-            'properties': {
-                'cpid': {
-                    'type': 'string'
-                },
-                'duration_seconds': {'type': 'integer'},
-                'results': {
-                    "type": "array",
-                    "items": [{
-                        'type': 'object',
-                        'properties': {
-                            'name': {'type': 'string'},
-                            'uuid': {
-                                'type': 'string',
-                                'format': 'uuid_hex'
-                            }
-                        }
-                    }]
-
-                }
+    schema = {
+        'type': 'object',
+        'properties': {
+            'cpid': {
+                'type': 'string'
             },
-            'required': ['cpid', 'duration_seconds', 'results'],
-            'additionalProperties': False
-        }
-        jsonschema.Draft4Validator.check_schema(self.schema)
-        self.validator = jsonschema.Draft4Validator(
-            self.schema,
-            format_checker=ext_format_checker
-        )
+            'duration_seconds': {'type': 'integer'},
+            'results': {
+                'type': 'array',
+                'items': [{
+                    'type': 'object',
+                    'properties': {
+                        'name': {'type': 'string'},
+                        'uuid': {
+                            'type': 'string',
+                            'format': 'uuid_hex'
+                        }
+                    }
+                }]
+
+            }
+        },
+        'required': ['cpid', 'duration_seconds', 'results'],
+        'additionalProperties': False
+    }
 
     def validate(self, request):
         """Validate uploaded test results."""
@@ -149,3 +148,38 @@ class TestResultValidator(Validator):
     def assert_id(_id):
         """Check that _id is a valid uuid_hex string."""
         return is_uuid(_id)
+
+
+class PubkeyValidator(BaseValidator):
+
+    """Validator for uploaded public pubkeys."""
+
+    schema = {
+        'raw_key': 'string',
+        'self_signature': 'string',
+    }
+
+    def validate(self, request):
+        """Validate uploaded test results."""
+        super(PubkeyValidator, self).validate(request)
+        body = json.loads(request.body)
+        key_format = body['raw_key'].strip().split()[0]
+
+        if key_format not in ('ssh-dss', 'ssh-rsa',
+                              'pgp-sign-rsa', 'pgp-sign-dss'):
+            raise ValidationError('Public key has unsupported format')
+
+        try:
+            sign = binascii.a2b_hex(body['self_signature'])
+        except (binascii.Error, TypeError) as e:
+            raise ValidationError('Malformed signature', e)
+
+        try:
+            key = RSA.importKey(body['raw_key'])
+        except ValueError as e:
+            raise ValidationError('Malformed public key', e)
+        signer = PKCS1_v1_5.new(key)
+        data_hash = SHA256.new()
+        data_hash.update('signature'.encode('utf-8'))
+        if not signer.verify(data_hash, sign):
+            raise ValidationError('Signature verification failed')

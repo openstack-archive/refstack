@@ -12,4 +12,25 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 """API controllers package."""
+
+from oslo_config import cfg
+
+from refstack.api import constants as const
+
+CTRLS_OPTS = [
+    cfg.IntOpt('results_per_page',
+               default=20,
+               help='Number of results for one page'),
+    cfg.StrOpt('input_date_format',
+               default='%Y-%m-%d %H:%M:%S',
+               help='The format for %(start)s and %(end)s parameters' % {
+                   'start': const.START_DATE,
+                   'end': const.END_DATE
+               })
+]
+
+CONF = cfg.CONF
+
+CONF.register_opts(CTRLS_OPTS, group='api')
