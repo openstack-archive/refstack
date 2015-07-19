@@ -170,18 +170,27 @@ refstackApp.controller('resultsReportController',
              var cap = {
                  'id': capId,
                  'passedTests': [],
-                 'notPassedTests': []
+                 'notPassedTests': [],
+                 'passedFlagged': [],
+                 'notPassedFlagged': []
              };
+             var capDetails = $scope.capabilityData.capabilities[capId];
              // Loop through each test belonging to the capability.
-             angular.forEach($scope.capabilityData.capabilities[capId].tests,
+             angular.forEach(capDetails.tests,
                  function (testId) {
                      // If the test ID is in the results' test list, add
                      // it to the passedTests array.
                      if ($scope.resultsData.results.indexOf(testId) > -1) {
                          cap.passedTests.push(testId);
+                         if (capDetails.flagged.indexOf(testId) > -1) {
+                             cap.passedFlagged.push(testId);
+                         }
                      }
                      else {
                          cap.notPassedTests.push(testId);
+                         if (capDetails.flagged.indexOf(testId) > -1) {
+                             cap.notPassedFlagged.push(testId);
+                         }
                      }
                  });
              return cap;
@@ -197,7 +206,9 @@ refstackApp.controller('resultsReportController',
              var cap = {
                  'id': capId,
                  'passedTests': [],
-                 'notPassedTests': []
+                 'notPassedTests': [],
+                 'passedFlagged': [],
+                 'notPassedFlagged': []
              };
              // Loop through each test belonging to the capability.
              angular.forEach($scope.capabilityData.capabilities[capId].tests,
@@ -206,9 +217,15 @@ refstackApp.controller('resultsReportController',
                      // it to the passedTests array.
                      if ($scope.resultsData.results.indexOf(testId) > -1) {
                          cap.passedTests.push(testId);
+                         if ('flag' in details) {
+                             cap.passedFlagged.push(testId);
+                         }
                      }
                      else {
                          cap.notPassedTests.push(testId);
+                         if ('flag' in details) {
+                             cap.notPassedFlagged.push(testId);
+                         }
                      }
                  });
              return cap;
@@ -225,10 +242,14 @@ refstackApp.controller('resultsReportController',
              // is the number of tests passed. The 'caps' array will contain
              // objects with details regarding each capability.
              $scope.caps = {
-                 'required': {'caps': [], 'count': 0, 'passedCount': 0},
-                 'advisory': {'caps': [], 'count': 0, 'passedCount': 0},
-                 'deprecated': {'caps': [], 'count': 0, 'passedCount': 0},
-                 'removed': {'caps': [], 'count': 0, 'passedCount': 0}
+                 'required': {'caps': [], 'count': 0, 'passedCount': 0,
+                              'flagFailCount': 0, 'flagPassCount': 0},
+                 'advisory': {'caps': [], 'count': 0, 'passedCount': 0,
+                              'flagFailCount': 0, 'flagPassCount': 0},
+                 'deprecated': {'caps': [], 'count': 0, 'passedCount': 0,
+                                'flagFailCount': 0, 'flagPassCount': 0},
+                 'removed': {'caps': [], 'count': 0, 'passedCount': 0,
+                             'flagFailCount': 0, 'flagPassCount': 0}
              };
 
              switch ($scope.schemaVersion) {
@@ -255,11 +276,28 @@ refstackApp.controller('resultsReportController',
                  $scope.caps[status].count +=
                      cap.passedTests.length + cap.notPassedTests.length;
                  $scope.caps[status].passedCount += cap.passedTests.length;
+                 $scope.caps[status].flagPassCount += cap.passedFlagged.length;
+                 $scope.caps[status].flagFailCount +=
+                     cap.notPassedFlagged.length;
                  $scope.caps[status].caps.push(cap);
              });
 
              $scope.requiredPassPercent = ($scope.caps.required.passedCount *
                  100 / $scope.caps.required.count);
+
+             $scope.totalRequiredFailCount = $scope.caps.required.count -
+                 $scope.caps.required.passedCount;
+             $scope.totalRequiredFlagCount =
+                 $scope.caps.required.flagFailCount +
+                 $scope.caps.required.flagPassCount;
+             $scope.totalNonFlagCount = $scope.caps.required.count -
+                 $scope.totalRequiredFlagCount;
+             $scope.nonFlagPassCount = $scope.totalNonFlagCount -
+                 ($scope.totalRequiredFailCount -
+                  $scope.caps.required.flagFailCount);
+
+             $scope.nonFlagRequiredPassPercent = ($scope.nonFlagPassCount *
+                 100 / $scope.totalNonFlagCount);
          };
 
          getResults();

@@ -255,7 +255,7 @@ describe('Refstack controllers', function () {
             },
             'capabilities': {
                 'cap_id_1': {
-                    'flagged': [],
+                    'flagged': [ 'test_id_1'],
                     'tests': ['test_id_1', 'test_id_2']
                 }
             }
@@ -333,16 +333,23 @@ describe('Refstack controllers', function () {
                         'caps': [{
                             'id': 'cap_id_1',
                             'passedTests': ['test_id_1'],
-                            'notPassedTests': ['test_id_2']
+                            'notPassedTests': ['test_id_2'],
+                            'passedFlagged': ['test_id_1'],
+                            'notPassedFlagged': []
                         }],
-                        'count': 2, 'passedCount': 1
+                        'count': 2, 'passedCount': 1,
+                        'flagFailCount': 0, 'flagPassCount': 1
                     },
-                    'advisory': {'caps': [], 'count': 0, 'passedCount': 0},
-                    'deprecated': {'caps': [], 'count': 0, 'passedCount': 0},
-                    'removed': {'caps': [], 'count': 0, 'passedCount': 0}
+                    'advisory': {'caps': [], 'count': 0, 'passedCount': 0,
+                                 'flagFailCount': 0, 'flagPassCount': 0},
+                    'deprecated': {'caps': [], 'count': 0, 'passedCount': 0,
+                                   'flagFailCount': 0, 'flagPassCount': 0},
+                    'removed': {'caps': [], 'count': 0, 'passedCount': 0,
+                                'flagFailCount': 0, 'flagPassCount': 0}
                 };
                 expect(scope.caps).toEqual(expectedCapsObject);
                 expect(scope.requiredPassPercent).toEqual(50);
+                expect(scope.nonFlagPassCount).toEqual(0);
             });
 
         it('should be able to sort the results into a capability object for ' +
@@ -362,9 +369,13 @@ describe('Refstack controllers', function () {
                     },
                     'capabilities': {
                         'cap_id_1': {
-                            'flagged': [],
                             'tests': {
                                 'test_id_1': {
+                                    'flag': {
+                                        'action': 'foo',
+                                        'date': '2015-03-24',
+                                        'reason': 'bar'
+                                     },
                                     'idempotent_id': 'id-1234'
                                 },
                                 'test_id_2': {
@@ -381,16 +392,23 @@ describe('Refstack controllers', function () {
                         'caps': [{
                             'id': 'cap_id_1',
                             'passedTests': ['test_id_1'],
-                            'notPassedTests': ['test_id_2']
+                            'notPassedTests': ['test_id_2'],
+                            'passedFlagged': ['test_id_1'],
+                            'notPassedFlagged': []
                         }],
-                        'count': 2, 'passedCount': 1
+                        'count': 2, 'passedCount': 1,
+                        'flagFailCount': 0, 'flagPassCount': 1
                     },
-                    'advisory': {'caps': [], 'count': 0, 'passedCount': 0},
-                    'deprecated': {'caps': [], 'count': 0, 'passedCount': 0},
-                    'removed': {'caps': [], 'count': 0, 'passedCount': 0}
+                    'advisory': {'caps': [], 'count': 0, 'passedCount': 0,
+                                 'flagFailCount': 0, 'flagPassCount': 0},
+                    'deprecated': {'caps': [], 'count': 0, 'passedCount': 0,
+                                   'flagFailCount': 0, 'flagPassCount': 0},
+                    'removed': {'caps': [], 'count': 0, 'passedCount': 0,
+                                'flagFailCount': 0, 'flagPassCount': 0}
                 };
                 expect(scope.caps).toEqual(expectedCapsObject);
                 expect(scope.requiredPassPercent).toEqual(50);
+                expect(scope.nonFlagPassCount).toEqual(0);
             });
     });
 });
