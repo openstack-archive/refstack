@@ -117,6 +117,19 @@ def _apply_filters_for_query(query, filters):
     if cpid:
         query = query.filter(models.Test.cpid == cpid)
 
+    signed = api_const.SIGNED in filters
+    if signed:
+        query = (query
+                 .join(models.Test.meta)
+                 .filter(models.TestMeta.meta_key == api_const.PUBLIC_KEY)
+                 .filter(models.TestMeta.value.in_(filters['pubkeys']))
+                 )
+    else:
+        signed_results = (query.session
+                          .query(models.TestMeta.test_id)
+                          .filter_by(meta_key=api_const.PUBLIC_KEY))
+        query = query.filter(models.Test.id.notin_(signed_results))
+
     return query
 
 

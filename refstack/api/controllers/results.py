@@ -55,7 +55,7 @@ class ResultsController(validation.BaseRestControllerWithValidation):
         if pecan.request.headers.get('X-Public-Key'):
             if 'metadata' not in item:
                 item['metadata'] = {}
-            item['metadata']['public_key'] = \
+            item['metadata'][const.PUBLIC_KEY] = \
                 pecan.request.headers.get('X-Public-Key')
         test_id = db.store_results(item)
         LOG.debug(item)
@@ -79,6 +79,7 @@ class ResultsController(validation.BaseRestControllerWithValidation):
             const.START_DATE,
             const.END_DATE,
             const.CPID,
+            const.SIGNED
         ]
 
         try:
@@ -88,9 +89,6 @@ class ResultsController(validation.BaseRestControllerWithValidation):
                 api_utils.get_page_number(records_count)
         except api_utils.ParseInputsError as ex:
             pecan.abort(400, 'Reason: %s' % ex)
-        except Exception as ex:
-            LOG.debug('An error occurred: %s' % ex)
-            pecan.abort(500)
 
         try:
             per_page = CONF.api.results_per_page
@@ -102,7 +100,8 @@ class ResultsController(validation.BaseRestControllerWithValidation):
                     'test_id': r.id,
                     'created_at': r.created_at,
                     'cpid': r.cpid,
-                    'url': CONF.api.test_results_url % r.id
+                    'url': parse.urljoin(CONF.ui_url,
+                                         CONF.api.test_results_url) % r.id
                 })
 
             page = {'results': results,

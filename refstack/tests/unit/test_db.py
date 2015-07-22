@@ -193,9 +193,12 @@ class DBBackendTestCase(base.BaseTestCase):
         self.assertEqual(expected_result, actual_result)
 
     @mock.patch('refstack.db.sqlalchemy.models.Test')
-    def test_apply_filters_for_query(self, mock_model):
+    @mock.patch('refstack.db.sqlalchemy.models.TestMeta')
+    def test_apply_filters_for_query_unsigned(self, mock_meta,
+                                              mock_test):
         query = mock.Mock()
-        mock_model.created_at = six.text_type()
+        mock_test.created_at = six.text_type()
+        mock_meta.test_id = six.text_type()
 
         filters = {
             api_const.START_DATE: 'fake1',
@@ -205,19 +208,30 @@ class DBBackendTestCase(base.BaseTestCase):
 
         result = api._apply_filters_for_query(query, filters)
 
-        query.filter.assert_called_once_with(mock_model.created_at >=
+        query.filter.assert_called_once_with(mock_test.created_at >=
                                              filters[api_const.START_DATE])
 
         query = query.filter.return_value
-        query.filter.assert_called_once_with(mock_model.created_at <=
+        query.filter.assert_called_once_with(mock_test.created_at <=
                                              filters[api_const.END_DATE])
 
         query = query.filter.return_value
-        query.filter.assert_called_once_with(mock_model.cpid ==
+        query.filter.assert_called_once_with(mock_test.cpid ==
                                              filters[api_const.CPID])
 
         query = query.filter.return_value
-        self.assertEqual(result, query)
+
+        query.session.query.assert_called_once_with(mock_meta.test_id)
+        meta_query = query.session.query.return_value
+
+        meta_query.filter_by.\
+            assert_called_once_with(meta_key=api_const.PUBLIC_KEY)
+        unsigned_test_id_query = meta_query.filter_by.return_value
+        mock_test.id.notin_.assert_called_once_with(unsigned_test_id_query)
+        query.filter.assert_called_once_with(mock_test.id.notin_.return_value)
+
+        filtered_query = query.filter.return_value
+        self.assertEqual(result, filtered_query)
 
     @mock.patch.object(api, '_apply_filters_for_query')
     @mock.patch.object(api, 'get_session')

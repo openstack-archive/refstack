@@ -34,6 +34,7 @@ def upgrade():
         sa.ForeignKeyConstraint(['openid'], ['user.openid'], ),
         mysql_charset=MYSQL_CHARSET
     )
+    op.create_index('indx_meta_value', 'meta', ['value'], mysql_length=32)
 
 
 def downgrade():

@@ -134,7 +134,7 @@ class ResultsControllerTestCase(base.BaseTestCase):
                           'url': self.test_results_url % 'fake_test_id'})
         self.assertEqual(mock_response.status, 201)
         mock_store_results.assert_called_once_with(
-            {'answer': 42, 'metadata': {'public_key': 'fake-key'}}
+            {'answer': 42, 'metadata': {const.PUBLIC_KEY: 'fake-key'}}
         )
 
     @mock.patch('pecan.abort')
@@ -216,6 +216,7 @@ class ResultsControllerTestCase(base.BaseTestCase):
             const.START_DATE,
             const.END_DATE,
             const.CPID,
+            const.SIGNED
         ]
         page_number = 1
         total_pages_number = 10

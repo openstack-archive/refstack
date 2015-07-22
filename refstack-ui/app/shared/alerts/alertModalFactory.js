@@ -5,7 +5,7 @@ refstackApp.factory('raiseAlert',
         'use strict';
         return function(mode, title, text) {
             $modal.open({
-                templateUrl: '/components/alerts/alertModal.html',
+                templateUrl: '/shared/alerts/alertModal.html',
                 controller: 'raiseAlertModalController',
                 backdrop: true,
                 keyboard: true,

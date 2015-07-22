@@ -26,8 +26,13 @@ refstackApp.config([
                 templateUrl: '/components/capabilities/capabilities.html',
                 controller: 'capabilitiesController'
             }).
-            state('results', {
-                url: '/results',
+            state('community_results', {
+                url: '/community_results',
+                templateUrl: '/components/results/results.html',
+                controller: 'resultsController'
+            }).
+            state('user_results', {
+                url: '/user_results',
                 templateUrl: '/components/results/results.html',
                 controller: 'resultsController'
             }).
@@ -45,19 +50,46 @@ refstackApp.config([
 ]);
 
 /**
- * Try to authenticate user
+ * Injections in $rootscope
  */
 
-refstackApp.run(['$http', '$rootScope', 'refstackApiUrl',
-    function($http, $rootScope, refstackApiUrl) {
+refstackApp.run(['$http', '$rootScope', '$window', 'refstackApiUrl',
+    function($http, $rootScope, $window, refstackApiUrl) {
         'use strict';
+
+        /**
+         * This function injects sign in function in all scopes
+         */
+
+        $rootScope.auth = {};
+
+        var sign_in_url = refstackApiUrl + '/auth/signin';
+        $rootScope.auth.doSignIn = function () {
+            $window.location.href = sign_in_url;
+        };
+
+        /**
+         * This function injects sign out function in all scopes
+         */
+        var sign_out_url = refstackApiUrl + '/auth/signout';
+        $rootScope.auth.doSignOut = function () {
+            $rootScope.currentUser = null;
+            $rootScope.isAuthenticated = false;
+            $window.location.href = sign_out_url;
+        };
+
+        /**
+         * This block tries to authenticate user
+         */
         var profile_url = refstackApiUrl + '/profile';
         $http.get(profile_url, {withCredentials: true}).
             success(function(data) {
-                $rootScope.currentUser = data;
+                $rootScope.auth.currentUser = data;
+                $rootScope.auth.isAuthenticated = true;
             }).
             error(function() {
-                $rootScope.currentUser = null;
+                $rootScope.auth.currentUser = null;
+                $rootScope.auth.isAuthenticated = false;
             });
     }
 ]);

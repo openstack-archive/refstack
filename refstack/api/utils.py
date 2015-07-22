@@ -86,6 +86,16 @@ def parse_input_params(expected_input_params):
                                        'start': const.START_DATE,
                                        'end': const.END_DATE
                                    })
+    if const.SIGNED in filters:
+        if is_authenticated():
+            filters['openid'] = get_user_id()
+            filters['pubkeys'] = [
+                ' '.join((pk['format'], pk['key']))
+                for pk in db.get_user_pubkeys(filters['openid'])
+            ]
+        else:
+            raise ParseInputsError('To see signed test '
+                                   'results you need to authenticate')
     return filters
 
 
@@ -174,6 +184,11 @@ def get_user_id():
 def get_user():
     """Return db record for authenticated user."""
     return db.user_get(get_user_id())
+
+
+def get_user_public_keys():
+    """Return db record for authenticated user."""
+    return db.get_user_pubkeys(get_user_id())
 
 
 def is_authenticated():

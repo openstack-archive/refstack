@@ -6,8 +6,8 @@ var refstackApp = angular.module('refstackApp');
  * a listing of community uploaded results.
  */
 refstackApp.controller('resultsController',
-    ['$scope', '$http', '$filter', 'refstackApiUrl',
-     function ($scope, $http, $filter, refstackApiUrl) {
+    ['$scope', '$http', '$filter', '$state', 'refstackApiUrl',
+     function ($scope, $http, $filter, $state, refstackApiUrl) {
          'use strict';
 
          /** Initial page to be on. */
@@ -33,6 +33,9 @@ refstackApp.controller('resultsController',
          /** The upload date upper limit to be used in filtering results. */
          $scope.endDate = '';
 
+         $scope.isUserResults = $state.current.name === 'user_results';
+         $scope.pageHeader = $scope.isUserResults ?
+             'Private test results' : 'Community test results';
          /**
           * This will contact the Refstack API to get a listing of test run
           * results.
@@ -51,7 +54,9 @@ refstackApp.controller('resultsController',
              if (end) {
                  content_url = content_url + '&end_date=' + end + ' 23:59:59';
              }
-
+             if ($scope.isUserResults) {
+                 content_url = content_url + '&signed';
+             }
              $scope.resultsRequest =
                  $http.get(content_url).success(function (data) {
                      $scope.data = data;

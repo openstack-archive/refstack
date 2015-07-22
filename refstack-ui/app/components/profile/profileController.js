@@ -19,16 +19,6 @@ refstackApp.controller('profileController',
         function($scope, $http, refstackApiUrl, $state,
                  PubKeys, $modal, raiseAlert) {
             'use strict';
-            $scope.updateProfile = function () {
-                var profile_url = refstackApiUrl + '/profile';
-                $http.get(profile_url, {withCredentials: true}).
-                    success(function(data) {
-                        $scope.user = data;
-                    }).
-                    error(function() {
-                        $state.go('home');
-                    });
-            };
 
             $scope.updatePubKeys = function (){
                 var keys = PubKeys.query(function(){
@@ -77,7 +67,6 @@ refstackApp.controller('profileController',
             $scope.showRes = function(pubKey){
                 raiseAlert('success', '', pubKey.key);
             };
-            $scope.updateProfile();
             $scope.updatePubKeys();
         }
     ]);

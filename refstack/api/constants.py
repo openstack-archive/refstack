@@ -19,6 +19,7 @@ START_DATE = 'start_date'
 END_DATE = 'end_date'
 CPID = 'cpid'
 PAGE = 'page'
+SIGNED = 'signed'
 
 # OpenID parameters
 OPENID_MODE = 'openid.mode'
@@ -36,3 +37,6 @@ OPENID_ERROR = 'openid.error'
 # User session parameters
 CSRF_TOKEN = 'csrf_token'
 USER_OPENID = 'user_openid'
+
+# Test metadata fields
+PUBLIC_KEY = 'public_key'

@@ -1,11 +1,11 @@
 <h3>User profile</h3>
 
-<div ng-show="user">
-    <table ng-show="user" class="table table-striped table-hover">
+<div>
+    <table class="table table-striped table-hover">
         <tbody>
-            <tr> <td>User name</td> <td>{{user.fullname}}</td> </tr>
-            <tr> <td>User OpenId</td> <td>{{user.openid}}</td> </tr>
-            <tr> <td>Email</td> <td>{{user.email}}</td> </tr>
+            <tr> <td>User name</td> <td>{{auth.currentUser.fullname}}</td> </tr>
+            <tr> <td>User OpenId</td> <td>{{auth.currentUser.openid}}</td> </tr>
+            <tr> <td>Email</td> <td>{{auth.currentUser.email}}</td> </tr>
         </tbody>
     </table>
 </div>
@@ -22,8 +22,8 @@
     </div>
 </div>
 
-<div ng-show="pubkeys">
-    <table ng-show="pubkeys" class="table table-striped table-hover">
+<div>
+    <table class="table table-striped table-hover">
         <tbody>
             <tr ng-repeat="pubKey in pubkeys" ng-click="openShowPubKeyModal(pubKey)">
                 <td>{{pubKey.format}}</td>
@@ -33,4 +33,3 @@
         </tbody>
     </table>
 </div>
-

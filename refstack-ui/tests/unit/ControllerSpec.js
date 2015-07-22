@@ -3,11 +3,18 @@ describe('Refstack controllers', function () {
     'use strict';
 
     var fakeApiUrl = 'http://foo.bar/v1';
+    var $httpBackend;
     beforeEach(function () {
         module(function ($provide) {
             $provide.constant('refstackApiUrl', fakeApiUrl);
         });
         module('refstackApp');
+        inject(function(_$httpBackend_){
+            $httpBackend = _$httpBackend_;
+        });
+        $httpBackend.whenGET(fakeApiUrl + '/profile').respond(401);
+        $httpBackend.whenGET('/components/home/home.html')
+            .respond('<div>mock template</div>');
     });
 
     describe('headerController', function () {
@@ -36,42 +43,10 @@ describe('Refstack controllers', function () {
             });
     });
 
-    describe('authController', function () {
-        var scope, $httpBackend, $window;
-
-        beforeEach(inject(function (_$httpBackend_, $rootScope, $controller) {
-            $httpBackend = _$httpBackend_;
-            scope = $rootScope.$new();
-            $window = {location: { href: jasmine.createSpy()} };
-            $controller('authController', {$scope: scope, $window: $window});
-        }));
-
-        it('should show signin url for signed user', function () {
-            $httpBackend.expectGET(fakeApiUrl +
-            '/profile').respond({'openid': 'foo@bar.com',
-                                 'email': 'foo@bar.com',
-                                 'fullname': 'foo' });
-            $httpBackend.flush();
-            scope.doSignIn();
-            expect($window.location.href).toBe(fakeApiUrl + '/auth/signin');
-            expect(scope.isAuthenticated()).toBe(true);
-        });
-
-        it('should show signout url for not signed user', function () {
-            $httpBackend.expectGET(fakeApiUrl +
-            '/profile').respond(401);
-            $httpBackend.flush();
-            scope.doSignOut();
-            expect($window.location.href).toBe(fakeApiUrl + '/auth/signout');
-            expect(scope.isAuthenticated()).toBe(false);
-        });
-    });
-
     describe('capabilitiesController', function () {
-        var scope, $httpBackend;
+        var scope;
 
-        beforeEach(inject(function (_$httpBackend_, $rootScope, $controller) {
-            $httpBackend = _$httpBackend_;
+        beforeEach(inject(function ($rootScope, $controller) {
             scope = $rootScope.$new();
             $controller('capabilitiesController', {$scope: scope});
         }));
@@ -102,8 +77,6 @@ describe('Refstack controllers', function () {
                     }
                 };
 
-                $httpBackend.expectGET(fakeApiUrl +
-                '/profile').respond(401);
                 $httpBackend.expectGET(fakeApiUrl +
                 '/capabilities').respond(['2015.03.json', '2015.04.json']);
                 // Should call request with latest version.
@@ -170,7 +143,7 @@ describe('Refstack controllers', function () {
     });
 
     describe('resultsController', function () {
-        var scope, $httpBackend;
+        var scope;
         var fakeResponse = {
             'pagination': {'current_page': 1, 'total_pages': 2},
             'results': [{
@@ -180,8 +153,7 @@ describe('Refstack controllers', function () {
             }]
         };
 
-        beforeEach(inject(function (_$httpBackend_, $rootScope, $controller) {
-            $httpBackend = _$httpBackend_;
+        beforeEach(inject(function ($rootScope, $controller) {
             scope = $rootScope.$new();
             $controller('resultsController', {$scope: scope});
         }));
@@ -189,9 +161,8 @@ describe('Refstack controllers', function () {
         it('should fetch the first page of results with proper URL args',
             function () {
                 // Initial results should be page 1 of all results.
-                $httpBackend.expectGET(fakeApiUrl + '/profile').respond(401);
-                $httpBackend.expectGET(fakeApiUrl +
-                '/results?page=1').respond(fakeResponse);
+                $httpBackend.expectGET(fakeApiUrl + '/results?page=1')
+                    .respond(fakeResponse);
                 $httpBackend.flush();
                 expect(scope.data).toEqual(fakeResponse);
                 expect(scope.currentPage).toBe(1);
@@ -211,7 +182,6 @@ describe('Refstack controllers', function () {
             });
 
         it('should set an error when results cannot be retrieved', function () {
-            $httpBackend.expectGET(fakeApiUrl + '/profile').respond(401);
             $httpBackend.expectGET(fakeApiUrl + '/results?page=1').respond(404,
                 {'detail': 'Not Found'});
             $httpBackend.flush();
@@ -224,23 +194,16 @@ describe('Refstack controllers', function () {
 
         it('should have an function to clear filters and update the view',
             function () {
-                $httpBackend.expectGET(fakeApiUrl + '/profile').respond(401);
-                $httpBackend.expectGET(fakeApiUrl +
-                '/results?page=1').respond(fakeResponse);
                 scope.startDate = 'some date';
                 scope.endDate = 'some other date';
                 scope.clearFilters();
                 expect(scope.startDate).toBe(null);
                 expect(scope.endDate).toBe(null);
-                $httpBackend.expectGET(fakeApiUrl +
-                '/results?page=1').respond(fakeResponse);
-                $httpBackend.flush();
-                expect(scope.data).toEqual(fakeResponse);
             });
     });
 
     describe('resultsReportController', function () {
-        var scope, $httpBackend, stateparams;
+        var scope, stateparams;
         var fakeResultResponse = {'results': ['test_id_1']};
         var fakeCapabilityResponse = {
             'platform': {'required': ['compute']},
@@ -261,8 +224,7 @@ describe('Refstack controllers', function () {
             }
         };
 
-        beforeEach(inject(function (_$httpBackend_, $rootScope, $controller) {
-            $httpBackend = _$httpBackend_;
+        beforeEach(inject(function ($rootScope, $controller) {
             stateparams = {testID: 1234};
             scope = $rootScope.$new();
             $controller('resultsReportController',
@@ -272,7 +234,6 @@ describe('Refstack controllers', function () {
         it('should make all necessary API requests to get results ' +
             'and capabilities',
             function () {
-                $httpBackend.expectGET(fakeApiUrl + '/profile').respond(401);
                 $httpBackend.expectGET(fakeApiUrl +
                 '/results/1234').respond(fakeResultResponse);
                 $httpBackend.expectGET(fakeApiUrl +
