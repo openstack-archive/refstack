@@ -355,7 +355,7 @@ class BaseRestControllerWithValidationTestCase(base.BaseTestCase):
         self.controller.store_item.assert_called_once_with([42])
 
     def test_get_one_return_item(self):
-        self.validator.assert_id.return_value = True
+        self.validator.assert_id = mock.Mock(return_value=True)
         self.controller.get_item = mock.Mock(return_value='fake_item')
 
         result = self.controller.get_one('fake_arg')
@@ -365,7 +365,7 @@ class BaseRestControllerWithValidationTestCase(base.BaseTestCase):
         self.controller.get_item.assert_called_once_with(item_id='fake_arg')
 
     def test_get_one_return_schema(self):
-        self.validator.assert_id.return_value = False
+        self.validator.assert_id = mock.Mock(return_value=False)
         self.validator.schema = 'fake_schema'
         result = self.controller.get_one('schema')
         self.assertEqual(result, 'fake_schema')
