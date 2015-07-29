@@ -53,6 +53,14 @@
            ({{nonFlagPassCount}}/{{totalNonFlagCount}})
            of the <em>required</em> tests.
         </p>
+
+        <p>Compliance with <strong>{{version.slice(0, -5)}}</strong>:
+            <strong>
+                <span ng-if="nonFlagPassCount === totalNonFlagCount" class="yes">YES</span>
+                <span ng-if="nonFlagPassCount !== totalNonFlagCount" class="no">NO</span>
+            </strong>
+        </p>
+
         <hr>
         <h4>Capability Overview</h4>
 
