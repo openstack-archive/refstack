@@ -1,5 +1,5 @@
 <h3>{{pageHeader}}</h3>
-<p>The most recently uploaded community test results are listed here. Currently, these results are anonymous.</p>
+<p>The most recently uploaded community test results are listed here.</p>
 
 <div class="result-filters">
     <h4>Filters</h4>
@@ -48,13 +48,15 @@
             <tr>
                 <th>Upload Date</th>
                 <th>Test Run ID</th>
+                <th ng-if="::isUserResults">Shared</th>
             </tr>
         </thead>
 
         <tbody>
             <tr ng-repeat="result in data.results">
                 <td>{{result.created_at}}</td>
-                <td><a ui-sref="resultsDetail({testID: result.test_id})">{{result.test_id}}</a></td>
+                <td><a ui-sref="resultsDetail({testID: result.id})">{{result.id}}</a></td>
+                <td ng-if="::isUserResults"><span ng-show="result.meta.shared" class="glyphicon glyphicon-share"></span></td>
             </tr>
         </tbody>
     </table>

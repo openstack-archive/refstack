@@ -28,11 +28,11 @@ refstackApp.controller('profileController',
                             'resource': key,
                             'format': key.format,
                             'shortKey': [
-                                key.key.slice(0, 10),
+                                key.pubkey.slice(0, 10),
                                 '.',
-                                key.key.slice(-10, -1)
+                                key.pubkey.slice(-10, -1)
                             ].join('.'),
-                            'key': key.key,
+                            'pubkey': key.pubkey,
                             'comment': key.comment
                         });
                     });
@@ -65,7 +65,7 @@ refstackApp.controller('profileController',
                 });
             };
             $scope.showRes = function(pubKey){
-                raiseAlert('success', '', pubKey.key);
+                raiseAlert('success', '', pubKey.pubkey);
             };
             $scope.updatePubKeys();
         }
@@ -104,7 +104,7 @@ refstackApp.controller('showPubKeyModalController',
             'use strict';
             $scope.pubKey = pubKey.resource;
             $scope.rawKey = [pubKey.format,
-                pubKey.key, pubKey.comment].join('\n');
+                pubKey.pubkey, pubKey.comment].join('\n');
             $scope.deletePubKey = function () {
                 $scope.pubKey.$remove(
                     {id: $scope.pubKey.id},

@@ -1,12 +1,27 @@
 <h3>Test Run Results</h3>
 
-<div ng-show="resultsData" class="test-report">
-    <strong>Test ID:</strong> {{testId}}<br />
-    <strong>Upload Date:</strong> {{resultsData.created_at}} UTC<br />
-    <strong>Duration:</strong> {{resultsData.duration_seconds}} seconds<br />
-    <strong>Total Number of Passed Tests:</strong> {{resultsData.results.length}}<br />
-    <hr>
+<div ng-show="resultsData"  class="container-fluid">
+    <div class="row">
+        <div class="pull-left">
+            <div class="test-report">
+                <strong>Test ID:</strong> {{testId}}<br />
+                <div ng-if="isEditingAllowed()"><strong>Cloud ID:</strong> {{resultsData.cpid}}<br /></div>
+                <strong>Upload Date:</strong> {{resultsData.created_at}} UTC<br />
+                <strong>Duration:</strong> {{resultsData.duration_seconds}} seconds<br />
+                <strong>Total Number of Passed Tests:</strong> {{resultsData.results.length}}<br />
+                <hr>
+            </div>
+        </div>
+        <div class="pull-right">
+            <div ng-show="isEditingAllowed()">
+                <button class="btn btn-warning" ng-hide="isShared()" ng-click="shareTestRun(true)">Share</button>
+                <button class="btn btn-success" ng-show="isShared()" ng-click="shareTestRun(false)">Unshare</button>
+                <button type="button" class="btn btn-danger" ng-click="deleteTestRun()">Delete</button>
+            </div>
+        </div>
+    </div>
 </div>
+
 
 <div ng-show="resultsData">
     <p>See how these results stack up against DefCore capabilities and OpenStack

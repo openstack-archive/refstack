@@ -15,14 +15,17 @@
 
 """Refstack API's utils."""
 import copy
+import functools
 import random
 import requests
 import string
+import types
 
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import timeutils
 import pecan
+import pecan.rest
 import six
 from six.moves.urllib import parse
 
@@ -88,10 +91,10 @@ def parse_input_params(expected_input_params):
                                    })
     if const.SIGNED in filters:
         if is_authenticated():
-            filters['openid'] = get_user_id()
-            filters['pubkeys'] = [
-                ' '.join((pk['format'], pk['key']))
-                for pk in db.get_user_pubkeys(filters['openid'])
+            filters[const.OPENID] = get_user_id()
+            filters[const.USER_PUBKEYS] = [
+                ' '.join((pk['format'], pk['pubkey']))
+                for pk in get_user_public_keys()
             ]
         else:
             raise ParseInputsError('To see signed test '
@@ -187,7 +190,7 @@ def get_user():
 
 
 def get_user_public_keys():
-    """Return db record for authenticated user."""
+    """Return public keys for authenticated user."""
     return db.get_user_pubkeys(get_user_id())
 
 
@@ -197,9 +200,89 @@ def is_authenticated():
         try:
             if get_user():
                 return True
-        except db.UserNotFound:
+        except db.NotFound:
             pass
     return False
+
+
+def enforce_permissions(test_id, level):
+    """Check that user role is required for specified test run."""
+    role = get_user_role(test_id)
+    if not role:
+        pecan.abort(401)
+    if level == const.ROLE_USER:
+        if role in (const.ROLE_OWNER, const.ROLE_USER):
+            return
+        pecan.abort(403)
+    if level == const.ROLE_OWNER:
+        if get_user_role(test_id) in (const.ROLE_OWNER,):
+            return
+        pecan.abort(403)
+    else:
+        raise ValueError('Permission level %s is undefined'
+                         '' % level)
+
+
+def get_user_role(test_id):
+    """Return user role for current user and specified test run."""
+    if _check_owner(test_id):
+        return const.ROLE_OWNER
+    if _check_user(test_id):
+        return const.ROLE_USER
+    return
+
+
+def _check_user(test_id):
+    """Check that user has access to shared test run."""
+    test_pubkey = db.get_test_meta_key(test_id, const.PUBLIC_KEY)
+    if not test_pubkey:
+        return True
+    elif db.get_test_meta_key(test_id, const.SHARED_TEST_RUN):
+        return True
+    else:
+        return _check_owner(test_id)
+
+
+def _check_owner(test_id):
+    """Check that user has access to specified test run as owner."""
+    if not is_authenticated():
+        return False
+    test_pubkey = db.get_test_meta_key(test_id, const.PUBLIC_KEY)
+    return test_pubkey in [' '.join((pk['format'], pk['pubkey']))
+                           for pk in get_user_public_keys()]
+
+
+def check_permissions(level):
+    """Decorator for checking permissions.
+
+    It checks that user have enough permissions to access and manipulate
+    an information about selected test run.
+    Any user has role: const.ROLE_USER. It allows access to unsigned, shared
+    and own test runs.
+    Owner role: const.ROLE_OWNER allows access only to user's own results.
+    """
+    def decorator(method_or_class):
+
+        def wrapper(method):
+            @functools.wraps(method)
+            def wrapped(*args, **kwargs):
+                test_id = args[1]
+                enforce_permissions(test_id, level)
+                return method(*args, **kwargs)
+            return wrapped
+
+        if isinstance(method_or_class, types.FunctionType):
+            return wrapper(method_or_class)
+        elif issubclass(method_or_class, pecan.rest.RestController):
+            controller = method_or_class
+            for method_name in ('get', 'get_all', 'get_one',
+                                'post', 'put', 'delete'):
+                if hasattr(controller, method_name):
+                    setattr(controller, method_name,
+                            wrapper(getattr(controller, method_name)))
+            return controller
+
+    return decorator
 
 
 def verify_openid_request(request):

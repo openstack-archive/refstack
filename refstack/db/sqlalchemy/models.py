@@ -36,10 +36,21 @@ class RefStackBase(models.ModelBase,
     """Base class for RefStack Models."""
 
     __table_args__ = {'mysql_engine': 'InnoDB'}
+
+    @property
+    def metadata_keys(self):  # pragma: no cover
+        """Model keys with metadata structure. Will be converted in dict."""
+        return dict()
+
+    @property
+    def default_allowed_keys(self):  # pragma: no cover
+        """Default keys will be present in resulted dict."""
+        return ()
+
     metadata = None
 
 
-class Test(BASE, RefStackBase):
+class Test(BASE, RefStackBase):  # pragma: no cover
 
     """Test."""
 
@@ -51,8 +62,24 @@ class Test(BASE, RefStackBase):
     results = orm.relationship('TestResults', backref='test')
     meta = orm.relationship('TestMeta', backref='test')
 
+    @property
+    def _extra_keys(self):
+        """Relation should be pointed directly."""
+        return ['results', 'meta']
 
-class TestResults(BASE, RefStackBase):
+    @property
+    def metadata_keys(self):
+        """Model keys with metadata structure."""
+        return {'meta': {'key': 'meta_key',
+                         'value': 'value'}}
+
+    @property
+    def default_allowed_keys(self):
+        """Default keys."""
+        return 'id', 'created_at', 'duration_seconds', 'meta'
+
+
+class TestResults(BASE, RefStackBase):  # pragma: no cover
 
     """Test results."""
 
@@ -70,8 +97,13 @@ class TestResults(BASE, RefStackBase):
     name = sa.Column(sa.String(512, collation='latin1_swedish_ci'),)
     uuid = sa.Column(sa.String(36))
 
+    @property
+    def default_allowed_keys(self):
+        """Default keys."""
+        return 'name', 'uuid'
 
-class TestMeta(BASE, RefStackBase):
+
+class TestMeta(BASE, RefStackBase):  # pragma: no cover
 
     """Test metadata."""
 
@@ -85,8 +117,13 @@ class TestMeta(BASE, RefStackBase):
     meta_key = sa.Column(sa.String(64), index=True, nullable=False)
     value = sa.Column(sa.Text())
 
+    @property
+    def default_allowed_keys(self):
+        """Default keys."""
+        return 'meta_key', 'value'
 
-class User(BASE, RefStackBase):
+
+class User(BASE, RefStackBase):  # pragma: no cover
 
     """User information."""
 
@@ -98,8 +135,18 @@ class User(BASE, RefStackBase):
     fullname = sa.Column(sa.String(128))
     pubkeys = orm.relationship('PubKey', backref='user')
 
+    @property
+    def _extra_keys(self):
+        """Relation should be pointed directly."""
+        return ['pubkeys']
 
-class PubKey(BASE, RefStackBase):
+    @property
+    def default_allowed_keys(self):
+        """Default keys."""
+        return 'openid', 'email', 'fullname', 'pubkeys'
+
+
+class PubKey(BASE, RefStackBase):  # pragma: no cover
 
     """User public pubkeys."""
 
@@ -113,3 +160,8 @@ class PubKey(BASE, RefStackBase):
     pubkey = sa.Column(sa.Text(), nullable=False)
     comment = sa.Column(sa.String(128))
     md5_hash = sa.Column(sa.String(32), nullable=False, index=True)
+
+    @property
+    def default_allowed_keys(self):
+        """Default keys."""
+        return 'id', 'openid', 'format', 'pubkey', 'comment'

@@ -45,21 +45,9 @@ class BaseRestControllerWithValidation(rest.RestController):
         else:
             raise ValueError("__validator__ is not defined")
 
-    def get_item(self, item_id):  # pragma: no cover
-        """Handler for getting item."""
-        raise NotImplementedError
-
     def store_item(self, item_in_json):  # pragma: no cover
         """Handler for storing item. Should return new item id."""
         raise NotImplementedError
-
-    @pecan.expose('json')
-    def get_one(self, item_id):
-        """Return test results in JSON format.
-
-        :param item_id: item ID in uuid4 format or action
-        """
-        return self.get_item(item_id=item_id)
 
     @pecan.expose('json')
     def schema(self):

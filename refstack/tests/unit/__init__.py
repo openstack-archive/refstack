@@ -13,3 +13,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 """Refstack unittests."""
+
+import mock
+from oslotest import base
+
+
+class RefstackBaseTestCase(base.BaseTestCase):
+
+    """Refstack test base class."""
+
+    def setup_mock(self, *args, **kwargs):
+        """Mock in test setup."""
+        patcher = mock.patch(*args, **kwargs)
+        self.addCleanup(patcher.stop)
+        return patcher.start()

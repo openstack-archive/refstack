@@ -21,7 +21,6 @@ import sys
 import httmock
 import mock
 from oslo_config import fixture as config_fixture
-from oslotest import base
 import requests
 from six.moves.urllib import parse
 import webob.exc
@@ -33,6 +32,7 @@ from refstack.api.controllers import capabilities
 from refstack.api.controllers import results
 from refstack.api.controllers import validation
 from refstack.api.controllers import user
+from refstack.tests import unit as base
 
 
 def safe_json_dump(content):
@@ -44,7 +44,23 @@ def safe_json_dump(content):
     return content
 
 
-class RootControllerTestCase(base.BaseTestCase):
+class BaseControllerTestCase(base.RefstackBaseTestCase):
+
+    def setUp(self):
+        super(BaseControllerTestCase, self).setUp()
+        self.mock_request = self.setup_mock('pecan.request')
+        self.mock_response = self.setup_mock('pecan.response')
+        self.mock_abort = \
+            self.setup_mock('pecan.abort',
+                            side_effect=webob.exc.HTTPError)
+        self.mock_get_user_role = \
+            self.setup_mock('refstack.api.utils.get_user_role')
+        self.mock_is_authenticated = \
+            self.setup_mock('refstack.api.utils.is_authenticated',
+                            return_value=True)
+
+
+class RootControllerTestCase(BaseControllerTestCase):
 
     @mock.patch('pecan.expose', return_value=lambda f: f)
     def test_index(self, expose_mock):
@@ -58,7 +74,7 @@ class RootControllerTestCase(base.BaseTestCase):
         expose_mock.assert_called_with(generic=True, template='index.html')
 
 
-class ResultsControllerTestCase(base.BaseTestCase):
+class ResultsControllerTestCase(BaseControllerTestCase):
 
     def setUp(self):
         super(ResultsControllerTestCase, self).setUp()
@@ -78,33 +94,58 @@ class ResultsControllerTestCase(base.BaseTestCase):
     @mock.patch('refstack.db.get_test')
     @mock.patch('refstack.db.get_test_results')
     def test_get(self, mock_get_test_res, mock_get_test):
-
-        test_info = mock.Mock()
-        test_info.cpid = 'foo'
-        test_info.created_at = 'bar'
-        test_info.duration_seconds = 999
+        self.mock_get_user_role.return_value = const.ROLE_USER
+        test_info = {'created_at': 'bar',
+                     'duration_seconds': 999}
         mock_get_test.return_value = test_info
 
-        mock_get_test_res.return_value = [('test1',), ('test2',), ('test3',)]
+        mock_get_test_res.return_value = [{'name': 'test1'},
+                                          {'name': 'test2'}]
 
         actual_result = self.controller.get_one('fake_arg')
         expected_result = {
-            'cpid': 'foo',
             'created_at': 'bar',
             'duration_seconds': 999,
-            'results': ['test1', 'test2', 'test3']
+            'results': ['test1', 'test2'],
+            'user_role': const.ROLE_USER
         }
 
         self.assertEqual(actual_result, expected_result)
         mock_get_test_res.assert_called_once_with('fake_arg')
         mock_get_test.assert_called_once_with('fake_arg')
 
+    @mock.patch('refstack.db.get_test')
+    @mock.patch('refstack.db.get_test_results')
+    def test_get_for_owner(self, mock_get_test_res, mock_get_test):
+        self.mock_get_user_role.return_value = const.ROLE_OWNER
+        test_info = {'cpid': 'foo',
+                     'created_at': 'bar',
+                     'duration_seconds': 999}
+        mock_get_test.return_value = test_info
+
+        mock_get_test_res.return_value = [{'name': 'test1'},
+                                          {'name': 'test2'}]
+
+        actual_result = self.controller.get_one('fake_arg')
+        expected_result = {
+            'cpid': 'foo',
+            'created_at': 'bar',
+            'duration_seconds': 999,
+            'results': ['test1', 'test2'],
+            'user_role': const.ROLE_OWNER
+        }
+
+        self.assertEqual(actual_result, expected_result)
+        mock_get_test_res.assert_called_once_with('fake_arg')
+        mock_get_test.assert_called_once_with(
+            'fake_arg', allowed_keys=['id', 'cpid', 'created_at',
+                                      'duration_seconds', 'meta']
+        )
+
     @mock.patch('refstack.db.store_results')
-    @mock.patch('pecan.response')
-    @mock.patch('pecan.request')
-    def test_post(self, mock_request, mock_response, mock_store_results):
-        mock_request.body = '{"answer": 42}'
-        mock_request.headers = {}
+    def test_post(self, mock_store_results):
+        self.mock_request.body = '{"answer": 42}'
+        self.mock_request.headers = {}
         mock_store_results.return_value = 'fake_test_id'
         result = self.controller.post()
         self.assertEqual(
@@ -113,17 +154,13 @@ class ResultsControllerTestCase(base.BaseTestCase):
              'url': parse.urljoin(self.ui_url,
                                   self.test_results_url) % 'fake_test_id'}
         )
-        self.assertEqual(mock_response.status, 201)
+        self.assertEqual(self.mock_response.status, 201)
         mock_store_results.assert_called_once_with({'answer': 42})
 
     @mock.patch('refstack.db.store_results')
-    @mock.patch('pecan.response')
-    @mock.patch('pecan.request')
-    def test_post_with_sign(self, mock_request,
-                            mock_response,
-                            mock_store_results):
-        mock_request.body = '{"answer": 42}'
-        mock_request.headers = {
+    def test_post_with_sign(self, mock_store_results):
+        self.mock_request.body = '{"answer": 42}'
+        self.mock_request.headers = {
             'X-Signature': 'fake-sign',
             'X-Public-Key': 'fake-key'
         }
@@ -132,65 +169,51 @@ class ResultsControllerTestCase(base.BaseTestCase):
         self.assertEqual(result,
                          {'test_id': 'fake_test_id',
                           'url': self.test_results_url % 'fake_test_id'})
-        self.assertEqual(mock_response.status, 201)
+        self.assertEqual(self.mock_response.status, 201)
         mock_store_results.assert_called_once_with(
-            {'answer': 42, 'metadata': {const.PUBLIC_KEY: 'fake-key'}}
+            {'answer': 42, 'meta': {const.PUBLIC_KEY: 'fake-key'}}
         )
 
-    @mock.patch('pecan.abort')
     @mock.patch('refstack.db.get_test')
-    def test_get_item_failed(self, mock_get_test, mock_abort):
+    def test_get_item_failed(self, mock_get_test):
         mock_get_test.return_value = None
-        mock_abort.side_effect = Exception()
-        self.assertRaises(Exception,
-                          self.controller.get_item,
+        self.assertRaises(webob.exc.HTTPError,
+                          self.controller.get_one,
                           'fake_id')
 
-    @mock.patch('pecan.abort')
     @mock.patch('refstack.api.utils.parse_input_params')
-    def test_get_failed_in_parse_input_params(self,
-                                              parse_inputs,
-                                              pecan_abort):
+    def test_get_failed_in_parse_input_params(self, parse_inputs):
 
         parse_inputs.side_effect = api_utils.ParseInputsError()
-        pecan_abort.side_effect = Exception()
-        self.assertRaises(Exception,
+        self.assertRaises(webob.exc.HTTPError,
                           self.controller.get)
 
     @mock.patch('refstack.db.get_test_records_count')
-    @mock.patch('pecan.abort')
     @mock.patch('refstack.api.utils.parse_input_params')
     def test_get_failed_in_get_test_records_number(self,
                                                    parse_inputs,
-                                                   pecan_abort,
                                                    db_get_count):
-        db_get_count.side_effect = Exception()
-        pecan_abort.side_effect = Exception()
-        self.assertRaises(Exception,
+        db_get_count.side_effect = api_utils.ParseInputsError()
+        self.assertRaises(webob.exc.HTTPError,
                           self.controller.get)
 
     @mock.patch('refstack.db.get_test_records_count')
     @mock.patch('refstack.api.utils.parse_input_params')
     @mock.patch('refstack.api.utils.get_page_number')
-    @mock.patch('pecan.abort')
     def test_get_failed_in_get_page_number(self,
-                                           pecan_abort,
                                            get_page,
                                            parse_input,
                                            db_get_count):
 
         get_page.side_effect = api_utils.ParseInputsError()
-        pecan_abort.side_effect = Exception()
-        self.assertRaises(Exception,
+        self.assertRaises(webob.exc.HTTPError,
                           self.controller.get)
 
     @mock.patch('refstack.db.get_test_records')
     @mock.patch('refstack.db.get_test_records_count')
     @mock.patch('refstack.api.utils.parse_input_params')
     @mock.patch('refstack.api.utils.get_page_number')
-    @mock.patch('pecan.abort')
     def test_get_failed_in_get_test_records(self,
-                                            pecan_abort,
                                             get_page,
                                             parce_input,
                                             db_get_count,
@@ -198,8 +221,7 @@ class ResultsControllerTestCase(base.BaseTestCase):
 
         get_page.return_value = (mock.Mock(), mock.Mock())
         db_get_test.side_effect = Exception()
-        pecan_abort.side_effect = Exception()
-        self.assertRaises(Exception,
+        self.assertRaises(webob.exc.HTTPError,
                           self.controller.get)
 
     @mock.patch('refstack.db.get_test_records')
@@ -228,19 +250,13 @@ class ResultsControllerTestCase(base.BaseTestCase):
                                per_page,
                                'api')
 
-        record = mock.Mock()
-        record.id = 111
-        record.created_at = '12345'
-        record.cpid = '54321'
+        record = {'id': 111, 'created_at': '12345', 'cpid': '54321'}
+        expected_record = record.copy()
+        expected_record['url'] = self.test_results_url % record['id']
 
         db_get_test.return_value = [record]
         expected_result = {
-            'results': [{
-                'test_id': record.id,
-                'created_at': record.created_at,
-                'cpid': record.cpid,
-                'url': self.test_results_url % record.id
-            }],
+            'results': [expected_record],
             'pagination': {
                 'current_page': page_number,
                 'total_pages': total_pages_number
@@ -258,12 +274,23 @@ class ResultsControllerTestCase(base.BaseTestCase):
 
         db_get_test.assert_called_once_with(page_number, per_page, filters)
 
+    @mock.patch('refstack.db.delete_test')
+    def test_delete(self, mock_db_delete):
+        self.mock_get_user_role.return_value = const.ROLE_OWNER
+        self.controller.delete('test_id')
+        self.assertEqual(204, self.mock_response.status)
+        self.mock_get_user_role.return_value = const.ROLE_USER
+        self.mock_abort.side_effect = webob.exc.HTTPError()
+        self.assertRaises(webob.exc.HTTPError,
+                          self.controller.delete, 'test_id')
 
-class CapabilitiesControllerTestCase(base.BaseTestCase):
+
+class CapabilitiesControllerTestCase(BaseControllerTestCase):
 
     def setUp(self):
         super(CapabilitiesControllerTestCase, self).setUp()
         self.controller = capabilities.CapabilitiesController()
+        self.mock_abort.side_effect = None
 
     def test_get_capabilities(self):
         """Test when getting a list of all capability files."""
@@ -280,8 +307,7 @@ class CapabilitiesControllerTestCase(base.BaseTestCase):
             result = self.controller.get()
         self.assertEqual(['2015.03.json'], result)
 
-    @mock.patch('pecan.abort')
-    def test_get_capabilities_error_code(self, mock_abort):
+    def test_get_capabilities_error_code(self):
         """Test when the HTTP status code isn't a 200 OK. The status should
            be propogated."""
         @httmock.all_requests
@@ -291,15 +317,14 @@ class CapabilitiesControllerTestCase(base.BaseTestCase):
 
         with httmock.HTTMock(github_api_mock):
             self.controller.get()
-        mock_abort.assert_called_with(404)
+        self.mock_abort.assert_called_with(404)
 
     @mock.patch('requests.get')
-    @mock.patch('pecan.abort')
-    def test_get_capabilities_exception(self, mock_abort, mock_request):
+    def test_get_capabilities_exception(self, mock_requests_get):
         """Test when the GET request raises an exception."""
-        mock_request.side_effect = requests.exceptions.RequestException()
+        mock_requests_get.side_effect = requests.exceptions.RequestException()
         self.controller.get()
-        mock_abort.assert_called_with(500)
+        self.mock_abort.assert_called_with(500)
 
     def test_get_capability_file(self):
         """Test when getting a specific capability file"""
@@ -312,8 +337,7 @@ class CapabilitiesControllerTestCase(base.BaseTestCase):
             result = self.controller.get_one('2015.03')
         self.assertEqual({'foo': 'bar'}, result)
 
-    @mock.patch('pecan.abort')
-    def test_get_capability_file_error_code(self, mock_abort):
+    def test_get_capability_file_error_code(self):
         """Test when the HTTP status code isn't a 200 OK. The status should
            be propogated."""
         @httmock.all_requests
@@ -323,18 +347,17 @@ class CapabilitiesControllerTestCase(base.BaseTestCase):
 
         with httmock.HTTMock(github_api_mock):
             self.controller.get_one('2010.03')
-        mock_abort.assert_called_with(404)
+        self.mock_abort.assert_called_with(404)
 
     @mock.patch('requests.get')
-    @mock.patch('pecan.abort')
-    def test_get_capability_file_exception(self, mock_abort, mock_request):
+    def test_get_capability_file_exception(self, mock_requests_get):
         """Test when the GET request raises an exception."""
-        mock_request.side_effect = requests.exceptions.RequestException()
+        mock_requests_get.side_effect = requests.exceptions.RequestException()
         self.controller.get_one('2010.03')
-        mock_abort.assert_called_with(500)
+        self.mock_abort.assert_called_with(500)
 
 
-class BaseRestControllerWithValidationTestCase(base.BaseTestCase):
+class BaseRestControllerWithValidationTestCase(BaseControllerTestCase):
 
     def setUp(self):
         super(BaseRestControllerWithValidationTestCase, self).setUp()
@@ -355,15 +378,6 @@ class BaseRestControllerWithValidationTestCase(base.BaseTestCase):
         self.assertEqual(mock_response.status, 201)
         self.controller.store_item.assert_called_once_with([42])
 
-    def test_get_one_return_item(self):
-        self.validator.assert_id = mock.Mock(return_value=True)
-        self.controller.get_item = mock.Mock(return_value='fake_item')
-
-        result = self.controller.get_one('fake_arg')
-
-        self.assertEqual(result, 'fake_item')
-        self.controller.get_item.assert_called_once_with(item_id='fake_arg')
-
     def test_get_one_return_schema(self):
         self.validator.assert_id = mock.Mock(return_value=False)
         self.validator.schema = 'fake_schema'
@@ -371,7 +385,7 @@ class BaseRestControllerWithValidationTestCase(base.BaseTestCase):
         self.assertEqual(result, 'fake_schema')
 
 
-class ProfileControllerTestCase(base.BaseTestCase):
+class ProfileControllerTestCase(BaseControllerTestCase):
 
     def setUp(self):
         super(ProfileControllerTestCase, self).setUp()
@@ -383,16 +397,14 @@ class ProfileControllerTestCase(base.BaseTestCase):
                                        fullname='Dobby'))
     @mock.patch('refstack.api.utils.get_user_session',
                 return_value={const.USER_OPENID: 'foo@bar.org'})
-    @mock.patch('refstack.api.utils.is_authenticated', return_value=True)
-    def test_get(self, mock_is_authenticated, mock_get_user_session,
-                 mock_user_get):
+    def test_get(self, mock_get_user_session, mock_user_get):
         actual_result = self.controller.get()
         self.assertEqual({'openid': 'foo@bar.org',
                           'email': 'foo@bar.org',
                           'fullname': 'Dobby'}, actual_result)
 
 
-class AuthControllerTestCase(base.BaseTestCase):
+class AuthControllerTestCase(BaseControllerTestCase):
 
     def setUp(self):
         super(AuthControllerTestCase, self).setUp()
@@ -403,20 +415,17 @@ class AuthControllerTestCase(base.BaseTestCase):
         self.CONF.set_override('ui_url', '127.0.0.1')
 
     @mock.patch('refstack.api.utils.get_user_session')
-    @mock.patch('refstack.api.utils.is_authenticated', return_value=True)
     @mock.patch('pecan.redirect', side_effect=webob.exc.HTTPRedirection)
-    def test_signed_signin(self, mock_redirect, mock_is_authenticated,
-                           mock_get_user_session):
+    def test_signed_signin(self, mock_redirect, mock_get_user_session):
         mock_session = mock.MagicMock(**{const.USER_OPENID: 'foo@bar.org'})
         mock_get_user_session.return_value = mock_session
         self.assertRaises(webob.exc.HTTPRedirection, self.controller.signin)
         mock_redirect.assert_called_with('127.0.0.1')
 
     @mock.patch('refstack.api.utils.get_user_session')
-    @mock.patch('refstack.api.utils.is_authenticated', return_value=False)
     @mock.patch('pecan.redirect', side_effect=webob.exc.HTTPRedirection)
-    def test_unsigned_signin(self, mock_redirect, mock_is_authenticated,
-                             mock_get_user_session):
+    def test_unsigned_signin(self, mock_redirect, mock_get_user_session):
+        self.mock_is_authenticated.return_value = False
         mock_session = mock.MagicMock(**{const.USER_OPENID: 'foo@bar.org'})
         mock_get_user_session.return_value = mock_session
         self.assertRaises(webob.exc.HTTPRedirection, self.controller.signin)
@@ -424,93 +433,88 @@ class AuthControllerTestCase(base.BaseTestCase):
                       mock_redirect.call_args[1]['location'])
 
     @mock.patch('socket.gethostbyname', return_value='1.1.1.1')
-    @mock.patch('pecan.request')
     @mock.patch('refstack.api.utils.get_user_session')
-    @mock.patch('pecan.abort', side_effect=webob.exc.HTTPError)
-    def test_signin_return_failed(self, mock_abort, mock_get_user_session,
-                                  mock_request, mock_socket):
+    def test_signin_return_failed(self, mock_get_user_session, mock_socket):
+        self.mock_abort.side_effect = webob.exc.HTTPError
         mock_session = mock.MagicMock(**{const.USER_OPENID: 'foo@bar.org',
                                          const.CSRF_TOKEN: '42'})
         mock_get_user_session.return_value = mock_session
-        mock_request.remote_addr = '1.1.1.2'
+        self.mock_request.remote_addr = '1.1.1.2'
 
-        mock_request.GET = {
+        self.mock_request.GET = {
             const.OPENID_ERROR: 'foo is not bar!!!'
         }
-        mock_request.environ['beaker.session'] = {
+        self.mock_request.environ['beaker.session'] = {
             const.CSRF_TOKEN: 42
         }
         self.assertRaises(webob.exc.HTTPError, self.controller.signin_return)
-        mock_abort.assert_called_once_with(
-            401, mock_request.GET[const.OPENID_ERROR])
+        self.mock_abort.assert_called_once_with(
+            401, self.mock_request.GET[const.OPENID_ERROR])
         self.assertNotIn(const.CSRF_TOKEN,
-                         mock_request.environ['beaker.session'])
+                         self.mock_request.environ['beaker.session'])
 
-        mock_abort.reset_mock()
-        mock_request.environ['beaker.session'] = {
+        self.mock_abort.reset_mock()
+        self.mock_request.environ['beaker.session'] = {
             const.CSRF_TOKEN: 42
         }
-        mock_request.GET = {
+        self.mock_request.GET = {
             const.OPENID_MODE: 'cancel'
         }
         self.assertRaises(webob.exc.HTTPError, self.controller.signin_return)
-        mock_abort.assert_called_once_with(
+        self.mock_abort.assert_called_once_with(
             401, 'Authentication canceled.')
         self.assertNotIn(const.CSRF_TOKEN,
-                         mock_request.environ['beaker.session'])
+                         self.mock_request.environ['beaker.session'])
 
-        mock_abort.reset_mock()
-        mock_request.environ['beaker.session'] = {
+        self.mock_abort.reset_mock()
+        self.mock_request.environ['beaker.session'] = {
             const.CSRF_TOKEN: 42
         }
-        mock_request.GET = {}
+        self.mock_request.GET = {}
         self.assertRaises(webob.exc.HTTPError, self.controller.signin_return)
-        mock_abort.assert_called_once_with(
+        self.mock_abort.assert_called_once_with(
             401, 'Authentication is failed. Try again.')
         self.assertNotIn(const.CSRF_TOKEN,
-                         mock_request.environ['beaker.session'])
+                         self.mock_request.environ['beaker.session'])
 
-        mock_abort.reset_mock()
-        mock_request.environ['beaker.session'] = {
+        self.mock_abort.reset_mock()
+        self.mock_request.environ['beaker.session'] = {
             const.CSRF_TOKEN: 42
         }
-        mock_request.GET = {const.CSRF_TOKEN: '24'}
-        mock_request.remote_addr = '1.1.1.1'
+        self.mock_request.GET = {const.CSRF_TOKEN: '24'}
+        self.mock_request.remote_addr = '1.1.1.1'
         self.assertRaises(webob.exc.HTTPError, self.controller.signin_return)
-        mock_abort.assert_called_once_with(
+        self.mock_abort.assert_called_once_with(
             401, 'Authentication is failed. Try again.')
         self.assertNotIn(const.CSRF_TOKEN,
-                         mock_request.environ['beaker.session'])
+                         self.mock_request.environ['beaker.session'])
 
     @mock.patch('refstack.api.utils.verify_openid_request', return_value=True)
     @mock.patch('refstack.db.user_save')
-    @mock.patch('pecan.request')
     @mock.patch('refstack.api.utils.get_user_session')
     @mock.patch('pecan.redirect', side_effect=webob.exc.HTTPRedirection)
     def test_signin_return_success(self, mock_redirect, mock_get_user_session,
-                                   mock_request, mock_user, mock_verify):
+                                   mock_user, mock_verify):
         mock_session = mock.MagicMock(**{const.USER_OPENID: 'foo@bar.org',
                                          const.CSRF_TOKEN: 42})
         mock_session.get = mock.Mock(return_value=42)
         mock_get_user_session.return_value = mock_session
 
-        mock_request.GET = {
+        self.mock_request.GET = {
             const.OPENID_CLAIMED_ID: 'foo@bar.org',
             const.OPENID_NS_SREG_EMAIL: 'foo@bar.org',
             const.OPENID_NS_SREG_FULLNAME: 'foo',
             const.CSRF_TOKEN: 42
         }
-        mock_request.environ['beaker.session'] = {
+        self.mock_request.environ['beaker.session'] = {
             const.CSRF_TOKEN: 42
         }
         self.assertRaises(webob.exc.HTTPRedirection,
                           self.controller.signin_return)
 
     @mock.patch('pecan.request')
-    @mock.patch('refstack.api.utils.is_authenticated', return_value=True)
     @mock.patch('pecan.redirect', side_effect=webob.exc.HTTPRedirection)
-    def test_signout(self, mock_redirect, mock_is_authenticated,
-                     mock_request):
+    def test_signout(self, mock_redirect, mock_request):
         mock_request.environ['beaker.session'] = {
             const.CSRF_TOKEN: 42
         }
@@ -518,3 +522,103 @@ class AuthControllerTestCase(base.BaseTestCase):
         mock_redirect.assert_called_with('127.0.0.1')
         self.assertNotIn(const.CSRF_TOKEN,
                          mock_request.environ['beaker.session'])
+
+
+class MetadataControllerTestCase(BaseControllerTestCase):
+
+    def setUp(self):
+        super(MetadataControllerTestCase, self).setUp()
+        self.controller = results.MetadataController()
+
+    @mock.patch('refstack.db.get_test')
+    def test_get(self, mock_db_get_test):
+        self.mock_get_user_role.return_value = const.ROLE_USER
+        mock_db_get_test.return_value = {'meta': 'fake_meta'}
+        self.assertEqual('fake_meta', self.controller.get('test_id'))
+        mock_db_get_test.assert_called_once_with('test_id')
+
+    @mock.patch('refstack.db.get_test_meta_key')
+    def test_get_one(self, mock_db_get_test_meta_key):
+        self.mock_get_user_role.return_value = const.ROLE_USER
+        mock_db_get_test_meta_key.return_value = 42
+        self.assertEqual(42, self.controller.get_one('test_id', 'answer'))
+        mock_db_get_test_meta_key.assert_called_once_with('test_id', 'answer')
+
+    @mock.patch('refstack.db.save_test_meta_item')
+    def test_post(self, mock_save_test_meta_item):
+        self.mock_get_user_role.return_value = const.ROLE_OWNER
+        self.controller.post('test_id', 'answer')
+        self.assertEqual(201, self.mock_response.status)
+        mock_save_test_meta_item.assert_called_once_with(
+            'test_id', 'answer', self.mock_request.body)
+
+        self.mock_get_user_role.return_value = const.ROLE_USER
+        self.mock_abort.side_effect = webob.exc.HTTPError()
+        self.assertRaises(webob.exc.HTTPError,
+                          self.controller.post, 'test_id', 'answer')
+
+    @mock.patch('refstack.db.delete_test_meta_item')
+    def test_delete(self, mock_delete_test_meta_item):
+        self.mock_get_user_role.return_value = const.ROLE_OWNER
+        self.controller.delete('test_id', 'answer')
+        self.assertEqual(204, self.mock_response.status)
+        mock_delete_test_meta_item.assert_called_once_with('test_id', 'answer')
+
+        self.mock_get_user_role.return_value = const.ROLE_USER
+        self.mock_abort.side_effect = webob.exc.HTTPError()
+        self.assertRaises(webob.exc.HTTPError,
+                          self.controller.delete, 'test_id', 'answer')
+
+
+class PublicKeysControllerTestCase(BaseControllerTestCase):
+
+    def setUp(self):
+        super(PublicKeysControllerTestCase, self).setUp()
+        self.controller = user.PublicKeysController()
+
+    @mock.patch('refstack.api.utils.get_user_public_keys')
+    def test_get(self, mock_get_user_public_keys):
+        mock_get_user_public_keys.return_value = 42
+        self.assertEqual(42, self.controller.get())
+        mock_get_user_public_keys.assert_called_once_with()
+
+    @mock.patch('refstack.api.utils.get_user_id')
+    @mock.patch('refstack.db.store_pubkey')
+    def test_post(self, mock_store_pubkey, mock_get_user_id):
+        self.controller.validator.validate = mock.Mock()
+        mock_get_user_id.return_value = 'fake_id'
+        mock_store_pubkey.return_value = 42
+        raw_key = 'fake key Don\'t_Panic.'
+        fake_pubkey = {
+            'format': 'fake',
+            'pubkey': 'key',
+            'comment': 'Don\'t_Panic.',
+            'openid': 'fake_id'
+        }
+        self.mock_request.body = json.dumps({'raw_key': raw_key})
+        self.controller.post()
+        self.assertEqual(201, self.mock_response.status)
+        mock_store_pubkey.assert_called_once_with(fake_pubkey)
+        mock_store_pubkey.reset_mock()
+
+        raw_key = 'fake key'
+        fake_pubkey = {
+            'format': 'fake',
+            'pubkey': 'key',
+            'comment': '',
+            'openid': 'fake_id'
+        }
+        self.mock_request.body = json.dumps({'raw_key': raw_key})
+        self.controller.post()
+        mock_store_pubkey.assert_called_once_with(fake_pubkey)
+
+    @mock.patch('refstack.db.delete_pubkey')
+    @mock.patch('refstack.api.utils.get_user_public_keys')
+    def test_delete(self, mock_get_user_public_keys, mock_delete_pubkey):
+        mock_get_user_public_keys.return_value = ({'id': 'key_id'},)
+        self.controller.delete('key_id')
+        self.assertEqual(204, self.mock_response.status)
+        mock_delete_pubkey.assert_called_once_with('key_id')
+
+        self.assertRaises(webob.exc.HTTPError,
+                          self.controller.delete, 'other_key_id')

@@ -18,6 +18,7 @@
 from oslo_config import cfg
 from oslo_log import log
 import pecan
+from pecan import rest
 from six.moves.urllib import parse
 
 from refstack import db
@@ -31,37 +32,84 @@ LOG = log.getLogger(__name__)
 CONF = cfg.CONF
 
 
+@api_utils.check_permissions(level=const.ROLE_USER)
+class MetadataController(rest.RestController):
+
+    """/v1/results/<test_id>/meta handler."""
+
+    rw_access_keys = ('shared',)
+
+    @pecan.expose('json')
+    def get(self, test_id):
+        """Get test run metadata."""
+        test_info = db.get_test(test_id)
+        return test_info['meta']
+
+    @pecan.expose('json')
+    def get_one(self, test_id, key):
+        """Get value for key from test run metadata."""
+        return db.get_test_meta_key(test_id, key)
+
+    @api_utils.check_permissions(level=const.ROLE_OWNER)
+    @pecan.expose('json')
+    def post(self, test_id, key):
+        """Save value for key in test run metadata."""
+        db.save_test_meta_item(test_id, key, pecan.request.body)
+        pecan.response.status = 201
+
+    @api_utils.check_permissions(level=const.ROLE_OWNER)
+    @pecan.expose('json')
+    def delete(self, test_id, key):
+        """Delete key from test run metadata."""
+        db.delete_test_meta_item(test_id, key)
+        pecan.response.status = 204
+
+
 class ResultsController(validation.BaseRestControllerWithValidation):
 
     """/v1/results handler."""
 
     __validator__ = validators.TestResultValidator
 
-    def get_item(self, item_id):
-        """Handler for getting item."""
-        test_info = db.get_test(item_id)
-        if not test_info:
-            pecan.abort(404)
-        test_list = db.get_test_results(item_id)
-        test_name_list = [test_dict[0] for test_dict in test_list]
-        return {"cpid": test_info.cpid,
-                "created_at": test_info.created_at,
-                "duration_seconds": test_info.duration_seconds,
-                "results": test_name_list}
+    meta = MetadataController()
 
-    def store_item(self, item_in_json):
+    @pecan.expose('json')
+    @api_utils.check_permissions(level=const.ROLE_USER)
+    def get_one(self, test_id):
+        """Handler for getting item."""
+        if api_utils.get_user_role(test_id) == const.ROLE_OWNER:
+            test_info = db.get_test(
+                test_id, allowed_keys=['id', 'cpid', 'created_at',
+                                       'duration_seconds', 'meta']
+            )
+        else:
+            test_info = db.get_test(test_id)
+        test_list = db.get_test_results(test_id)
+        test_name_list = [test_dict['name'] for test_dict in test_list]
+        test_info.update({'results': test_name_list,
+                          'user_role': api_utils.get_user_role(test_id)})
+        return test_info
+
+    def store_item(self, test):
         """Handler for storing item. Should return new item id."""
-        item = item_in_json.copy()
+        test_ = test.copy()
         if pecan.request.headers.get('X-Public-Key'):
-            if 'metadata' not in item:
-                item['metadata'] = {}
-            item['metadata'][const.PUBLIC_KEY] = \
+            if 'meta' not in test_:
+                test_['meta'] = {}
+            test_['meta'][const.PUBLIC_KEY] = \
                 pecan.request.headers.get('X-Public-Key')
-        test_id = db.store_results(item)
-        LOG.debug(item)
+        test_id = db.store_results(test_)
+        LOG.debug(test_)
         return {'test_id': test_id,
                 'url': parse.urljoin(CONF.ui_url,
                                      CONF.api.test_results_url) % test_id}
+
+    @pecan.expose('json')
+    @api_utils.check_permissions(level=const.ROLE_OWNER)
+    def delete(self, test_id):
+        """Delete test run."""
+        db.delete_test(test_id)
+        pecan.response.status = 204
 
     @pecan.expose('json')
     def get(self):
@@ -92,17 +140,12 @@ class ResultsController(validation.BaseRestControllerWithValidation):
 
         try:
             per_page = CONF.api.results_per_page
-            records = db.get_test_records(page_number, per_page, filters)
+            results = db.get_test_records(page_number, per_page, filters)
 
-            results = []
-            for r in records:
-                results.append({
-                    'test_id': r.id,
-                    'created_at': r.created_at,
-                    'cpid': r.cpid,
-                    'url': parse.urljoin(CONF.ui_url,
-                                         CONF.api.test_results_url) % r.id
-                })
+            for result in results:
+                result.update({'url': parse.urljoin(
+                    CONF.ui_url, CONF.api.test_results_url
+                ) % result['id']})
 
             page = {'results': results,
                     'pagination': {

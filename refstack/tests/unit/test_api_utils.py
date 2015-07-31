@@ -19,7 +19,9 @@ import mock
 from oslo_config import fixture as config_fixture
 from oslo_utils import timeutils
 from oslotest import base
+from pecan import rest
 from six.moves.urllib import parse
+from webob import exc
 
 from refstack.api import constants as const
 from refstack.api import utils as api_utils
@@ -118,7 +120,9 @@ class APIUtilsTestCase(base.BaseTestCase):
                           expected_params)
 
     @mock.patch.object(api_utils, '_get_input_params_from_request')
-    def test_parse_input_params_success(self, mock_get_input):
+    @mock.patch.object(api_utils, 'is_authenticated', return_value=False)
+    def test_parse_input_params_failed_in_auth(self, mock_is_authenticated,
+                                               mock_get_input):
         fmt = '%Y-%m-%d %H:%M:%S'
         self.CONF.set_override('input_date_format',
                                fmt,
@@ -127,8 +131,34 @@ class APIUtilsTestCase(base.BaseTestCase):
             const.START_DATE: '2015-03-26 15:04:40',
             const.END_DATE: '2015-03-26 15:04:50',
             const.CPID: '12345',
+            const.SIGNED: True
         }
+        expected_params = mock.Mock()
+        mock_get_input.return_value = raw_filters
+        self.assertRaises(api_utils.ParseInputsError,
+                          api_utils.parse_input_params, expected_params)
 
+    @mock.patch.object(api_utils, '_get_input_params_from_request')
+    @mock.patch.object(api_utils, 'is_authenticated', return_value=True)
+    @mock.patch.object(api_utils, 'get_user_id', return_value='fake_id')
+    @mock.patch('refstack.db.get_user_pubkeys')
+    def test_parse_input_params_success(self, mock_get_user_pubkeys,
+                                        mock_get_user_id,
+                                        mock_is_authenticated,
+                                        mock_get_input):
+        fmt = '%Y-%m-%d %H:%M:%S'
+        self.CONF.set_override('input_date_format',
+                               fmt,
+                               'api')
+        raw_filters = {
+            const.START_DATE: '2015-03-26 15:04:40',
+            const.END_DATE: '2015-03-26 15:04:50',
+            const.CPID: '12345',
+            const.SIGNED: True
+        }
+        fake_pubkeys = ({'format': 'fake',
+                         'pubkey': 'fake_pk'},)
+        mock_get_user_pubkeys.return_value = fake_pubkeys
         expected_params = mock.Mock()
         mock_get_input.return_value = raw_filters
 
@@ -145,7 +175,10 @@ class APIUtilsTestCase(base.BaseTestCase):
         expected_result = {
             const.START_DATE: parsed_start_date,
             const.END_DATE: parsed_end_date,
-            const.CPID: '12345'
+            const.CPID: '12345',
+            const.SIGNED: True,
+            const.OPENID: 'fake_id',
+            const.USER_PUBKEYS: ['fake fake_pk'],
         }
 
         result = api_utils.parse_input_params(expected_params)
@@ -292,9 +325,132 @@ class APIUtilsTestCase(base.BaseTestCase):
         mock_get_user.return_value = 'Dobby'
         self.assertEqual(True, api_utils.is_authenticated())
         mock_db.user_get.called_once_with(mock_session)
-        mock_db.UserNotFound = db.UserNotFound
-        mock_get_user.side_effect = mock_db.UserNotFound
+        mock_db.NotFound = db.NotFound
+        mock_get_user.side_effect = mock_db.NotFound('User')
         self.assertEqual(False, api_utils.is_authenticated())
+
+    @mock.patch('pecan.abort', side_effect=exc.HTTPError)
+    @mock.patch('refstack.db.get_test_meta_key')
+    @mock.patch.object(api_utils, 'is_authenticated')
+    @mock.patch.object(api_utils, 'get_user_public_keys')
+    def test_check_get_user_role(self, mock_get_user_public_keys,
+                                 mock_is_authenticated,
+                                 mock_get_test_meta_key,
+                                 mock_pecan_abort):
+        # Check user level
+        mock_get_test_meta_key.return_value = None
+        self.assertEqual(const.ROLE_USER, api_utils.get_user_role('fake_test'))
+        api_utils.enforce_permissions('fake_test', const.ROLE_USER)
+        self.assertRaises(exc.HTTPError, api_utils.enforce_permissions,
+                          'fake_test', const.ROLE_OWNER)
+
+        mock_get_test_meta_key.side_effect = {
+            ('fake_test', const.PUBLIC_KEY): 'fake key',
+            ('fake_test', const.SHARED_TEST_RUN): 'true',
+        }.get
+        self.assertEqual(const.ROLE_USER, api_utils.get_user_role('fake_test'))
+        api_utils.enforce_permissions('fake_test', const.ROLE_USER)
+        self.assertRaises(exc.HTTPError, api_utils.enforce_permissions,
+                          'fake_test', const.ROLE_OWNER)
+
+        mock_is_authenticated.return_value = True
+        mock_get_user_public_keys.return_value = [{'format': 'fake',
+                                                   'pubkey': 'key'}]
+        mock_get_test_meta_key.side_effect = {
+            ('fake_test', const.PUBLIC_KEY): 'fake key',
+            ('fake_test', const.SHARED_TEST_RUN): 'true',
+        }.get
+        self.assertEqual(const.ROLE_USER, api_utils.get_user_role('fake_test'))
+        api_utils.enforce_permissions('fake_test', const.ROLE_USER)
+        self.assertRaises(exc.HTTPError, api_utils.enforce_permissions,
+                          'fake_test', const.ROLE_OWNER)
+
+        # Check owner level
+        mock_is_authenticated.return_value = True
+        mock_get_user_public_keys.return_value = [{'format': 'fake',
+                                                   'pubkey': 'key'}]
+        mock_get_test_meta_key.side_effect = lambda *args: {
+            ('fake_test', const.PUBLIC_KEY): 'fake key',
+            ('fake_test', const.SHARED_TEST_RUN): None,
+        }.get(args)
+        self.assertEqual(const.ROLE_OWNER,
+                         api_utils.get_user_role('fake_test'))
+        api_utils.enforce_permissions('fake_test', const.ROLE_USER)
+        api_utils.enforce_permissions('fake_test', const.ROLE_OWNER)
+
+        # Check negative cases
+        mock_is_authenticated.return_value = False
+        mock_get_test_meta_key.side_effect = lambda *args: {
+            ('fake_test', const.PUBLIC_KEY): 'fake key',
+            ('fake_test', const.SHARED_TEST_RUN): None,
+        }.get(args)
+        self.assertRaises(exc.HTTPError, api_utils.enforce_permissions,
+                          'fake_test', const.ROLE_USER)
+        self.assertRaises(exc.HTTPError, api_utils.enforce_permissions,
+                          'fake_test', const.ROLE_OWNER)
+
+        mock_is_authenticated.return_value = True
+        mock_get_user_public_keys.return_value = [{'format': 'fake',
+                                                   'pubkey': 'key'}]
+        mock_get_test_meta_key.side_effect = lambda *args: {
+            ('fake_test', const.PUBLIC_KEY): 'fake other_key',
+            ('fake_test', const.SHARED_TEST_RUN): None,
+        }.get(args)
+        self.assertEqual(None, api_utils.get_user_role('fake_test'))
+        self.assertRaises(exc.HTTPError, api_utils.enforce_permissions,
+                          'fake_test', const.ROLE_USER)
+        self.assertRaises(exc.HTTPError, api_utils.enforce_permissions,
+                          'fake_test', const.ROLE_OWNER)
+
+    @mock.patch('pecan.abort', side_effect=exc.HTTPError)
+    @mock.patch('refstack.db.get_test_meta_key')
+    @mock.patch.object(api_utils, 'is_authenticated')
+    @mock.patch.object(api_utils, 'get_user_public_keys')
+    def test_check_permissions(self, mock_get_user_public_keys,
+                               mock_is_authenticated,
+                               mock_get_test_meta_key,
+                               mock_pecan_abort):
+
+        @api_utils.check_permissions(level=const.ROLE_USER)
+        class ControllerWithPermissions(rest.RestController):
+
+            def get(self, test_id):
+                return test_id
+
+            @api_utils.check_permissions(level=const.ROLE_OWNER)
+            def delete(self, test_id):
+                return test_id
+
+            @api_utils.check_permissions(level='fake_role')
+            def post(self, test_id):
+                return test_id
+
+        fake_controller = ControllerWithPermissions()
+
+        public_test = 'fake_public_test'
+        private_test = 'fake_test'
+
+        mock_get_user_public_keys.return_value = [{'format': 'fake',
+                                                   'pubkey': 'key'}]
+        mock_get_test_meta_key.side_effect = lambda *args: {
+            (public_test, const.PUBLIC_KEY): None,
+            (private_test, const.PUBLIC_KEY): 'fake key',
+            (private_test, const.SHARED_TEST_RUN): None,
+        }.get(args)
+
+        mock_is_authenticated.return_value = True
+        self.assertEqual(public_test, fake_controller.get(public_test))
+        self.assertRaises(exc.HTTPError, fake_controller.delete, public_test)
+        self.assertEqual(private_test, fake_controller.get(private_test))
+        self.assertEqual(private_test, fake_controller.delete(private_test))
+
+        mock_is_authenticated.return_value = False
+        self.assertEqual(public_test, fake_controller.get(public_test))
+        self.assertRaises(exc.HTTPError, fake_controller.delete, public_test)
+        self.assertRaises(exc.HTTPError, fake_controller.get, private_test)
+        self.assertRaises(exc.HTTPError, fake_controller.delete, private_test)
+
+        self.assertRaises(ValueError, fake_controller.post, public_test)
 
     @mock.patch('requests.post')
     @mock.patch('pecan.abort')

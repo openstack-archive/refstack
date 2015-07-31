@@ -20,6 +20,8 @@ END_DATE = 'end_date'
 CPID = 'cpid'
 PAGE = 'page'
 SIGNED = 'signed'
+OPENID = 'openid'
+USER_PUBKEYS = 'pubkeys'
 
 # OpenID parameters
 OPENID_MODE = 'openid.mode'
@@ -40,3 +42,8 @@ USER_OPENID = 'user_openid'
 
 # Test metadata fields
 PUBLIC_KEY = 'public_key'
+SHARED_TEST_RUN = 'shared'
+
+# Roles
+ROLE_USER = 'user'
+ROLE_OWNER = 'owner'

@@ -6,8 +6,10 @@ var refstackApp = angular.module('refstackApp');
  * view details for a specific test run.
  */
 refstackApp.controller('resultsReportController',
-    ['$scope', '$http', '$stateParams', 'refstackApiUrl',
-     function ($scope, $http, $stateParams, refstackApiUrl) {
+    ['$scope', '$http', '$stateParams',
+     '$window', 'refstackApiUrl', 'raiseAlert',
+     function ($scope, $http, $stateParams, $window,
+               refstackApiUrl, raiseAlert) {
          'use strict';
 
          /** The testID extracted from the URL route. */
@@ -73,6 +75,53 @@ refstackApp.controller('resultsReportController',
                  });
          };
 
+         $scope.isEditingAllowed = function () {
+             return Boolean($scope.resultsData &&
+                 $scope.resultsData.user_role === 'owner');
+         };
+
+         $scope.isShared = function () {
+             return Boolean($scope.resultsData &&
+                 'shared' in $scope.resultsData.meta);
+         };
+
+         $scope.shareTestRun = function (shareState) {
+             var content_url = [
+                 refstackApiUrl, '/results/', $scope.testId, '/meta/shared'
+             ].join('');
+             if (shareState) {
+                 $scope.shareRequest =
+                     $http.post(content_url, 'true').success(function () {
+                         $scope.resultsData.meta.shared = 'true';
+                         raiseAlert('success', '', 'Test run shared!');
+                     }).error(function (error) {
+                         raiseAlert('danger',
+                             error.title, error.detail);
+                     });
+             } else {
+                 $scope.shareRequest =
+                     $http.delete(content_url).success(function () {
+                         delete $scope.resultsData.meta.shared;
+                         raiseAlert('success', '', 'Test run unshared!');
+                     }).error(function (error) {
+                         raiseAlert('danger',
+                             error.title, error.detail);
+                     });
+             }
+         };
+
+         $scope.deleteTestRun = function () {
+             var content_url = [
+                 refstackApiUrl, '/results/', $scope.testId
+             ].join('');
+             $scope.deleteRequest =
+                 $http.delete(content_url).success(function () {
+                     $window.history.back();
+                 }).error(function (error) {
+                     raiseAlert('danger',
+                         error.title, error.detail);
+                 });
+         };
          /**
           * This will contact the Refstack API server to retrieve the JSON
           * content of the capability file corresponding to the selected
@@ -302,4 +351,5 @@ refstackApp.controller('resultsReportController',
 
          getResults();
      }
-    ]);
+    ]
+);

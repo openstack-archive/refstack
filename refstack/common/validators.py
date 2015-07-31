@@ -136,7 +136,7 @@ class TestResultValidator(BaseValidator):
 
             try:
                 key = RSA.importKey(request.headers.get('X-Public-Key', ''))
-            except ValueError as e:
+            except (binascii.Error, ValueError) as e:
                 raise ValidationError('Malformed public key', e)
             signer = PKCS1_v1_5.new(key)
             data_hash = SHA256.new()
@@ -155,8 +155,13 @@ class PubkeyValidator(BaseValidator):
     """Validator for uploaded public pubkeys."""
 
     schema = {
-        'raw_key': 'string',
-        'self_signature': 'string',
+        'type': 'object',
+        'properties': {
+            'raw_key': {'type': 'string'},
+            'self_signature': {'type': 'string'}
+        },
+        'required': ['raw_key', 'self_signature'],
+        'additionalProperties': False
     }
 
     def validate(self, request):
@@ -176,7 +181,7 @@ class PubkeyValidator(BaseValidator):
 
         try:
             key = RSA.importKey(body['raw_key'])
-        except ValueError as e:
+        except (binascii.Error, ValueError) as e:
             raise ValidationError('Malformed public key', e)
         signer = PKCS1_v1_5.new(key)
         data_hash = SHA256.new()

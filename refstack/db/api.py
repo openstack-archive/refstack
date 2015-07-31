@@ -36,7 +36,7 @@ _BACKEND_MAPPING = {'sqlalchemy': 'refstack.db.sqlalchemy.api'}
 IMPL = db_api.DBAPI.from_config(cfg.CONF, backend_mapping=_BACKEND_MAPPING,
                                 lazy=True)
 
-UserNotFound = IMPL.UserNotFound
+NotFound = IMPL.NotFound
 
 
 def store_results(results):
@@ -47,20 +47,61 @@ def store_results(results):
     return IMPL.store_results(results)
 
 
-def get_test(test_id):
-    """Get test information from the database.
+def get_test(test_id, allowed_keys=None):
+    """Get test run information from the database.
 
     :param test_id: The ID of the test.
     """
-    return IMPL.get_test(test_id)
+    return IMPL.get_test(test_id, allowed_keys=allowed_keys)
+
+
+def delete_test(test_id):
+    """Delete test run information from the database.
+
+    :param test_id: The ID of the test.
+    """
+    return IMPL.delete_test(test_id)
 
 
 def get_test_results(test_id):
-    """Get all passed tempest tests for a particular test.
+    """Get all passed tempest tests for a specified test run.
 
     :param test_id: The ID of the test.
     """
     return IMPL.get_test_results(test_id)
+
+
+def get_test_meta_key(test_id, key, default=None):
+    """Get metadata value related to specified test run.
+
+    :param test_id: The ID of the test.
+    :param key: Metadata key
+    :param default: Default value
+
+    """
+    return IMPL.get_test_meta_key(test_id, key, default)
+
+
+def save_test_meta_item(test_id, key, value):
+    """Store or update item value related to specified test run.
+
+    :param test_id: The ID of the test.
+    :param key: Metadata key
+
+    """
+    return IMPL.save_test_meta_item(test_id, key, value)
+
+
+def delete_test_meta_item(test_id, key):
+    """Delete metadata item related to specified test run.
+
+    :param test_id: The ID of the test.
+    :param key: Metadata key
+    :param default: Default value
+
+    :raise NotFound if default value is not set and no value found
+    """
+    return IMPL.delete_test_meta_item(test_id, key)
 
 
 def get_test_records(page_number, per_page, filters):
