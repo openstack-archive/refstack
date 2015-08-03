@@ -7,9 +7,10 @@ User interface for interacting with the Refstack API.
 Setup
 =====
 
-Create a config.json file and specify your API endpoint inside this file:
+From the Refstack project root directory, create a config.json file
+and specify your API endpoint inside this file:
 
-:code:`cp app/config.json.sample app/config.json`
+:code:`cp refstack-ui/app/config.json.sample refstack-ui/app/config.json`
 
 You can start a development server by doing the following:
 
@@ -18,10 +19,6 @@ Install NodeJS and NPM:
 :code:`curl -sL https://deb.nodesource.com/setup | sudo bash -`
 
 :code:`sudo apt-get install nodejs`
-
-From the Refstack project root directory, move into the UI folder: 
-
-:code:`cd refstack-ui`
 
 Install dependencies and start the server:
 

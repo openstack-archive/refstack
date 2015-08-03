@@ -54,9 +54,10 @@ Refstack Quickstart
 
 ####Configuration file preparation
 
-- Make a copy of the sample config and update it with the correct
-  information of your environment. Example of config file with default
-  values available in etc directory.
+- Make a copy of the sample config file (etc/refstack.conf.sample) and
+  update it with the correct information of your environment. Examples
+  of the config parameters with default values are included in the
+  sample config file.
 
 - At the minimum, the following values should be updated:
 
@@ -71,13 +72,6 @@ Refstack Quickstart
      Update to your UI server address.  For example:
     `allowed_cors_origins = http://192.168.56.104:8080`
 
-    Note that in this example and the one below the UI and API server are
-    served on the same server but on different ports.
-
-  - `test_results_url`
-
-     Updated to your API server address.  For example:
-    `test_results_url = http://192.168.56.104:8000/output.html?test_id=%s`  
 
 ####Database sync
 
@@ -95,7 +89,7 @@ Refstack Quickstart
 
    `refstack-manage --config-file /path/to/refstack.conf version`
 
-    Now it should be `42278d6179b9`.
+    Now it should be `2f178b0bf762`.
 
 
 ####Start Refstack
