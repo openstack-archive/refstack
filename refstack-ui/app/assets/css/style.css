@@ -156,3 +156,17 @@ h1, h2, h3, h4, h5, h6 {
     padding: 40px;
   }
 }
+
+.yes {
+  background: #1A911E;
+  color: white;
+  padding-left: .5em;
+  padding-right: .5em;
+}
+
+.no {
+  background: #BC0505;
+  color: white;
+  padding-left: .5em;
+  padding-right: .5em;
+}
