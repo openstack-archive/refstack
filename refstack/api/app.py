@@ -47,23 +47,21 @@ API_OPTS = [
                help='Url of public Refstack API.'
                ),
     cfg.StrOpt('static_root',
-               default='%(project_root)s/static',
-               help='The directory where your static files can '
-                    'be found. Pecan comes with middleware that can be used '
-                    'to serve static files (like CSS and Javascript files) '
-                    'during development. %(project_root)s is special variable '
-                    'that point to the root directory of Refstack project. '
-                    'Value of this option must contain %(project_root)s '
-                    'variable. Directory with static files specified relative '
-                    'the project root.'
+               default='refstack-ui/app',
+               help='The directory where your static files can be found. '
+                    'Pecan  comes with middleware that can be used to serve '
+                    'static files (like CSS and Javascript files) during '
+                    'development. Here, a special variable %(project_root)s '
+                    'can be used to point to the root directory of the '
+                    'Refstack project\'s module, so paths can be specified '
+                    'relative to that.'
                ),
     cfg.StrOpt('template_path',
-               default='%(project_root)s/templates',
+               default='refstack-ui/app',
                help='Points to the directory where your template files live. '
-                    '%(project_root)s is special variable that point to the '
-                    'root directory of Refstack project. Value of this option '
-                    'must contain %(project_root)s variable. Directory with '
-                    'template files specified relative the project root.'
+                    'Here, a special variable %(project_root)s can be used to '
+                    'point to the root directory of the Refstack project\'s '
+                    'main module, so paths can be specified relative to that.'
                ),
     cfg.ListOpt('allowed_cors_origins',
                 default=[],

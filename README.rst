@@ -40,11 +40,10 @@ after their software has been incorporated into the distro or cloud.
    vendors. It can be used by vendors in house to compare interoperability
    data over time.
 
-   * API server install docs: `doc/refstack.md <doc/refstack.md>`_
-   * UI server install docs: `refstack-ui/README.rst <refstack-ui/README.rst>`_
+   * API and UI install docs: `doc/refstack.md <doc/refstack.md>`_
    * repository: http://git.openstack.org/cgit/stackforge/refstack
    * storyboard: https://storyboard.openstack.org/#!/project/700
-   * reviews: https://review.OpenStack.org/#q,status:open+refstack,n,z
+   * reviews: https://review.openstack.org/#q,status:open+refstack,n,z
 
 * **refstack-client**
    refstack-client contains the tools you will need to run the DefCore tests.
