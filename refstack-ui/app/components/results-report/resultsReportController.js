@@ -31,6 +31,13 @@ refstackApp.controller('resultsReportController',
          /** The schema version of the currently selected capabilities data. */
          $scope.schemaVersion = null;
 
+         /** The selected test status used for test filtering. */
+         $scope.testStatus = 'all';
+
+         /** The HTML template that all accordian groups will use. */
+         $scope.detailsTemplate = 'components/results-report/partials/' +
+                                  'reportDetails.html';
+
          /**
           * Retrieve an array of available capability files from the Refstack
           * API server, sort this array reverse-alphabetically, and store it in
@@ -137,9 +144,6 @@ refstackApp.controller('resultsReportController',
                  $http.get(content_url).success(function (data) {
                      $scope.capabilityData = data;
                      $scope.schemaVersion = data.schema;
-                     $scope.detailsTemplate = 'components/results-report/' +
-                                              'partials/reportDetailsV' +
-                                              data.schema + '.html';
                      $scope.buildCapabilitiesObject();
                  }).error(function (error) {
                      $scope.showError = true;
@@ -154,7 +158,7 @@ refstackApp.controller('resultsReportController',
           * their corresponding statuses.
           * @returns {Object} Object containing each capability and their status
           */
-         $scope.getTargetCapabilitites = function () {
+         $scope.getTargetCapabilities = function () {
              var components = $scope.capabilityData.components;
              var targetCaps = {};
 
@@ -213,7 +217,7 @@ refstackApp.controller('resultsReportController',
           * This will build the a capability object for schema version 1.2.
           * This object will contain the information needed to form a report in
           * the HTML template.
-          * @param {String} capID capability ID
+          * @param {String} capId capability ID
           */
          $scope.buildCapabilityV1_2 = function (capId) {
              var cap = {
@@ -249,7 +253,7 @@ refstackApp.controller('resultsReportController',
           * This will build the a capability object for schema version 1.3.
           * This object will contain the information needed to form a report in
           * the HTML template.
-          * @param {String} capID capability ID
+          * @param {String} capId capability ID
           */
          $scope.buildCapabilityV1_3 = function (capId) {
              var cap = {
@@ -319,7 +323,7 @@ refstackApp.controller('resultsReportController',
 
              // Get test details for each relevant capability and store
              // them in the scope's 'caps' object.
-             var targetCaps = $scope.getTargetCapabilitites();
+             var targetCaps = $scope.getTargetCapabilities();
              angular.forEach(targetCaps, function(status, capId) {
                  var cap = $scope[capMethod](capId);
                  $scope.caps[status].count +=
@@ -347,6 +351,109 @@ refstackApp.controller('resultsReportController',
 
              $scope.nonFlagRequiredPassPercent = ($scope.nonFlagPassCount *
                  100 / $scope.totalNonFlagCount);
+         };
+
+         /**
+          * This will check if a given test is flagged.
+          * @param {String} test ID of the test to check
+          * @param {Object} capObj capability that test is under
+          * @returns {Boolean} truthy value if test is flagged
+          */
+         $scope.isTestFlagged = function (test, capObj) {
+             if (!capObj) {
+                 return false;
+             }
+             return ((($scope.schemaVersion === '1.2') &&
+                      (capObj.flagged.indexOf(test) > -1)) ||
+                     (($scope.schemaVersion === '1.3') &&
+                      (capObj.tests[test].flag)));
+         };
+
+         /**
+          * This will return the reason a test is flagged. An empty string
+          * will be returned if the passed in test is not flagged.
+          * @param {String} test ID of the test to check
+          * @param {String} capObj capability that test is under
+          * @returns {String} reason
+          */
+         $scope.getFlaggedReason = function (test, capObj) {
+             if (($scope.schemaVersion === '1.2') &&
+                 ($scope.isTestFlagged(test, capObj))){
+
+                 // Return a generic message since schema 1.2 does not
+                 // provide flag reasons.
+                 return 'DefCore has flagged this test.';
+             }
+             else if (($scope.schemaVersion === '1.3') &&
+                      ($scope.isTestFlagged(test, capObj))){
+
+                 return capObj.tests[test].flag.reason;
+             }
+             else {
+                 return '';
+             }
+         };
+
+         /**
+          * This will check the if a capability should be shown based on the
+          * test filter selected. If a capability does not have any tests
+          * belonging under the given filter, it should not be shown.
+          * @param {Object} capability Built object for capability
+          * @returns {Boolean} true if capability should be shown
+          */
+         $scope.isCapabilityShown = function (capability) {
+             return (($scope.testStatus === 'all') ||
+                ($scope.testStatus === 'passed' &&
+                 capability.passedTests.length > 0) ||
+                ($scope.testStatus === 'failed' &&
+                 capability.notPassedTests.length > 0) ||
+                ($scope.testStatus === 'flagged' &&
+                 (capability.passedFlagged.length +
+                  capability.notPassedFlagged.length > 0)));
+         };
+
+         /**
+          * This will check the if a test should be shown based on the test
+          * filter selected.
+          * @param {String} test ID of the test
+          * @param {Object} capability Built object for capability
+          * @return {Boolean} true if test should be shown
+          */
+         $scope.isTestShown = function (test, capability) {
+             return (($scope.testStatus === 'all') ||
+                 ($scope.testStatus === 'passed' &&
+                  capability.passedTests.indexOf(test) > -1) ||
+                 ($scope.testStatus === 'failed' &&
+                  capability.notPassedTests.indexOf(test) > -1) ||
+                 ($scope.testStatus === 'flagged' &&
+                  (capability.passedFlagged.indexOf(test) > -1 ||
+                   capability.notPassedFlagged.indexOf(test) > -1)));
+         };
+
+         /**
+          * This will give the number of tests belonging under the selected
+          * test filter.
+          * @param {Object} capability Built object for capability
+          * @returns {Number} number of tests under filter
+          */
+         $scope.getTestCount = function (capability) {
+             if ($scope.testStatus === 'all') {
+                 return capability.passedTests.length +
+                    capability.notPassedTests.length;
+             }
+             else if ($scope.testStatus === 'passed') {
+                 return capability.passedTests.length;
+             }
+             else if ($scope.testStatus === 'failed') {
+                 return capability.notPassedTests.length;
+             }
+             else if ($scope.testStatus === 'flagged') {
+                 return capability.passedFlagged.length +
+                    capability.notPassedFlagged.length;
+             }
+             else {
+                 return 0;
+             }
          };
 
          getResults();

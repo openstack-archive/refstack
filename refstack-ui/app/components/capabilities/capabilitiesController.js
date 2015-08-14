@@ -19,11 +19,7 @@ refstackApp.controller('capabilitiesController',
          /** The target OpenStack marketing program to show capabilities for. */
          $scope.target = 'platform';
 
-         /**
-          * The various possible capability statuses. The true value for each
-          * status is the name of the key, so by default only required
-          * capabilities will be shown.
-          */
+         /** The various possible capability statuses. */
          $scope.status = {
              required: true,
              advisory: false,

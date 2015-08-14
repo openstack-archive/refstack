@@ -1,0 +1,64 @@
+<!--
+HTML for each accordion group that separates the status types on the results
+report page.
+-->
+
+<accordion-group is-open="isOpen" is-disabled="caps[status].caps.length == 0">
+    <accordion-heading>
+        {{status | capitalize}} <small>({{caps[status].caps.length}} total capabilities)</small>
+        <i class="pull-right glyphicon"
+           ng-class="{'glyphicon-chevron-down': isOpen, 'glyphicon-chevron-right': !isOpen}"></i>
+    </accordion-heading>
+    <ol class="capabilities">
+        <li ng-repeat="capability in caps[status].caps | orderBy:'id'"
+            ng-if="isCapabilityShown(capability)">
+
+            <a ng-click="hideTests = !hideTests"
+               title="{{capabilityData.capabilities[capability.id].description}}">
+                   {{capability.id}}
+            </a>
+            <span ng-class="{'text-success': testStatus === 'passed',
+                             'text-danger': testStatus === 'failed',
+                             'text-warning': testStatus === 'flagged'}"
+                  ng-if="testStatus !== 'all'">
+                [{{getTestCount(capability)}}]
+            </span>
+            <span ng-class="{'text-success': (capability.passedTests.length > 0 &&
+                                              capability.notPassedTests.length == 0),
+                             'text-danger': (capability.passedTests.length == 0 &&
+                                             capability.notPassedTests.length > 0),
+                             'text-warning': (capability.passedTests.length > 0 &&
+                                              capability.notPassedTests.length > 0)}"
+                  ng-if="testStatus === 'all'">
+                [{{capability.passedTests.length}}/{{capability.passedTests.length +
+                                                     capability.notPassedTests.length}}]
+            </span>
+
+            <ul class="list-unstyled" collapse="hideTests">
+                <li ng-repeat="test in capability.passedTests | orderBy:'toString()'"
+                    ng-if="isTestShown(test, capability)">
+
+                    <span class="glyphicon glyphicon-ok text-success"
+                          aria-hidden="true">
+                    </span>
+                    <span ng-class="{'glyphicon glyphicon-flag text-warning':
+                                     isTestFlagged(test, capabilityData.capabilities[capability.id])}"
+                          title="{{getFlaggedReason(test, capabilityData.capabilities[capability.id])}}">
+                    </span>
+                    {{test}}
+                </li>
+                <li ng-repeat="test in capability.notPassedTests | orderBy:'toString()'"
+                    ng-if="isTestShown(test, capability)">
+
+                    <span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span>
+                    <span ng-class="{'glyphicon glyphicon-flag text-warning':
+                                     isTestFlagged(test, capabilityData.capabilities[capability.id])}"
+                          title="{{getFlaggedReason(test, capabilityData.capabilities[capability.id])}}">
+                    </span>
+                    {{test}}
+                </li>
+            </ul>
+        </li>
+    </ol>
+</accordion-group>
+

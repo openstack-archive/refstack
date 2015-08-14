@@ -248,9 +248,6 @@ describe('Refstack controllers', function () {
                                                    '2015.03.json']);
                 expect(scope.capabilityData).toEqual(fakeCapabilityResponse);
                 expect(scope.schemaVersion).toEqual('1.2');
-                expect(scope.detailsTemplate).toEqual('components/results-' +
-                                                      'report/partials/' +
-                                                      'reportDetailsV1.2.html');
             });
 
         it('should have a method that creates an object containing each ' +
@@ -279,7 +276,7 @@ describe('Refstack controllers', function () {
                     'cap_id_2': 'required',
                     'cap_id_3': 'advisory'
                 };
-                expect(scope.getTargetCapabilitites()).toEqual(expected);
+                expect(scope.getTargetCapabilities()).toEqual(expected);
             });
 
         it('should be able to sort the results into a capability object for ' +
@@ -370,6 +367,145 @@ describe('Refstack controllers', function () {
                 expect(scope.caps).toEqual(expectedCapsObject);
                 expect(scope.requiredPassPercent).toEqual(50);
                 expect(scope.nonFlagPassCount).toEqual(0);
+            });
+
+        it('should have a method to determine if a test is flagged',
+            function () {
+                var capObj = {'flagged': [ 'test1'],
+                              'tests': ['test1', 'test2']};
+
+                scope.schemaVersion = '1.2';
+                expect(scope.isTestFlagged('test1', capObj)).toEqual(true);
+                expect(scope.isTestFlagged('test2', capObj)).toEqual(false);
+
+                capObj = {'tests': {
+                                'test1': {
+                                    'flag': {
+                                        'action': 'foo',
+                                        'date': '2015-03-24',
+                                        'reason': 'bar'
+                                     },
+                                    'idempotent_id': 'id-1234'
+                                },
+                                'test2': {
+                                    'idempotent_id': 'id-5678'
+                                }
+                            }
+                         };
+
+                scope.schemaVersion = '1.3';
+                expect(scope.isTestFlagged('test1', capObj)).toBeTruthy();
+                expect(scope.isTestFlagged('test2', capObj)).toBeFalsy();
+
+                expect(scope.isTestFlagged('test2', null)).toEqual(false);
+            });
+
+        it('should have a method to get the reason a flagged test is flagged',
+            function () {
+                var capObj = {'flagged': [ 'test1'],
+                              'tests': ['test1', 'test2']};
+
+                scope.schemaVersion = '1.2';
+                expect(scope.getFlaggedReason('test1', capObj)).toEqual(
+                    'DefCore has flagged this test.');
+
+                // Check that non-flagged test returns empty string.
+                expect(scope.getFlaggedReason('test2', capObj)).toEqual('');
+
+                capObj = {'tests': {
+                                'test1': {
+                                    'flag': {
+                                        'action': 'foo',
+                                        'date': '2015-03-24',
+                                        'reason': 'bar'
+                                     },
+                                    'idempotent_id': 'id-1234'
+                                }
+                            }
+                         };
+
+                scope.schemaVersion = '1.3';
+                expect(scope.getFlaggedReason('test1', capObj)).toEqual('bar');
+            });
+
+        it('should have a method to determine whether a capability should ' +
+           'be shown',
+            function () {
+                var caps = [{'id': 'cap_id_1',
+                             'passedTests': ['test_id_1'],
+                             'notPassedTests': [],
+                             'passedFlagged': ['test_id_1'],
+                             'notPassedFlagged': []
+                            },
+                            {'id': 'cap_id_2',
+                             'passedTests': [],
+                             'notPassedTests': ['test_id_4'],
+                             'passedFlagged': [],
+                             'notPassedFlagged': []
+                            }];
+
+                // Check that all capabilities are shown by default.
+                expect(scope.isCapabilityShown(caps[0])).toEqual(true);
+                expect(scope.isCapabilityShown(caps[1])).toEqual(true);
+
+                // Check that only capabilities with passed tests are shown.
+                scope.testStatus = 'passed';
+                expect(scope.isCapabilityShown(caps[0])).toEqual(true);
+                expect(scope.isCapabilityShown(caps[1])).toEqual(false);
+
+                // Check that only capabilities with passed tests are shown.
+                scope.testStatus = 'failed';
+                expect(scope.isCapabilityShown(caps[0])).toEqual(false);
+                expect(scope.isCapabilityShown(caps[1])).toEqual(true);
+
+                // Check that only capabilities with flagged tests are shown.
+                scope.testStatus = 'flagged';
+                expect(scope.isCapabilityShown(caps[0])).toEqual(true);
+                expect(scope.isCapabilityShown(caps[1])).toEqual(false);
+            });
+
+        it('should have a method to determine whether a test should be shown',
+            function () {
+                var cap = {'id': 'cap_id_1',
+                           'passedTests': ['test_id_1'],
+                           'notPassedTests': [],
+                           'passedFlagged': ['test_id_1'],
+                           'notPassedFlagged': []
+                          };
+
+                expect(scope.isTestShown('test_id_1', cap)).toEqual(true);
+                scope.testStatus = 'passed';
+                expect(scope.isTestShown('test_id_1', cap)).toEqual(true);
+                scope.testStatus = 'failed';
+                expect(scope.isTestShown('test_id_1', cap)).toEqual(false);
+                scope.testStatus = 'flagged';
+                expect(scope.isTestShown('test_id_1', cap)).toEqual(true);
+            });
+
+        it('should have a method to determine how many tests belong under ' +
+           'the current test filter',
+            function () {
+                var cap = {'id': 'cap_id_1',
+                           'passedTests': ['t1', 't2', 't3'],
+                           'notPassedTests': ['t4', 't5', 't6', 't7'],
+                           'passedFlagged': ['t1'],
+                           'notPassedFlagged': ['t3', 't4']
+                          };
+
+                // Should return the count of all tests.
+                expect(scope.getTestCount(cap)).toEqual(7);
+
+                // Should return the count of passed tests.
+                scope.testStatus = 'passed';
+                expect(scope.getTestCount(cap)).toEqual(3);
+
+                // Should return the count of failed tests.
+                scope.testStatus = 'failed';
+                expect(scope.getTestCount(cap)).toEqual(4);
+
+                // Should return the count of flagged tests.
+                scope.testStatus = 'flagged';
+                expect(scope.getTestCount(cap)).toEqual(3);
             });
     });
 });

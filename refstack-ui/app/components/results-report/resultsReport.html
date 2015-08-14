@@ -79,6 +79,26 @@
         <hr>
         <h4>Capability Overview</h4>
 
+        Test Filters:<br />
+        <div class="btn-group button-margin" data-toggle="buttons">
+            <label class="btn btn-default" ng-class="{'active': testStatus === 'all'}">
+                <input type="radio" ng-model="testStatus" value="all">
+                <span class="text-primary">All</span>
+            </label>
+            <label class="btn btn-default" ng-class="{'active': testStatus === 'passed'}">
+                <input type="radio" ng-model="testStatus" value="passed">
+                <span class="text-success">Passed</span>
+            </label>
+            <label class="btn btn-default" ng-class="{'active': testStatus === 'failed'}">
+                <input type="radio" ng-model="testStatus" value="failed">
+                <span class="text-danger">Failed</span>
+            </label>
+            <label class="btn btn-default" ng-class="{'active': testStatus === 'flagged'}">
+                <input type="radio" ng-model="testStatus" value="flagged">
+                <span class="text-warning">Flagged</span>
+            </label>
+        </div>
+
         <accordion close-others=false>
             <!-- The ng-repeat is used to pass in a local variable to the template. -->
             <ng-include

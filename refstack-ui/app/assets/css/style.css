@@ -170,3 +170,7 @@ h1, h2, h3, h4, h5, h6 {
   padding-left: .5em;
   padding-right: .5em;
 }
+
+.button-margin {
+  margin-bottom: 1em;
+}
