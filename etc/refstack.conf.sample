@@ -114,19 +114,17 @@
 
 # The directory where your static files can be found. Pecan comes with
 # middleware that can be used to serve static files (like CSS and
-# Javascript files) during development. %(project_root)s is special
-# variable that point to the root directory of Refstack project. Value
-# of this option must contain %(project_root)s variable. Directory
-# with static files specified relative the project root. (string
-# value)
-#static_root = %(project_root)s/static
+# Javascript files) during development. Here, a special variable
+# %(project_root)s can be used to point to the root directory of Refstack
+# project's main module, so paths can be specified relative to that.
+# (string value)
+#static_root = refstack-ui/app
 
-# Points to the directory where your template files live.
-# %(project_root)s is special variable that point to the root
-# directory of Refstack project. Value of this option must contain
-# %(project_root)s variable. Directory with template files specified
-# relative the project root. (string value)
-#template_path = %(project_root)s/templates
+# Points to the directory where your template files live. Here, a special
+# variable %(project_root)s can be used to point to the root directory of
+# the Refstack project's main module, so paths can be specified relative to
+# that. (string value)
+#template_path = refstack-ui/app
 
 # List of sites allowed cross-site resource access. If this is empty,
 # only same-origin requests are allowed. (list value)
