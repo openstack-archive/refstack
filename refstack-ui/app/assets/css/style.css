@@ -6,6 +6,7 @@ body {
 
 a {
   text-decoration: none;
+  cursor: pointer;
 }
 
 a:hover {
@@ -70,10 +71,6 @@ h1, h2, h3, h4, h5, h6 {
 
 .capabilities {
   color: #4B4B4B;
-}
-
-.capabilities a, .criteria a {
-  cursor: pointer;
 }
 
 .capabilities .capability-list-item {
@@ -173,4 +170,13 @@ h1, h2, h3, h4, h5, h6 {
 
 .button-margin {
   margin-bottom: 1em;
+}
+
+.tests-modal-content {
+  overflow: auto;
+  max-height: calc(100vh - 100px);
+}
+
+.tests-modal-content textarea {
+  font-size: .9em;
 }

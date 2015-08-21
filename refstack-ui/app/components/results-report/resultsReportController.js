@@ -7,8 +7,8 @@ var refstackApp = angular.module('refstackApp');
  */
 refstackApp.controller('resultsReportController',
     ['$scope', '$http', '$stateParams',
-     '$window', 'refstackApiUrl', 'raiseAlert',
-     function ($scope, $http, $stateParams, $window,
+     '$window', '$modal', 'refstackApiUrl', 'raiseAlert',
+     function ($scope, $http, $stateParams, $window, $modal,
                refstackApiUrl, raiseAlert) {
          'use strict';
 
@@ -55,7 +55,6 @@ refstackApp.controller('resultsReportController',
                      $scope.updateCapabilities();
                  }).error(function (error) {
                      $scope.showError = true;
-                     $scope.resultsData = null;
                      $scope.error = 'Error retrieving version list: ' +
                          JSON.stringify(error);
                  });
@@ -129,6 +128,7 @@ refstackApp.controller('resultsReportController',
                          error.title, error.detail);
                  });
          };
+
          /**
           * This will contact the Refstack API server to retrieve the JSON
           * content of the capability file corresponding to the selected
@@ -456,7 +456,54 @@ refstackApp.controller('resultsReportController',
              }
          };
 
+         $scope.openFullTestListModal = function () {
+             $modal.open({
+                 templateUrl: '/components/results-report/partials' +
+                              '/fullTestListModal.html',
+                 backdrop: true,
+                 windowClass: 'modal',
+                 animation: true,
+                 controller: 'fullTestListModalController',
+                 size: 'lg',
+                 resolve: {
+                     tests: function () {
+                         return $scope.resultsData.results;
+                     }
+                 }
+             });
+         };
+
          getResults();
      }
     ]
+);
+
+
+/**
+ * Full Test List Modal Controller
+ * This controller is for the modal that appears if a user wants to see the
+ * full list of passed tests on a report page.
+ */
+refstackApp.controller('fullTestListModalController',
+    ['$scope', '$modalInstance', 'tests',
+     function ($scope, $modalInstance, tests) {
+         'use strict';
+
+         $scope.tests = tests;
+
+         /**
+          * This function will close/dismiss the modal.
+          */
+         $scope.close = function () {
+             $modalInstance.dismiss('exit');
+         };
+
+         /**
+          * This function will return a string representing the sorted
+          * tests list separated by newlines.
+          */
+         $scope.getTestListString = function () {
+             return $scope.tests.sort().join('\n');
+         };
+     }]
 );

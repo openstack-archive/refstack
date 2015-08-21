@@ -8,7 +8,10 @@
                 <div ng-if="isEditingAllowed()"><strong>Cloud ID:</strong> {{resultsData.cpid}}<br /></div>
                 <strong>Upload Date:</strong> {{resultsData.created_at}} UTC<br />
                 <strong>Duration:</strong> {{resultsData.duration_seconds}} seconds<br />
-                <strong>Total Number of Passed Tests:</strong> {{resultsData.results.length}}<br />
+                <strong>Total Number of Passed Tests:</strong>
+                <a title="See all passed tests" ng-click="openFullTestListModal()">
+                    {{resultsData.results.length}}
+                </a><br />
                 <hr>
             </div>
         </div>
@@ -21,7 +24,6 @@
         </div>
     </div>
 </div>
-
 
 <div ng-show="resultsData">
     <p>See how these results stack up against DefCore capabilities and OpenStack

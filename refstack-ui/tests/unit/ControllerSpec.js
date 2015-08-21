@@ -507,5 +507,50 @@ describe('Refstack controllers', function () {
                 scope.testStatus = 'flagged';
                 expect(scope.getTestCount(cap)).toEqual(3);
             });
+
+        it('should have a method to open a modal for the full passed test list',
+            function () {
+                var modal;
+                inject(function ($modal) {
+                    modal = $modal;
+                });
+                spyOn(modal, 'open');
+                scope.openFullTestListModal();
+                expect(modal.open).toHaveBeenCalled();
+            });
+    });
+
+    describe('fullTestListModalController', function () {
+        var scope;
+        var modalInstance;
+
+        beforeEach(inject(function ($rootScope, $controller) {
+            scope = $rootScope.$new();
+            modalInstance = {
+                dismiss: jasmine.createSpy('modalInstance.dismiss')
+            };
+            $controller('fullTestListModalController', {
+                $scope: scope,
+                $modalInstance: modalInstance,
+                tests: ['t1', 't2']
+            });
+        }));
+
+        it('should set a scope variable to the passed in tests', function () {
+            expect(scope.tests).toEqual(['t1', 't2']);
+        });
+
+        it('should have a method to close the modal',
+            function () {
+                scope.close();
+                expect(modalInstance.dismiss).toHaveBeenCalledWith('exit');
+            });
+
+        it('should have a method to convert the tests to a string',
+            function () {
+                scope.tests = ['t2', 't1', 't3'];
+                var expectedString = 't1\nt2\nt3';
+                expect(scope.getTestListString()).toEqual(expectedString);
+            });
     });
 });
