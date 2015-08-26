@@ -329,7 +329,7 @@ describe('Refstack controllers', function () {
                         'cap_id_1': {
                             'tests': {
                                 'test_id_1': {
-                                    'flag': {
+                                    'flagged': {
                                         'action': 'foo',
                                         'date': '2015-03-24',
                                         'reason': 'bar'
@@ -380,7 +380,7 @@ describe('Refstack controllers', function () {
 
                 capObj = {'tests': {
                                 'test1': {
-                                    'flag': {
+                                    'flagged': {
                                         'action': 'foo',
                                         'date': '2015-03-24',
                                         'reason': 'bar'
@@ -414,7 +414,7 @@ describe('Refstack controllers', function () {
 
                 capObj = {'tests': {
                                 'test1': {
-                                    'flag': {
+                                    'flagged': {
                                         'action': 'foo',
                                         'date': '2015-03-24',
                                         'reason': 'bar'

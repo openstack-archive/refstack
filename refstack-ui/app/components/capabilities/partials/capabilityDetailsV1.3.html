@@ -20,7 +20,7 @@ variable 'capabilities'.
     <a ng-click="hideTests = !hideTests">Tests ({{getObjectLength(capability.tests)}})</a>
     <ul collapse="hideTests">
         <li ng-repeat="(testName, testDetails) in capability.tests">
-           <span ng-class="{'glyphicon glyphicon-flag text-warning': testDetails.flag}" title="{{testDetails.flag.reason}}"></span>
+           <span ng-class="{'glyphicon glyphicon-flag text-warning': testDetails.flagged}" title="{{testDetails.flagged.reason}}"></span>
            {{testName}}
         </li>
     </ul>
