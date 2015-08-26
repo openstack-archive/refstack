@@ -24,7 +24,7 @@ import pecan
 import webob
 
 from refstack.api import app
-from refstack.common import validators
+from refstack.api import exceptions as api_exc
 
 
 def get_response_kwargs(response_mock):
@@ -65,19 +65,12 @@ class JSONErrorHookTestCase(base.BaseTestCase):
             expected_body={'code': exc.status_int, 'title': exc.title}
         )
 
-        self.CONF.set_override('app_dev_mode', True, 'api')
-        self._on_error(
-            response, exc, expected_status_code=exc.status,
-            expected_body={'code': exc.status_int, 'title': exc.title,
-                           'detail': str(exc)}
-        )
-
     @mock.patch.object(webob, 'Response')
     def test_on_error_with_validation_error(self, response):
         self.CONF.set_override('app_dev_mode', False, 'api')
-        exc = mock.Mock(spec=validators.ValidationError,
-                        title='No No No!')
-
+        exc = mock.MagicMock(spec=api_exc.ValidationError,
+                             title='No No No!')
+        exc.args = ('No No No!',)
         self._on_error(
             response, exc, expected_status_code=400,
             expected_body={'code': 400, 'title': exc.title}

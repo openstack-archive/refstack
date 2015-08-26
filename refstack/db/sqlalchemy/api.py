@@ -23,7 +23,6 @@ import uuid
 from oslo_config import cfg
 from oslo_db import options as db_options
 from oslo_db.sqlalchemy import session as db_session
-from oslo_db import exception as oslo_db_exc
 import six
 
 from refstack.api import constants as api_const
@@ -41,11 +40,14 @@ class NotFound(Exception):
 
     """Raise if item not found in db."""
 
-    def __init__(self, model, details=None):
-        """Init."""
-        self.model = model
-        title = details if details else ''.join((model, ' not found.'))
-        super(NotFound, self).__init__(title)
+    pass
+
+
+class Duplication(Exception):
+
+    """Raise if unique constraint violates."""
+
+    pass
 
 
 def _create_facade_lazily():
@@ -136,7 +138,7 @@ def get_test(test_id, allowed_keys=None):
         filter_by(id=test_id). \
         first()
     if not test_info:
-        raise NotFound('Test', 'Test result %s not found' % test_id)
+        raise NotFound('Test result %s not found' % test_id)
     return _to_dict(test_info, allowed_keys)
 
 
@@ -152,7 +154,7 @@ def delete_test(test_id):
                 .filter_by(test_id=test_id).delete()
             session.delete(test)
         else:
-            raise NotFound('Test', 'Test result %s not found' % test_id)
+            raise NotFound('Test result %s not found' % test_id)
 
 
 def get_test_meta_key(test_id, key, default=None):
@@ -190,8 +192,7 @@ def delete_test_meta_item(test_id, key):
         with session.begin():
             session.delete(meta_item)
     else:
-        raise NotFound('TestMeta',
-                       'Metadata key %s '
+        raise NotFound('Metadata key %s '
                        'not found for test run %s' % (key, test_id))
 
 
@@ -263,7 +264,7 @@ def user_get(user_openid):
     session = get_session()
     user = session.query(models.User).filter_by(openid=user_openid).first()
     if user is None:
-        raise NotFound('User', 'User with OpenID %s not found' % user_openid)
+        raise NotFound('User with OpenID %s not found' % user_openid)
     return user
 
 
@@ -302,8 +303,7 @@ def store_pubkey(pubkey_info):
         if not pubkeys_collision:
             pubkey.save(session)
         else:
-            raise oslo_db_exc.DBDuplicateEntry(columns=['pubkeys.pubkey'],
-                                               value=pubkey.pubkey)
+            raise Duplication('Public key already exists.')
     return pubkey.id
 
 

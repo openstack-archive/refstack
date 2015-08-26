@@ -37,6 +37,7 @@ IMPL = db_api.DBAPI.from_config(cfg.CONF, backend_mapping=_BACKEND_MAPPING,
                                 lazy=True)
 
 NotFound = IMPL.NotFound
+Duplication = IMPL.Duplication
 
 
 def store_results(results):

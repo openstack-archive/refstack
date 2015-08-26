@@ -26,7 +26,7 @@ from six.moves.urllib import parse
 import webob.exc
 
 from refstack.api import constants as const
-from refstack.api import utils as api_utils
+from refstack.api import exceptions as api_exc
 from refstack.api.controllers import auth
 from refstack.api.controllers import capabilities
 from refstack.api.controllers import results
@@ -184,8 +184,8 @@ class ResultsControllerTestCase(BaseControllerTestCase):
     @mock.patch('refstack.api.utils.parse_input_params')
     def test_get_failed_in_parse_input_params(self, parse_inputs):
 
-        parse_inputs.side_effect = api_utils.ParseInputsError()
-        self.assertRaises(webob.exc.HTTPError,
+        parse_inputs.side_effect = api_exc.ParseInputsError()
+        self.assertRaises(api_exc.ParseInputsError,
                           self.controller.get)
 
     @mock.patch('refstack.db.get_test_records_count')
@@ -193,8 +193,8 @@ class ResultsControllerTestCase(BaseControllerTestCase):
     def test_get_failed_in_get_test_records_number(self,
                                                    parse_inputs,
                                                    db_get_count):
-        db_get_count.side_effect = api_utils.ParseInputsError()
-        self.assertRaises(webob.exc.HTTPError,
+        db_get_count.side_effect = api_exc.ParseInputsError()
+        self.assertRaises(api_exc.ParseInputsError,
                           self.controller.get)
 
     @mock.patch('refstack.db.get_test_records_count')
@@ -205,8 +205,8 @@ class ResultsControllerTestCase(BaseControllerTestCase):
                                            parse_input,
                                            db_get_count):
 
-        get_page.side_effect = api_utils.ParseInputsError()
-        self.assertRaises(webob.exc.HTTPError,
+        get_page.side_effect = api_exc.ParseInputsError()
+        self.assertRaises(api_exc.ParseInputsError,
                           self.controller.get)
 
     @mock.patch('refstack.db.get_test_records')

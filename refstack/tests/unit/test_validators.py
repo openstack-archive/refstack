@@ -25,14 +25,15 @@ import mock
 from oslotest import base
 import six
 
-from refstack.common import validators
+from refstack.api import exceptions as api_exc
+from refstack.api import validators
 
 
 class ValidatorsTestCase(base.BaseTestCase):
     """Test case for validator's helpers."""
 
     def test_str_validation_error(self):
-        err = validators.ValidationError(
+        err = api_exc.ValidationError(
             'Something went wrong!',
             AttributeError("'NoneType' object has no attribute 'a'")
         )
@@ -42,7 +43,7 @@ class ValidatorsTestCase(base.BaseTestCase):
             'AttributeError',
             "'NoneType' object has no attribute 'a'"
         ), str(err))
-        err = validators.ValidationError(
+        err = api_exc.ValidationError(
             'Something went wrong again!'
         )
         self.assertEqual('Something went wrong again!', str(err))
@@ -100,7 +101,7 @@ class TestResultValidatorTestCase(base.BaseTestCase):
         request.body = json.dumps(self.FAKE_JSON)
         data_hash = SHA256.new()
         data_hash.update(request.body.encode('utf-8'))
-        key = RSA.generate(4096)
+        key = RSA.generate(1024)
         signer = PKCS1_v1_5.new(key)
         sign = signer.sign(data_hash)
         request.headers = {
@@ -112,12 +113,12 @@ class TestResultValidatorTestCase(base.BaseTestCase):
     def test_validation_fail_no_json(self):
         wrong_request = mock.Mock()
         wrong_request.body = 'foo'
-        self.assertRaises(validators.ValidationError,
+        self.assertRaises(api_exc.ValidationError,
                           self.validator.validate,
                           wrong_request)
         try:
             self.validator.validate(wrong_request)
-        except validators.ValidationError as e:
+        except api_exc.ValidationError as e:
             self.assertIsInstance(e.exc, ValueError)
 
     def test_validation_fail(self):
@@ -125,12 +126,12 @@ class TestResultValidatorTestCase(base.BaseTestCase):
         wrong_request.body = json.dumps({
             'foo': 'bar'
         })
-        self.assertRaises(validators.ValidationError,
+        self.assertRaises(api_exc.ValidationError,
                           self.validator.validate,
                           wrong_request)
         try:
             self.validator.validate(wrong_request)
-        except validators.ValidationError as e:
+        except api_exc.ValidationError as e:
             self.assertIsInstance(e.exc, jsonschema.ValidationError)
 
     @mock.patch('jsonschema.validate')
@@ -145,7 +146,7 @@ class TestResultValidatorTestCase(base.BaseTestCase):
             'X-Signature': binascii.b2a_hex('fake_sign'.encode('utf-8')),
             'X-Public-Key': key.publickey().exportKey('OpenSSH')
         }
-        self.assertRaises(validators.ValidationError,
+        self.assertRaises(api_exc.ValidationError,
                           self.validator.validate,
                           request)
         request.headers = {
@@ -154,7 +155,7 @@ class TestResultValidatorTestCase(base.BaseTestCase):
         }
         try:
             self.validator.validate(request)
-        except validators.ValidationError as e:
+        except api_exc.ValidationError as e:
             self.assertEqual(e.title,
                              'Signature verification failed')
 
@@ -164,7 +165,7 @@ class TestResultValidatorTestCase(base.BaseTestCase):
         }
         try:
             self.validator.validate(request)
-        except validators.ValidationError as e:
+        except api_exc.ValidationError as e:
             self.assertIsInstance(e.exc, TypeError)
 
         request.headers = {
@@ -173,7 +174,7 @@ class TestResultValidatorTestCase(base.BaseTestCase):
         }
         try:
             self.validator.validate(request)
-        except validators.ValidationError as e:
+        except api_exc.ValidationError as e:
             self.assertIsInstance(e.exc, ValueError)
 
 
@@ -207,12 +208,12 @@ class PubkeyValidatorTestCase(base.BaseTestCase):
     def test_validation_fail_no_json(self):
         wrong_request = mock.Mock()
         wrong_request.body = 'foo'
-        self.assertRaises(validators.ValidationError,
+        self.assertRaises(api_exc.ValidationError,
                           self.validator.validate,
                           wrong_request)
         try:
             self.validator.validate(wrong_request)
-        except validators.ValidationError as e:
+        except api_exc.ValidationError as e:
             self.assertIsInstance(e.exc, ValueError)
 
     def test_validation_fail(self):
@@ -220,12 +221,12 @@ class PubkeyValidatorTestCase(base.BaseTestCase):
         wrong_request.body = json.dumps({
             'foo': 'bar'
         })
-        self.assertRaises(validators.ValidationError,
+        self.assertRaises(api_exc.ValidationError,
                           self.validator.validate,
                           wrong_request)
         try:
             self.validator.validate(wrong_request)
-        except validators.ValidationError as e:
+        except api_exc.ValidationError as e:
             self.assertIsInstance(e.exc, jsonschema.ValidationError)
 
     @mock.patch('jsonschema.validate')
@@ -239,7 +240,7 @@ class PubkeyValidatorTestCase(base.BaseTestCase):
         request.body = json.dumps(body)
         try:
             self.validator.validate(request)
-        except validators.ValidationError as e:
+        except api_exc.ValidationError as e:
             self.assertEqual(e.title,
                              'Signature verification failed')
 
@@ -251,7 +252,7 @@ class PubkeyValidatorTestCase(base.BaseTestCase):
         request.body = json.dumps(body)
         try:
             self.validator.validate(request)
-        except validators.ValidationError as e:
+        except api_exc.ValidationError as e:
             self.assertEqual(e.title,
                              'Public key has unsupported format')
 
@@ -263,7 +264,7 @@ class PubkeyValidatorTestCase(base.BaseTestCase):
         request.body = json.dumps(body)
         try:
             self.validator.validate(request)
-        except validators.ValidationError as e:
+        except api_exc.ValidationError as e:
             self.assertEqual(e.title,
                              'Malformed signature')
 
@@ -275,6 +276,6 @@ class PubkeyValidatorTestCase(base.BaseTestCase):
         request.body = json.dumps(body)
         try:
             self.validator.validate(request)
-        except validators.ValidationError as e:
+        except api_exc.ValidationError as e:
             self.assertEqual(e.title,
                              'Malformed public key')

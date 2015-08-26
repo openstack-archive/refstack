@@ -24,10 +24,12 @@ from oslo_config import cfg
 from oslo_log import log
 from oslo_log import loggers
 import pecan
+import six
 import webob
 
+from refstack.api import exceptions as api_exc
 from refstack.api import utils as api_utils
-from refstack.common import validators
+from refstack import db
 
 LOG = log.getLogger(__name__)
 
@@ -121,19 +123,29 @@ class JSONErrorHook(pecan.hooks.PecanHook):
         if isinstance(exc, webob.exc.HTTPRedirection):
             return
         elif isinstance(exc, webob.exc.HTTPError):
-            status_code = exc.status_int
-            body = {'title': exc.title}
-        elif isinstance(exc, validators.ValidationError):
+            return webob.Response(
+                body=json.dumps({'code': exc.status_int,
+                                 'title': exc.title}),
+                status=exc.status_int,
+                content_type='application/json'
+            )
+        title = None
+        if isinstance(exc, api_exc.ValidationError):
             status_code = 400
-            body = {'title': exc.title}
+        elif isinstance(exc, api_exc.ParseInputsError):
+            status_code = 400
+        elif isinstance(exc, db.NotFound):
+            status_code = 404
+        elif isinstance(exc, db.Duplication):
+            status_code = 409
         else:
             LOG.exception(exc)
             status_code = 500
-            body = {'title': 'Internal Server Error'}
+            title = 'Internal Server Error'
 
-        body['code'] = status_code
+        body = {'title': title or exc.args[0], 'code': status_code}
         if self.debug:
-            body['detail'] = str(exc)
+            body['detail'] = six.text_type(exc)
         return webob.Response(
             body=json.dumps(body),
             status=status_code,

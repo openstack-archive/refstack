@@ -31,16 +31,10 @@ from six.moves.urllib import parse
 
 from refstack import db
 from refstack.api import constants as const
+from refstack.api import exceptions as api_exc
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
-
-
-class ParseInputsError(Exception):
-
-    """Raise if input params are invalid."""
-
-    pass
 
 
 def _get_input_params_from_request(expected_params):
@@ -77,18 +71,16 @@ def parse_input_params(expected_input_params):
             try:
                 filters[key] = timeutils.parse_strtime(value, date_fmt)
             except (ValueError, TypeError) as exc:
-                raise ParseInputsError('Invalid date format: %(exc)s'
-                                       % {'exc': exc})
+                raise api_exc.ParseInputsError(
+                    'Invalid date format: %(exc)s' % {'exc': exc})
 
     start_date = filters.get(const.START_DATE)
     end_date = filters.get(const.END_DATE)
     if start_date and end_date:
         if start_date > end_date:
-            raise ParseInputsError('Invalid dates: %(start)s '
-                                   'more than %(end)s' % {
-                                       'start': const.START_DATE,
-                                       'end': const.END_DATE
-                                   })
+            raise api_exc.ParseInputsError(
+                'Invalid dates: %(start)s more than %(end)s'
+                '' % {'start': const.START_DATE, 'end': const.END_DATE})
     if const.SIGNED in filters:
         if is_authenticated():
             filters[const.OPENID] = get_user_id()
@@ -97,8 +89,8 @@ def parse_input_params(expected_input_params):
                 for pk in get_user_public_keys()
             ]
         else:
-            raise ParseInputsError('To see signed test '
-                                   'results you need to authenticate')
+            raise api_exc.ParseInputsError(
+                'To see signed test results you need to authenticate')
     return filters
 
 
@@ -129,19 +121,21 @@ def get_page_number(records_count):
     try:
         page_number = int(page_number)
     except (ValueError, TypeError):
-        raise ParseInputsError('Invalid page number: The page number can not '
-                               'be converted to an integer')
+        raise api_exc.ParseInputsError(
+            'Invalid page number: The page number can not be converted to '
+            'an integer')
 
     if page_number == 1:
         return (page_number, total_pages)
 
     if page_number <= 0:
-        raise ParseInputsError('Invalid page number: '
-                               'The page number less or equal zero.')
+        raise api_exc.ParseInputsError('Invalid page number: '
+                                       'The page number less or equal zero.')
 
     if page_number > total_pages:
-        raise ParseInputsError('Invalid page number: The page number '
-                               'is greater than the total number of pages.')
+        raise api_exc.ParseInputsError(
+            'Invalid page number: '
+            'The page number is greater than the total number of pages.')
 
     return (page_number, total_pages)
 
