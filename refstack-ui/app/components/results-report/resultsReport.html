@@ -83,17 +83,17 @@
 
         Test Filters:<br />
         <div class="btn-group button-margin" data-toggle="buttons">
-            <label class="btn btn-default" ng-class="{'active': testStatus === 'all'}">
-                <input type="radio" ng-model="testStatus" value="all">
+            <label class="btn btn-default" ng-class="{'active': testStatus === 'total'}">
+                <input type="radio" ng-model="testStatus" value="total">
                 <span class="text-primary">All</span>
             </label>
             <label class="btn btn-default" ng-class="{'active': testStatus === 'passed'}">
                 <input type="radio" ng-model="testStatus" value="passed">
                 <span class="text-success">Passed</span>
             </label>
-            <label class="btn btn-default" ng-class="{'active': testStatus === 'failed'}">
-                <input type="radio" ng-model="testStatus" value="failed">
-                <span class="text-danger">Failed</span>
+            <label class="btn btn-default" ng-class="{'active': testStatus === 'not passed'}">
+                <input type="radio" ng-model="testStatus" value="not passed">
+                <span class="text-danger">Not Passed</span>
             </label>
             <label class="btn btn-default" ng-class="{'active': testStatus === 'flagged'}">
                 <input type="radio" ng-model="testStatus" value="flagged">

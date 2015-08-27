@@ -32,7 +32,7 @@ refstackApp.controller('resultsReportController',
          $scope.schemaVersion = null;
 
          /** The selected test status used for test filtering. */
-         $scope.testStatus = 'all';
+         $scope.testStatus = 'total';
 
          /** The HTML template that all accordian groups will use. */
          $scope.detailsTemplate = 'components/results-report/partials/' +
@@ -402,10 +402,10 @@ refstackApp.controller('resultsReportController',
           * @returns {Boolean} true if capability should be shown
           */
          $scope.isCapabilityShown = function (capability) {
-             return (($scope.testStatus === 'all') ||
+             return (($scope.testStatus === 'total') ||
                 ($scope.testStatus === 'passed' &&
                  capability.passedTests.length > 0) ||
-                ($scope.testStatus === 'failed' &&
+                ($scope.testStatus === 'not passed' &&
                  capability.notPassedTests.length > 0) ||
                 ($scope.testStatus === 'flagged' &&
                  (capability.passedFlagged.length +
@@ -420,10 +420,10 @@ refstackApp.controller('resultsReportController',
           * @return {Boolean} true if test should be shown
           */
          $scope.isTestShown = function (test, capability) {
-             return (($scope.testStatus === 'all') ||
+             return (($scope.testStatus === 'total') ||
                  ($scope.testStatus === 'passed' &&
                   capability.passedTests.indexOf(test) > -1) ||
-                 ($scope.testStatus === 'failed' &&
+                 ($scope.testStatus === 'not passed' &&
                   capability.notPassedTests.indexOf(test) > -1) ||
                  ($scope.testStatus === 'flagged' &&
                   (capability.passedFlagged.indexOf(test) > -1 ||
@@ -432,19 +432,19 @@ refstackApp.controller('resultsReportController',
 
          /**
           * This will give the number of tests belonging under the selected
-          * test filter.
+          * test filter for a given capability.
           * @param {Object} capability Built object for capability
           * @returns {Number} number of tests under filter
           */
-         $scope.getTestCount = function (capability) {
-             if ($scope.testStatus === 'all') {
+         $scope.getCapabilityTestCount = function (capability) {
+             if ($scope.testStatus === 'total') {
                  return capability.passedTests.length +
                     capability.notPassedTests.length;
              }
              else if ($scope.testStatus === 'passed') {
                  return capability.passedTests.length;
              }
-             else if ($scope.testStatus === 'failed') {
+             else if ($scope.testStatus === 'not passed') {
                  return capability.notPassedTests.length;
              }
              else if ($scope.testStatus === 'flagged') {
@@ -453,6 +453,35 @@ refstackApp.controller('resultsReportController',
              }
              else {
                  return 0;
+             }
+         };
+
+         /**
+          * This will give the number of tests belonging under the selected
+          * test filter for a given status.
+          * @param {String} capability status
+          * @returns {Number} number of tests for status under filter
+          */
+         $scope.getStatusTestCount = function (status) {
+             if (!$scope.caps) {
+                 return -1;
+             }
+             else if ($scope.testStatus === 'total') {
+                 return $scope.caps[status].count;
+             }
+             else if ($scope.testStatus === 'passed') {
+                 return $scope.caps[status].passedCount;
+             }
+             else if ($scope.testStatus === 'not passed') {
+                 return $scope.caps[status].count -
+                        $scope.caps[status].passedCount;
+             }
+             else if ($scope.testStatus === 'flagged') {
+                 return $scope.caps[status].flagFailCount +
+                        $scope.caps[status].flagPassCount;
+             }
+             else {
+                 return -1;
              }
          };
 
