@@ -1,5 +1,9 @@
 Refstack Quickstart
 ===================
+
+You can use docker for [one-click setup](run_in_docker.md)
+or follow step-by-step instructions below.
+
 ####Install API dependencies (on ubuntu 14.x)..
 
 - `sudo apt-get install git python-dev libssl-dev python-setuptools`
