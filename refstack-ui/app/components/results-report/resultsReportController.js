@@ -270,13 +270,13 @@ refstackApp.controller('resultsReportController',
                      // it to the passedTests array.
                      if ($scope.resultsData.results.indexOf(testId) > -1) {
                          cap.passedTests.push(testId);
-                         if ('flag' in details) {
+                         if ('flagged' in details) {
                              cap.passedFlagged.push(testId);
                          }
                      }
                      else {
                          cap.notPassedTests.push(testId);
-                         if ('flag' in details) {
+                         if ('flagged' in details) {
                              cap.notPassedFlagged.push(testId);
                          }
                      }
@@ -366,7 +366,7 @@ refstackApp.controller('resultsReportController',
              return ((($scope.schemaVersion === '1.2') &&
                       (capObj.flagged.indexOf(test) > -1)) ||
                      (($scope.schemaVersion === '1.3') &&
-                      (capObj.tests[test].flag)));
+                      (capObj.tests[test].flagged)));
          };
 
          /**
@@ -387,7 +387,7 @@ refstackApp.controller('resultsReportController',
              else if (($scope.schemaVersion === '1.3') &&
                       ($scope.isTestFlagged(test, capObj))){
 
-                 return capObj.tests[test].flag.reason;
+                 return capObj.tests[test].flagged.reason;
              }
              else {
                  return '';
