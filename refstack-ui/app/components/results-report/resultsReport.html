@@ -17,9 +17,9 @@
         </div>
         <div class="pull-right">
             <div ng-show="isEditingAllowed()">
-                <button class="btn btn-warning" ng-hide="isShared()" ng-click="shareTestRun(true)">Share</button>
+                <button class="btn btn-warning" ng-hide="isShared()" ng-click="shareTestRun(true)" confirm="Are you sure you want to share these test run results with the community?">Share</button>
                 <button class="btn btn-success" ng-show="isShared()" ng-click="shareTestRun(false)">Unshare</button>
-                <button type="button" class="btn btn-danger" ng-click="deleteTestRun()">Delete</button>
+                <button type="button" class="btn btn-danger" ng-click="deleteTestRun()" confirm="Are you sure you want to delete these test run results?">Delete</button>
             </div>
         </div>
     </div>
