@@ -20,8 +20,8 @@ from pecan import rest
 from pecan.secure import secure
 
 from refstack.api import utils as api_utils
+from refstack.api import validators
 from refstack.api.controllers import validation
-from refstack.common import validators
 from refstack import db
 
 

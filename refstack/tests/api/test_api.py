@@ -23,7 +23,7 @@ from oslo_config import fixture as config_fixture
 import six
 import webtest.app
 
-from refstack.common import validators
+from refstack.api import validators
 from refstack.tests import api
 
 FAKE_TESTS_RESULT = {

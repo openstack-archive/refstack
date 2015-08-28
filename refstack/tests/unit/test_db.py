@@ -20,7 +20,6 @@ import hashlib
 import six
 import mock
 from oslo_config import fixture as config_fixture
-from oslo_db import exception as oslo_db_exc
 from oslotest import base
 import sqlalchemy.orm
 
@@ -551,7 +550,7 @@ class DBBackendTestCase(base.BaseTestCase):
             .filter_by.return_value\
             .filter_by.return_value\
             .all.return_value = mock_pubkey
-        self.assertRaises(oslo_db_exc.DBDuplicateEntry,
+        self.assertRaises(db.Duplication,
                           db.store_pubkey, pubkey_info)
 
     @mock.patch.object(api, 'get_session')

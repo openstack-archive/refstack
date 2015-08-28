@@ -24,30 +24,9 @@ from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 
+from refstack.api import exceptions as api_exc
+
 ext_format_checker = jsonschema.FormatChecker()
-
-
-class ValidationError(Exception):
-
-    """Raise if request doesn't pass trough validation process."""
-
-    def __init__(self, title, exc=None):
-        """Init."""
-        super(ValidationError, self).__init__(title)
-        self.exc = exc
-        self.title = title
-        self.details = "%s(%s: %s)" % (self.title,
-                                       self.exc.__class__.__name__,
-                                       str(self.exc)) \
-            if self.exc else self.title
-
-    def __repr__(self):
-        """Repr method."""
-        return self.details
-
-    def __str__(self):
-        """Str method."""
-        return self.__repr__()
 
 
 def is_uuid(inst):
@@ -86,12 +65,13 @@ class BaseValidator(object):
         try:
             body = json.loads(request.body)
         except (ValueError, TypeError) as e:
-            raise ValidationError('Malformed request', e)
+            raise api_exc.ValidationError('Malformed request', e)
 
         try:
             jsonschema.validate(body, self.schema)
         except jsonschema.ValidationError as e:
-            raise ValidationError('Request doesn''t correspond to schema', e)
+            raise api_exc.ValidationError(
+                'Request doesn''t correspond to schema', e)
 
 
 class TestResultValidator(BaseValidator):
@@ -132,17 +112,17 @@ class TestResultValidator(BaseValidator):
             try:
                 sign = binascii.a2b_hex(request.headers.get('X-Signature', ''))
             except (binascii.Error, TypeError) as e:
-                raise ValidationError('Malformed signature', e)
+                raise api_exc.ValidationError('Malformed signature', e)
 
             try:
                 key = RSA.importKey(request.headers.get('X-Public-Key', ''))
             except (binascii.Error, ValueError) as e:
-                raise ValidationError('Malformed public key', e)
+                raise api_exc.ValidationError('Malformed public key', e)
             signer = PKCS1_v1_5.new(key)
             data_hash = SHA256.new()
             data_hash.update(request.body.encode('utf-8'))
             if not signer.verify(data_hash, sign):
-                raise ValidationError('Signature verification failed')
+                raise api_exc.ValidationError('Signature verification failed')
 
     @staticmethod
     def assert_id(_id):
@@ -172,19 +152,19 @@ class PubkeyValidator(BaseValidator):
 
         if key_format not in ('ssh-dss', 'ssh-rsa',
                               'pgp-sign-rsa', 'pgp-sign-dss'):
-            raise ValidationError('Public key has unsupported format')
+            raise api_exc.ValidationError('Public key has unsupported format')
 
         try:
             sign = binascii.a2b_hex(body['self_signature'])
         except (binascii.Error, TypeError) as e:
-            raise ValidationError('Malformed signature', e)
+            raise api_exc.ValidationError('Malformed signature', e)
 
         try:
             key = RSA.importKey(body['raw_key'])
         except (binascii.Error, ValueError) as e:
-            raise ValidationError('Malformed public key', e)
+            raise api_exc.ValidationError('Malformed public key', e)
         signer = PKCS1_v1_5.new(key)
         data_hash = SHA256.new()
         data_hash.update('signature'.encode('utf-8'))
         if not signer.verify(data_hash, sign):
-            raise ValidationError('Signature verification failed')
+            raise api_exc.ValidationError('Signature verification failed')

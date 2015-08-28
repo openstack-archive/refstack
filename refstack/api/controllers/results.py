@@ -24,8 +24,8 @@ from six.moves.urllib import parse
 from refstack import db
 from refstack.api import constants as const
 from refstack.api import utils as api_utils
+from refstack.api import validators
 from refstack.api.controllers import validation
-from refstack.common import validators
 
 LOG = log.getLogger(__name__)
 
@@ -130,13 +130,10 @@ class ResultsController(validation.BaseRestControllerWithValidation):
             const.SIGNED
         ]
 
-        try:
-            filters = api_utils.parse_input_params(expected_input_params)
-            records_count = db.get_test_records_count(filters)
-            page_number, total_pages_number = \
-                api_utils.get_page_number(records_count)
-        except api_utils.ParseInputsError as ex:
-            pecan.abort(400, 'Reason: %s' % ex)
+        filters = api_utils.parse_input_params(expected_input_params)
+        records_count = db.get_test_records_count(filters)
+        page_number, total_pages_number = \
+            api_utils.get_page_number(records_count)
 
         try:
             per_page = CONF.api.results_per_page

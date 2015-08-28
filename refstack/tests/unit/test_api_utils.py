@@ -24,6 +24,7 @@ from six.moves.urllib import parse
 from webob import exc
 
 from refstack.api import constants as const
+from refstack.api import exceptions as api_exc
 from refstack.api import utils as api_utils
 from refstack import db
 
@@ -97,7 +98,7 @@ class APIUtilsTestCase(base.BaseTestCase):
         expected_params = mock.Mock()
         mock_get_input.return_value = raw_filters
         mock_strtime.side_effect = ValueError()
-        self.assertRaises(api_utils.ParseInputsError,
+        self.assertRaises(api_exc.ParseInputsError,
                           api_utils.parse_input_params,
                           expected_params)
 
@@ -115,7 +116,7 @@ class APIUtilsTestCase(base.BaseTestCase):
 
         expected_params = mock.Mock()
         mock_get_input.return_value = raw_filters
-        self.assertRaises(api_utils.ParseInputsError,
+        self.assertRaises(api_exc.ParseInputsError,
                           api_utils.parse_input_params,
                           expected_params)
 
@@ -135,7 +136,7 @@ class APIUtilsTestCase(base.BaseTestCase):
         }
         expected_params = mock.Mock()
         mock_get_input.return_value = raw_filters
-        self.assertRaises(api_utils.ParseInputsError,
+        self.assertRaises(api_exc.ParseInputsError,
                           api_utils.parse_input_params, expected_params)
 
     @mock.patch.object(api_utils, '_get_input_params_from_request')
@@ -225,7 +226,7 @@ class APIUtilsTestCase(base.BaseTestCase):
             const.PAGE: 'abc'
         }
 
-        self.assertRaises(api_utils.ParseInputsError,
+        self.assertRaises(api_exc.ParseInputsError,
                           api_utils.get_page_number,
                           total_records)
 
@@ -256,7 +257,7 @@ class APIUtilsTestCase(base.BaseTestCase):
             const.PAGE: '-1'
         }
 
-        self.assertRaises(api_utils.ParseInputsError,
+        self.assertRaises(api_exc.ParseInputsError,
                           api_utils.get_page_number,
                           total_records)
 
@@ -271,7 +272,7 @@ class APIUtilsTestCase(base.BaseTestCase):
             const.PAGE: '100'
         }
 
-        self.assertRaises(api_utils.ParseInputsError,
+        self.assertRaises(api_exc.ParseInputsError,
                           api_utils.get_page_number,
                           total_records)
 
