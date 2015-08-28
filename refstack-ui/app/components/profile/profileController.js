@@ -14,9 +14,9 @@ refstackApp.factory('PubKeys',
 
 refstackApp.controller('profileController',
     [
-        '$scope', '$http', 'refstackApiUrl', '$state', 'PubKeys',
+        '$scope', '$http', 'refstackApiUrl', 'PubKeys',
         '$modal', 'raiseAlert',
-        function($scope, $http, refstackApiUrl, $state,
+        function($scope, $http, refstackApiUrl,
                  PubKeys, $modal, raiseAlert) {
             'use strict';
 
@@ -67,7 +67,8 @@ refstackApp.controller('profileController',
             $scope.showRes = function(pubKey){
                 raiseAlert('success', '', pubKey.pubkey);
             };
-            $scope.updatePubKeys();
+            $scope.authRequest = $scope.auth.doSignCheck()
+                .then($scope.updatePubKeys);
         }
     ]);
 

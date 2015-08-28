@@ -72,8 +72,12 @@ refstackApp.controller('resultsController',
                          JSON.stringify(error);
                  });
          };
-
-         $scope.update();
+         if ($scope.isUserResults) {
+             $scope.authRequest = $scope.auth.doSignCheck()
+                 .then($scope.update);
+         } else {
+             $scope.update();
+         }
 
          /**
           * This is called when the date filter calendar is opened. It

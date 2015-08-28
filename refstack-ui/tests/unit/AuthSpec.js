@@ -2,7 +2,7 @@ describe('Auth', function () {
     'use strict';
 
     var fakeApiUrl = 'http://foo.bar/v1';
-    var $window;
+    var $window, $rootScope, $httpBackend;
     beforeEach(function () {
         $window = {location: { href: jasmine.createSpy()} };
         module(function ($provide) {
@@ -10,14 +10,13 @@ describe('Auth', function () {
             $provide.value('$window', $window);
         });
         module('refstackApp');
+        inject(function (_$httpBackend_, _$rootScope_) {
+            $httpBackend = _$httpBackend_;
+            $rootScope = _$rootScope_;
+        });
+        $httpBackend.whenGET('/components/home/home.html')
+            .respond('<div>mock template</div>');
     });
-
-    var $rootScope, $httpBackend;
-    beforeEach(inject(function (_$httpBackend_, _$rootScope_) {
-        $httpBackend = _$httpBackend_;
-        $rootScope = _$rootScope_;
-    }));
-
     it('should show signin url for signed user', function () {
         $httpBackend.expectGET(fakeApiUrl +
             '/profile').respond({'openid': 'foo@bar.com',
