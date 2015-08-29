@@ -5,6 +5,7 @@
     <textarea type="text" rows="10" cols="67" readonly="readonly">{{::rawKey}}</textarea>
     <div class="modal-footer">
         <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
-        <button type="button" class="btn btn-danger btn-sm" ng-click="deletePubKey()">Delete</button>
+        <button type="button" class="btn btn-danger btn-sm" ng-click="deletePubKey() "
+                confirm="Are you sure you want to delete this public key? You will lose management access to any test results signed with this key.">Delete</button>
     </div>
 </div>
