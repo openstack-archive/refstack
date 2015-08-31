@@ -1,7 +1,7 @@
-refstack
+RefStack
 ========
 
-**What is refstack?**
+**What is RefStack?**
 
 - Toolset for testing interoperability between OpenStack clouds.
 - Database backed website supporting collection and publication of
@@ -11,15 +11,15 @@ refstack
 **Overview**
 
 
-refstack intends on being THE source of tools for interoperability testing
+RefStack intends on being THE source of tools for interoperability testing
 of OpenStack clouds.
 
-refstack provides users in the OpenStack community with a Tempest wrapper,
+RefStack provides users in the OpenStack community with a Tempest wrapper,
 refstack-client, that helps to verify interoperability of their cloud
 with other OpenStack clouds. It does so by validating any cloud
 implementation against the OpenStack Tempest API tests.
 
-**refstack and DefCore** - The prototypical use case for refstack provides
+**RefStack and DefCore** - The prototypical use case for RefStack provides
 the DefCore Committee the tools for vendors and other users to run API
 tests against their clouds to provide the DefCore committee with a reliable
 overview of what APIs and capabilities are being used in the marketplace.
@@ -29,11 +29,11 @@ be used to validate clouds against existing DefCore capability lists,
 giving you assurance that your cloud faithfully implements OpenStack
 standards.
 
-**Value Add for Vendors** - Vendors can use refstack to demonstrate that
+**Value Add for Vendors** - Vendors can use RefStack to demonstrate that
 their distros, and/or their customers' installed clouds remain with OpenStack
 after their software has been incorporated into the distro or cloud.
 
-**refstack consists of two parts:**
+**RefStack consists of two parts:**
 
 * **refstack-api**
    Our API isn't just for us to collect data from private and public cloud
