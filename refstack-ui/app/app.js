@@ -53,8 +53,8 @@ refstackApp.config([
  * Injections in $rootscope
  */
 
-refstackApp.run(['$http', '$rootScope', '$window', 'refstackApiUrl',
-    function($http, $rootScope, $window, refstackApiUrl) {
+refstackApp.run(['$http', '$rootScope', '$window', '$state', 'refstackApiUrl',
+    function($http, $rootScope, $window, $state, refstackApiUrl) {
         'use strict';
 
         /**
@@ -82,15 +82,19 @@ refstackApp.run(['$http', '$rootScope', '$window', 'refstackApiUrl',
          * This block tries to authenticate user
          */
         var profile_url = refstackApiUrl + '/profile';
-        $http.get(profile_url, {withCredentials: true}).
-            success(function(data) {
-                $rootScope.auth.currentUser = data;
-                $rootScope.auth.isAuthenticated = true;
-            }).
-            error(function() {
-                $rootScope.auth.currentUser = null;
-                $rootScope.auth.isAuthenticated = false;
-            });
+        $rootScope.auth.doSignCheck = function () {
+            return $http.get(profile_url, {withCredentials: true}).
+                success(function (data) {
+                    $rootScope.auth.currentUser = data;
+                    $rootScope.auth.isAuthenticated = true;
+                }).
+                error(function () {
+                    $rootScope.auth.currentUser = null;
+                    $rootScope.auth.isAuthenticated = false;
+                    $state.go('home');
+                });
+        };
+        $rootScope.auth.doSignCheck();
     }
 ]);
 
