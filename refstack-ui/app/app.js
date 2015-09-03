@@ -26,12 +26,12 @@ refstackApp.config([
                 templateUrl: '/components/capabilities/capabilities.html',
                 controller: 'capabilitiesController'
             }).
-            state('community_results', {
+            state('communityResults', {
                 url: '/community_results',
                 templateUrl: '/components/results/results.html',
                 controller: 'resultsController'
             }).
-            state('user_results', {
+            state('userResults', {
                 url: '/user_results',
                 templateUrl: '/components/results/results.html',
                 controller: 'resultsController'
@@ -45,6 +45,11 @@ refstackApp.config([
                 url: '/profile',
                 templateUrl: '/components/profile/profile.html',
                 controller: 'profileController'
+            }).
+            state('authFailure', {
+                url: '/auth_failure/:message',
+                templateUrl: '/components/home/home.html',
+                controller: 'authFailureController'
             });
     }
 ]);

@@ -101,6 +101,10 @@ class AuthController(rest.RestController):
         "signout": ["GET"]
     }
 
+    def _auth_failure(self, message):
+        pecan.redirect(parse.urljoin(CONF.ui_url,
+                                     '/#/auth_failure/%s') % message)
+
     @pecan.expose()
     def signin(self):
         """Handle signin request."""
@@ -138,17 +142,17 @@ class AuthController(rest.RestController):
         session = api_utils.get_user_session()
         if pecan.request.GET.get(const.OPENID_ERROR):
             api_utils.delete_params_from_user_session([const.CSRF_TOKEN])
-            pecan.abort(401, pecan.request.GET.get(const.OPENID_ERROR))
+            self._auth_failure(pecan.request.GET.get(const.OPENID_ERROR))
 
         if pecan.request.GET.get(const.OPENID_MODE) == 'cancel':
             api_utils.delete_params_from_user_session([const.CSRF_TOKEN])
-            pecan.abort(401, 'Authentication canceled.')
+            self._auth_failure('Authentication canceled.')
 
         session_token = session.get(const.CSRF_TOKEN)
         request_token = pecan.request.GET.get(const.CSRF_TOKEN)
         if request_token != session_token:
             api_utils.delete_params_from_user_session([const.CSRF_TOKEN])
-            pecan.abort(401, 'Authentication is failed. Try again.')
+            self._auth_failure('Authentication failed. Please try again.')
 
         api_utils.verify_openid_request(pecan.request)
         user_info = {

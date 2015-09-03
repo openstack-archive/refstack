@@ -33,7 +33,7 @@ refstackApp.controller('resultsController',
          /** The upload date upper limit to be used in filtering results. */
          $scope.endDate = '';
 
-         $scope.isUserResults = $state.current.name === 'user_results';
+         $scope.isUserResults = $state.current.name === 'userResults';
          $scope.pageHeader = $scope.isUserResults ?
              'Private test results' : 'Community test results';
          /**
