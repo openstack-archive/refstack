@@ -18,10 +18,10 @@ RefStack
             <li ng-class="{ active: isActive('/')}"><a ui-sref="home">Home</a></li>
             <li ng-class="{ active: isActive('/about')}"><a ui-sref="about">About</a></li>
             <li ng-class="{ active: isActive('/capabilities')}"><a ui-sref="capabilities">DefCore Capabilities</a></li>
-            <li ng-class="{ active: isActive('/community_results')}"><a ui-sref="community_results">Community Results</a></li>
+            <li ng-class="{ active: isActive('/community_results')}"><a ui-sref="communityResults">Community Results</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            <li ng-class="{ active: isActive('/user_results')}" ng-if="auth.isAuthenticated"><a ui-sref="user_results">My Results</a></li>
+            <li ng-class="{ active: isActive('/user_results')}" ng-if="auth.isAuthenticated"><a ui-sref="userResults">My Results</a></li>
             <li ng-class="{ active: isActive('/profile')}" ng-if="auth.isAuthenticated"><a ui-sref="profile">Profile</a></li>
             <li ng-if="auth.isAuthenticated"><a href="" ng-click="auth.doSignOut()">Sign Out</a></li>
             <li ng-if="!auth.isAuthenticated"><a href="" ng-click="auth.doSignIn()">Sign In / Sign Up</a></li>
