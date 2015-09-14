@@ -49,7 +49,7 @@ or follow step-by-step instructions below.
 
 ####Git you clonin'
 
-- `git clone http://github.com/stackforge/refstack`
+- `git clone http://github.com/openstack/refstack`
 
 - `cd refstack`
 
@@ -171,7 +171,7 @@ You would then need to modify the `openstack_openid_endpoint` field in the
 
    `refstack-manage --config-file /path/to/refstack.conf version`
 
-    Now it should be `2f178b0bf762`.
+    Now it should be some revision number other than `None`.
 
 
 ####Start RefStack
