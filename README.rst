@@ -41,15 +41,13 @@ after their software has been incorporated into the distro or cloud.
    data over time.
 
    * API and UI install docs: `doc/refstack.md <doc/refstack.md>`_
-   * repository: http://git.openstack.org/cgit/stackforge/refstack
-   * storyboard: https://storyboard.openstack.org/#!/project/700
+   * repository: http://git.openstack.org/cgit/openstack/refstack
    * reviews: https://review.openstack.org/#q,status:open+refstack,n,z
 
 * **refstack-client**
    refstack-client contains the tools you will need to run the DefCore tests.
 
-   * repository: http://git.openstack.org/cgit/stackforge/refstack-client
-   * storyboard: https://storyboard.openstack.org/#!/project/703
+   * repository: http://git.openstack.org/cgit/openstack/refstack-client
    * reviews: https://review.openstack.org/#q,status:open+refstack-client,n,z
 
 **Get involved!**
