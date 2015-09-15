@@ -5,9 +5,16 @@ report page.
 
 <accordion-group is-open="isOpen" is-disabled="caps[status].caps.length == 0">
     <accordion-heading>
-        {{status | capitalize}} <small>({{caps[status].caps.length}} total capabilities)</small>
+        {{status | capitalize}}
+        <small>
+            (<strong>Total:</strong> {{caps[status].caps.length}} capabilities, {{caps[status].count}} tests)
+            <span ng-if="testStatus !== 'total'">
+                (<strong>{{testStatus | capitalize}}:</strong> {{getStatusTestCount(status)}} tests)
+            </span>
+        </small>
         <i class="pull-right glyphicon"
-           ng-class="{'glyphicon-chevron-down': isOpen, 'glyphicon-chevron-right': !isOpen}"></i>
+           ng-class="{'glyphicon-chevron-down': isOpen, 'glyphicon-chevron-right': !isOpen}">
+        </i>
     </accordion-heading>
     <ol class="capabilities">
         <li ng-repeat="capability in caps[status].caps | orderBy:'id'"
@@ -18,10 +25,10 @@ report page.
                    {{capability.id}}
             </a>
             <span ng-class="{'text-success': testStatus === 'passed',
-                             'text-danger': testStatus === 'failed',
+                             'text-danger': testStatus === 'not passed',
                              'text-warning': testStatus === 'flagged'}"
-                  ng-if="testStatus !== 'all'">
-                [{{getTestCount(capability)}}]
+                  ng-if="testStatus !== 'total'">
+                [{{getCapabilityTestCount(capability)}}]
             </span>
             <span ng-class="{'text-success': (capability.passedTests.length > 0 &&
                                               capability.notPassedTests.length == 0),
@@ -29,7 +36,7 @@ report page.
                                              capability.notPassedTests.length > 0),
                              'text-warning': (capability.passedTests.length > 0 &&
                                               capability.notPassedTests.length > 0)}"
-                  ng-if="testStatus === 'all'">
+                  ng-if="testStatus === 'total'">
                 [{{capability.passedTests.length}}/{{capability.passedTests.length +
                                                      capability.notPassedTests.length}}]
             </span>

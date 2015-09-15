@@ -454,7 +454,7 @@ describe('Refstack controllers', function () {
                 expect(scope.isCapabilityShown(caps[1])).toEqual(false);
 
                 // Check that only capabilities with passed tests are shown.
-                scope.testStatus = 'failed';
+                scope.testStatus = 'not passed';
                 expect(scope.isCapabilityShown(caps[0])).toEqual(false);
                 expect(scope.isCapabilityShown(caps[1])).toEqual(true);
 
@@ -476,14 +476,14 @@ describe('Refstack controllers', function () {
                 expect(scope.isTestShown('test_id_1', cap)).toEqual(true);
                 scope.testStatus = 'passed';
                 expect(scope.isTestShown('test_id_1', cap)).toEqual(true);
-                scope.testStatus = 'failed';
+                scope.testStatus = 'not passed';
                 expect(scope.isTestShown('test_id_1', cap)).toEqual(false);
                 scope.testStatus = 'flagged';
                 expect(scope.isTestShown('test_id_1', cap)).toEqual(true);
             });
 
-        it('should have a method to determine how many tests belong under ' +
-           'the current test filter',
+        it('should have a method to determine how many tests in a ' +
+           'capability belong under the current test filter',
             function () {
                 var cap = {'id': 'cap_id_1',
                            'passedTests': ['t1', 't2', 't3'],
@@ -493,19 +493,48 @@ describe('Refstack controllers', function () {
                           };
 
                 // Should return the count of all tests.
-                expect(scope.getTestCount(cap)).toEqual(7);
+                expect(scope.getCapabilityTestCount(cap)).toEqual(7);
 
                 // Should return the count of passed tests.
                 scope.testStatus = 'passed';
-                expect(scope.getTestCount(cap)).toEqual(3);
+                expect(scope.getCapabilityTestCount(cap)).toEqual(3);
 
                 // Should return the count of failed tests.
-                scope.testStatus = 'failed';
-                expect(scope.getTestCount(cap)).toEqual(4);
+                scope.testStatus = 'not passed';
+                expect(scope.getCapabilityTestCount(cap)).toEqual(4);
 
                 // Should return the count of flagged tests.
                 scope.testStatus = 'flagged';
-                expect(scope.getTestCount(cap)).toEqual(3);
+                expect(scope.getCapabilityTestCount(cap)).toEqual(3);
+            });
+
+        it('should have a method to determine how many tests in a status ' +
+           'belong under the current test filter',
+            function () {
+                scope.caps = {'required': {'caps': [], 'count': 10,
+                              'passedCount': 6, 'flagFailCount': 3,
+                              'flagPassCount': 2}};
+
+                // Should return the count of all tests (count).
+                expect(scope.getStatusTestCount('required')).toEqual(10);
+
+                // Should return the count of passed tests (passedCount).
+                scope.testStatus = 'passed';
+                expect(scope.getStatusTestCount('required')).toEqual(6);
+
+                // Should return the count of failed tests
+                // (count - passedCount).
+                scope.testStatus = 'not passed';
+                expect(scope.getStatusTestCount('required')).toEqual(4);
+
+                // Should return the count of flagged tests
+                // (flagFailCount + flagPassCount).
+                scope.testStatus = 'flagged';
+                expect(scope.getStatusTestCount('required')).toEqual(5);
+
+                // Test when caps has not been set yet.
+                scope.caps = null;
+                expect(scope.getStatusTestCount('required')).toEqual(-1);
             });
 
         it('should have a method to open a modal for the full passed test list',
