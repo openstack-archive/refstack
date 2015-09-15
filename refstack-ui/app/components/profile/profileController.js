@@ -15,10 +15,14 @@ refstackApp.factory('PubKeys',
 refstackApp.controller('profileController',
     [
         '$scope', '$http', 'refstackApiUrl', 'PubKeys',
-        '$modal', 'raiseAlert',
+        '$modal', 'raiseAlert', '$state',
         function($scope, $http, refstackApiUrl,
-                 PubKeys, $modal, raiseAlert) {
+                 PubKeys, $modal, raiseAlert, $state) {
             'use strict';
+
+            if (!$scope.auth.isAuthenticated) {
+                $state.go('home');
+            }
 
             $scope.updatePubKeys = function (){
                 var keys = PubKeys.query(function(){

@@ -34,6 +34,9 @@ refstackApp.controller('resultsController',
          $scope.endDate = '';
 
          $scope.isUserResults = $state.current.name === 'userResults';
+         if ($scope.isUserResults && !$scope.auth.isAuthenticated) {
+             $state.go('home');
+         }
          $scope.pageHeader = $scope.isUserResults ?
              'Private test results' : 'Community test results';
          /**
