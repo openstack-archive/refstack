@@ -96,7 +96,6 @@ refstackApp.run(['$http', '$rootScope', '$window', '$state', 'refstackApiUrl',
                 error(function () {
                     $rootScope.auth.currentUser = null;
                     $rootScope.auth.isAuthenticated = false;
-                    $state.go('home');
                 });
         };
         $rootScope.auth.doSignCheck();
