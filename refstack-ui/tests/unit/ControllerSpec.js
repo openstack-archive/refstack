@@ -582,4 +582,34 @@ describe('Refstack controllers', function () {
                 expect(scope.getTestListString()).toEqual(expectedString);
             });
     });
+
+    describe('testRaiseAlertModalController', function() {
+        var data;
+        var scope, modalInstance;
+
+        data = {
+                    mode: 'success',
+                    title: '',
+                    text: 'operation successful'
+                };
+
+        beforeEach(inject(function ($rootScope, $controller) {
+            scope = $rootScope.$new();
+            modalInstance = {
+                dismiss: jasmine.createSpy('modalInstance.dismiss'),
+                close: jasmine.createSpy('modalInstance.close')
+            };
+            $controller('raiseAlertModalController', {
+                $scope: scope,
+                $modalInstance: modalInstance,
+                data: data
+            });
+        }));
+
+        it('should close',
+            function () {
+                scope.close();
+                expect(modalInstance.close).toHaveBeenCalledWith();
+            });
+    });
 });

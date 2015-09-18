@@ -27,16 +27,15 @@ refstackApp.factory('raiseAlert',
 
 
 refstackApp.controller('raiseAlertModalController',
-    ['$scope', '$modalInstance', '$interval', 'data',
-        function ($scope, $modalInstance, $interval, data) {
+    ['$scope', '$modalInstance', 'data',
+        function ($scope, $modalInstance, data) {
             'use strict';
             $scope.data = data;
+
+            //wait for users click to close the pop up window.
             $scope.close = function() {
                 $modalInstance.close();
             };
-            $interval(function(){
-                $scope.close();
-            }, 3000, 1);
         }
     ]
 );
