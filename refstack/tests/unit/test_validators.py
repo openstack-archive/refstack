@@ -74,6 +74,13 @@ class TestResultValidatorTestCase(base.BaseTestCase):
         ]
     }
 
+    FAKE_JSON_WITH_EMPTY_RESULTS = {
+        'cpid': 'foo',
+        'duration_seconds': 20,
+        'results': [
+        ]
+    }
+
     def setUp(self):
         super(TestResultValidatorTestCase, self).setUp()
         self.validator = validators.TestResultValidator()
@@ -133,6 +140,13 @@ class TestResultValidatorTestCase(base.BaseTestCase):
             self.validator.validate(wrong_request)
         except api_exc.ValidationError as e:
             self.assertIsInstance(e.exc, jsonschema.ValidationError)
+
+    def test_validation_fail_with_empty_result(self):
+        wrong_request = mock.Mock()
+        wrong_request.body = json.dumps(self.FAKE_JSON_WITH_EMPTY_RESULTS)
+        self.assertRaises(api_exc.ValidationError,
+                          self.validator.validate,
+                          wrong_request)
 
     @mock.patch('jsonschema.validate')
     def test_validation_with_broken_signature(self, mock_validate):
