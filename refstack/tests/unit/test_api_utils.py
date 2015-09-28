@@ -142,8 +142,7 @@ class APIUtilsTestCase(base.BaseTestCase):
     @mock.patch.object(api_utils, '_get_input_params_from_request')
     @mock.patch.object(api_utils, 'is_authenticated', return_value=True)
     @mock.patch.object(api_utils, 'get_user_id', return_value='fake_id')
-    @mock.patch('refstack.db.get_user_pubkeys')
-    def test_parse_input_params_success(self, mock_get_user_pubkeys,
+    def test_parse_input_params_success(self,
                                         mock_get_user_id,
                                         mock_is_authenticated,
                                         mock_get_input):
@@ -157,9 +156,7 @@ class APIUtilsTestCase(base.BaseTestCase):
             const.CPID: '12345',
             const.SIGNED: True
         }
-        fake_pubkeys = ({'format': 'fake',
-                         'pubkey': 'fake_pk'},)
-        mock_get_user_pubkeys.return_value = fake_pubkeys
+
         expected_params = mock.Mock()
         mock_get_input.return_value = raw_filters
 
@@ -179,11 +176,10 @@ class APIUtilsTestCase(base.BaseTestCase):
             const.CPID: '12345',
             const.SIGNED: True,
             const.OPENID: 'fake_id',
-            const.USER_PUBKEYS: ['fake fake_pk'],
         }
 
         result = api_utils.parse_input_params(expected_params)
-        self.assertEqual(result, expected_result)
+        self.assertEqual(expected_result, result)
 
         mock_get_input.assert_called_once_with(expected_params)
 
@@ -333,8 +329,8 @@ class APIUtilsTestCase(base.BaseTestCase):
     @mock.patch('pecan.abort', side_effect=exc.HTTPError)
     @mock.patch('refstack.db.get_test_meta_key')
     @mock.patch.object(api_utils, 'is_authenticated')
-    @mock.patch.object(api_utils, 'get_user_public_keys')
-    def test_check_get_user_role(self, mock_get_user_public_keys,
+    @mock.patch.object(api_utils, 'get_user_id')
+    def test_check_get_user_role(self, mock_get_user_id,
                                  mock_is_authenticated,
                                  mock_get_test_meta_key,
                                  mock_pecan_abort):
@@ -346,7 +342,7 @@ class APIUtilsTestCase(base.BaseTestCase):
                           'fake_test', const.ROLE_OWNER)
 
         mock_get_test_meta_key.side_effect = {
-            ('fake_test', const.PUBLIC_KEY): 'fake key',
+            ('fake_test', const.USER): 'fake_openid',
             ('fake_test', const.SHARED_TEST_RUN): 'true',
         }.get
         self.assertEqual(const.ROLE_USER, api_utils.get_user_role('fake_test'))
@@ -355,10 +351,9 @@ class APIUtilsTestCase(base.BaseTestCase):
                           'fake_test', const.ROLE_OWNER)
 
         mock_is_authenticated.return_value = True
-        mock_get_user_public_keys.return_value = [{'format': 'fake',
-                                                   'pubkey': 'key'}]
+        mock_get_user_id.return_value = 'fake_openid'
         mock_get_test_meta_key.side_effect = {
-            ('fake_test', const.PUBLIC_KEY): 'fake key',
+            ('fake_test', const.USER): 'fake_openid',
             ('fake_test', const.SHARED_TEST_RUN): 'true',
         }.get
         self.assertEqual(const.ROLE_USER, api_utils.get_user_role('fake_test'))
@@ -368,10 +363,9 @@ class APIUtilsTestCase(base.BaseTestCase):
 
         # Check owner level
         mock_is_authenticated.return_value = True
-        mock_get_user_public_keys.return_value = [{'format': 'fake',
-                                                   'pubkey': 'key'}]
+        mock_get_user_id.return_value = 'fake_openid'
         mock_get_test_meta_key.side_effect = lambda *args: {
-            ('fake_test', const.PUBLIC_KEY): 'fake key',
+            ('fake_test', const.USER): 'fake_openid',
             ('fake_test', const.SHARED_TEST_RUN): None,
         }.get(args)
         self.assertEqual(const.ROLE_OWNER,
@@ -382,7 +376,7 @@ class APIUtilsTestCase(base.BaseTestCase):
         # Check negative cases
         mock_is_authenticated.return_value = False
         mock_get_test_meta_key.side_effect = lambda *args: {
-            ('fake_test', const.PUBLIC_KEY): 'fake key',
+            ('fake_test', const.USER): 'fake_openid',
             ('fake_test', const.SHARED_TEST_RUN): None,
         }.get(args)
         self.assertRaises(exc.HTTPError, api_utils.enforce_permissions,
@@ -391,10 +385,9 @@ class APIUtilsTestCase(base.BaseTestCase):
                           'fake_test', const.ROLE_OWNER)
 
         mock_is_authenticated.return_value = True
-        mock_get_user_public_keys.return_value = [{'format': 'fake',
-                                                   'pubkey': 'key'}]
+        mock_get_user_id.return_value = 'fake_openid'
         mock_get_test_meta_key.side_effect = lambda *args: {
-            ('fake_test', const.PUBLIC_KEY): 'fake other_key',
+            ('fake_test', const.USER): 'some_other_user',
             ('fake_test', const.SHARED_TEST_RUN): None,
         }.get(args)
         self.assertEqual(None, api_utils.get_user_role('fake_test'))
@@ -406,8 +399,8 @@ class APIUtilsTestCase(base.BaseTestCase):
     @mock.patch('pecan.abort', side_effect=exc.HTTPError)
     @mock.patch('refstack.db.get_test_meta_key')
     @mock.patch.object(api_utils, 'is_authenticated')
-    @mock.patch.object(api_utils, 'get_user_public_keys')
-    def test_check_permissions(self, mock_get_user_public_keys,
+    @mock.patch.object(api_utils, 'get_user_id')
+    def test_check_permissions(self, mock_get_user_id,
                                mock_is_authenticated,
                                mock_get_test_meta_key,
                                mock_pecan_abort):
@@ -431,11 +424,10 @@ class APIUtilsTestCase(base.BaseTestCase):
         public_test = 'fake_public_test'
         private_test = 'fake_test'
 
-        mock_get_user_public_keys.return_value = [{'format': 'fake',
-                                                   'pubkey': 'key'}]
+        mock_get_user_id.return_value = 'fake_openid'
         mock_get_test_meta_key.side_effect = lambda *args: {
-            (public_test, const.PUBLIC_KEY): None,
-            (private_test, const.PUBLIC_KEY): 'fake key',
+            (public_test, const.USER): None,
+            (private_test, const.USER): 'fake_openid',
             (private_test, const.SHARED_TEST_RUN): None,
         }.get(args)
 

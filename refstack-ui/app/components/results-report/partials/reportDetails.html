@@ -42,6 +42,7 @@ report page.
             </span>
 
             <ul class="list-unstyled" collapse="!showTests">
+                <!-- Start passed test list -->
                 <li ng-repeat="test in capability.passedTests | orderBy:'toString()'"
                     ng-if="ctrl.isTestShown(test, capability)">
 
@@ -54,6 +55,9 @@ report page.
                     </span>
                     {{test}}
                 </li>
+                <!-- End passed test list -->
+
+                <!-- Start not passed test list -->
                 <li ng-repeat="test in capability.notPassedTests | orderBy:'toString()'"
                     ng-if="ctrl.isTestShown(test, capability)">
 
@@ -64,6 +68,7 @@ report page.
                     </span>
                     {{test}}
                 </li>
+                <!-- End not passed test list -->
             </ul>
         </li>
     </ol>

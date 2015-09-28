@@ -370,7 +370,7 @@ class DBBackendTestCase(base.BaseTestCase):
 
         unsigned_query.session.query.assert_has_calls((
             mock.call(mock_meta.test_id),
-            mock.call().filter_by(meta_key='public_key'),
+            mock.call().filter_by(meta_key='user'),
             mock.call(mock_meta.test_id),
             mock.call().filter_by(meta_key='shared'),
         ))
@@ -390,13 +390,16 @@ class DBBackendTestCase(base.BaseTestCase):
         query = mock.Mock()
         mock_test.created_at = six.text_type()
         mock_meta.test_id = six.text_type()
+        mock_meta.meta_key = 'user'
+        mock_meta.value = 'test-openid'
 
         filters = {
             api_const.START_DATE: 'fake1',
             api_const.END_DATE: 'fake2',
             api_const.CPID: 'fake3',
             api_const.USER_PUBKEYS: ['fake_pk'],
-            api_const.SIGNED: 'true'
+            api_const.SIGNED: 'true',
+            api_const.OPENID: 'test-openid'
         }
 
         signed_query = (query
@@ -409,14 +412,12 @@ class DBBackendTestCase(base.BaseTestCase):
         signed_query.join.assert_called_once_with(mock_test.meta)
         signed_query = signed_query.join.return_value
         signed_query.filter.assert_called_once_with(
-            mock_meta.meta_key == api_const.PUBLIC_KEY
+            mock_meta.meta_key == api_const.USER
         )
         signed_query = signed_query.filter.return_value
-        mock_meta.value.in_.assert_called_once_with(
-            filters[api_const.USER_PUBKEYS])
         signed_query.filter.assert_called_once_with(
-            mock_meta.value.in_.return_value)
-
+            mock_meta.value == filters[api_const.OPENID]
+        )
         filtered_query = signed_query.filter.return_value
         self.assertEqual(result, filtered_query)
 
@@ -517,6 +518,36 @@ class DBBackendTestCase(base.BaseTestCase):
         user.save.assert_called_once_with(session=session)
         user.update.assert_called_once_with(user_info)
         session.begin.assert_called_once_with()
+
+    @mock.patch.object(api, 'get_session',
+                       return_value=mock.Mock(name='session'),)
+    @mock.patch('refstack.db.sqlalchemy.models.PubKey')
+    def test_get_pubkey(self, mock_model, mock_get_session):
+        key = 'AAAAB3Nz'
+        khash = hashlib.md5(base64.b64decode(key.encode('ascii'))).hexdigest()
+        session = mock_get_session.return_value
+        query = session.query.return_value
+        filtered = query.filter_by.return_value
+
+        # Test no key match.
+        filtered.all.return_value = []
+        result = api.get_pubkey(key)
+        self.assertEqual(None, result)
+
+        session.query.assert_called_once_with(mock_model)
+        query.filter_by.assert_called_once_with(md5_hash=khash)
+        filtered.all.assert_called_once_with()
+
+        # Test only one key match.
+        filtered.all.return_value = [{'pubkey': key, 'md5_hash': khash}]
+        result = api.get_pubkey(key)
+        self.assertEqual({'pubkey': key, 'md5_hash': khash}, result)
+
+        # Test multiple keys with same md5 hash.
+        filtered.all.return_value = [{'pubkey': 'key2', 'md5_hash': khash},
+                                     {'pubkey': key, 'md5_hash': khash}]
+        result = api.get_pubkey(key)
+        self.assertEqual({'pubkey': key, 'md5_hash': khash}, result)
 
     @mock.patch.object(api, 'get_session')
     @mock.patch('refstack.db.sqlalchemy.api.models')

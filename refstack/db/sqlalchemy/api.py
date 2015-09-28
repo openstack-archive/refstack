@@ -218,17 +218,17 @@ def _apply_filters_for_query(query, filters):
         query = query.filter(models.Test.cpid == cpid)
 
     signed = api_const.SIGNED in filters
+    # If we only want to get the user's test results.
     if signed:
         query = (query
                  .join(models.Test.meta)
-                 .filter(models.TestMeta.meta_key == api_const.PUBLIC_KEY)
-                 .filter(models.TestMeta.value.in_(
-                     filters[api_const.USER_PUBKEYS]))
+                 .filter(models.TestMeta.meta_key == api_const.USER)
+                 .filter(models.TestMeta.value == filters[api_const.OPENID])
                  )
     else:
         signed_results = (query.session
                           .query(models.TestMeta.test_id)
-                          .filter_by(meta_key=api_const.PUBLIC_KEY))
+                          .filter_by(meta_key=api_const.USER))
         shared_results = (query.session
                           .query(models.TestMeta.test_id)
                           .filter_by(meta_key=api_const.SHARED_TEST_RUN))
@@ -278,6 +278,23 @@ def user_save(user_info):
         user.update(user_info)
         user.save(session=session)
         return user
+
+
+def get_pubkey(key):
+    """Get the pubkey info corresponding to the given public key.
+
+    The md5 hash of the key is used for the query for quicker lookups.
+    """
+    session = get_session()
+    md5_hash = hashlib.md5(base64.b64decode(key.encode('ascii'))).hexdigest()
+    pubkeys = session.query(models.PubKey).filter_by(md5_hash=md5_hash).all()
+    if len(pubkeys) == 1:
+        return pubkeys[0]
+    elif len(pubkeys) > 1:
+        for pubkey in pubkeys:
+            if pubkey['pubkey'] == key:
+                return pubkey
+    return None
 
 
 def store_pubkey(pubkey_info):
