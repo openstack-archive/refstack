@@ -1,11 +1,11 @@
 <div class="modal-header">
-    <h4>Public key</h4>
+    <h4>Public Key</h4>
 </div>
 <div class="modal-body container-fluid">
-    <textarea type="text" rows="10" cols="67" readonly="readonly">{{::rawKey}}</textarea>
+    <textarea type="text" rows="10" cols="67" readonly="readonly">{{modal.rawKey}}</textarea>
     <div class="modal-footer">
-        <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
-        <button type="button" class="btn btn-danger btn-sm" ng-click="deletePubKey() "
+        <button class="btn btn-warning" ng-click="modal.cancel()">Cancel</button>
+        <button type="button" class="btn btn-danger btn-sm" ng-click="modal.deletePubKey() "
                 confirm="Are you sure you want to delete this public key? You will lose management access to any test results signed with this key.">Delete</button>
     </div>
 </div>

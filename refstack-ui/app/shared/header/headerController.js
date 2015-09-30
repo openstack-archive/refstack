@@ -1,22 +1,44 @@
-var refstackApp = angular.module('refstackApp');
-
-/**
- * Refstack Header Controller
- * This controller is for the header template which contains the site
- * navigation.
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-refstackApp.controller('headerController',
-    ['$scope', '$location', function ($scope, $location) {
-        'use strict';
+
+(function () {
+    'use strict';
+
+    angular
+        .module('refstackApp')
+        .controller('HeaderController', HeaderController);
+
+    HeaderController.$inject = ['$location'];
+
+    /**
+     * Refstack Header Controller
+     * This controller is for the header template which contains the site
+     * navigation.
+     */
+    function HeaderController($location) {
+        var ctrl = this;
+
+        ctrl.isActive = isActive;
 
         /** Whether the Navbar is collapsed for small displays. */
-        $scope.navbarCollapsed = true;
+        ctrl.navbarCollapsed = true;
 
         /**
          * This determines whether a button should be in the active state based
          * on the URL.
          */
-        $scope.isActive = function (viewLocation) {
+        function isActive(viewLocation) {
             var path = $location.path().substr(0, viewLocation.length);
             if (path === viewLocation) {
                 // Make sure "/" only matches when viewLocation is "/".
@@ -26,5 +48,6 @@ refstackApp.controller('headerController',
                 }
             }
             return false;
-        };
-    }]);
+        }
+    }
+})();

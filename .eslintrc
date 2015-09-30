@@ -32,6 +32,8 @@
     "shelljs": false
   },
 
+  "extends": "openstack",
+
   "globals": {
     "require": false,
     "exports": false,
@@ -43,16 +45,25 @@
     "browser": false
   },
 
+  "plugins": [
+    "angular"
+  ],
+
   "rules": {
     "quotes": [2, "single"],
     "eol-last": 2,
     "no-trailing-spaces": 2,
     "camelcase": 0,
     "no-extra-boolean-cast": 0,
+    "operator-linebreak": 0,
+    "require-jsdoc": 2,
 
     // Stylistic
-    "indent": [2, 4],
+    "indent": [2, 4, {SwitchCase: 1}],
     "max-len": [2, 80],
-    "no-undefined": 2
+    "no-undefined": 2,
+
+    // Angular Plugin
+    "angular/controller-as-vm": [1, "ctrl"]
   }
 }

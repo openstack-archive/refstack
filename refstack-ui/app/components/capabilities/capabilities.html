@@ -4,15 +4,15 @@
 <div class="row">
     <div class="col-md-3">
         <strong>Version:</strong>
-        <select ng-model="version" ng-change="update()" class="form-control">
+        <select ng-model="ctrl.version" ng-change="ctrl.update()" class="form-control">
             <!-- Slicing the version file name here gets rid of the '.json' file extension. -->
-            <option ng-repeat="versionFile in versionList" value="{{versionFile}}">{{versionFile.slice(0, -5)}}</option>
+            <option ng-repeat="versionFile in ctrl.versionList" value="{{versionFile}}">{{versionFile.slice(0, -5)}}</option>
         </select>
     </div>
     <div class="col-md-4">
         <strong>Target Program:</strong>
         <span class="program-about"><a target="_blank" href="http://www.openstack.org/brand/interop/">About</a></span>
-        <select ng-model="target" class="form-control" ng-change="updateTargetCapabilities()">
+        <select ng-model="ctrl.target" class="form-control" ng-change="ctrl.updateTargetCapabilities()">
             <option value="platform">OpenStack Powered Platform</option>
             <option value="compute">OpenStack Powered Compute</option>
             <option value="object">OpenStack Powered Object Storage</option>
@@ -21,10 +21,10 @@
 </div>
 
 <br />
-<div ng-show="capabilities">
+<div ng-show="ctrl.capabilities">
     <strong>Corresponding OpenStack Releases:</strong>
     <ul class="list-inline">
-        <li ng-repeat="release in capabilities.releases">
+        <li ng-repeat="release in ctrl.capabilities.releases">
             {{release | capitalize}}
         </li>
     </ul>
@@ -33,19 +33,19 @@
 <strong>Capability Status:</strong>
 <div class="checkbox">
     <label>
-    <input type="checkbox" ng-model="status.required">
+    <input type="checkbox" ng-model="ctrl.status.required">
     <span class="required">Required</span>
     </label>
     <label>
-    <input type="checkbox" ng-model="status.advisory">
+    <input type="checkbox" ng-model="ctrl.status.advisory">
     <span class="advisory">Advisory</span>
     </label>
     <label>
-    <input type="checkbox" ng-model="status.deprecated">
+    <input type="checkbox" ng-model="ctrl.status.deprecated">
     <span class="deprecated">Deprecated</span>
     </label>
     <label>
-    <input type="checkbox" ng-model="status.removed">
+    <input type="checkbox" ng-model="ctrl.status.removed">
     <span class="removed">Removed</span>
     </label>
 </div>
@@ -54,14 +54,14 @@
 <p><small>Tests marked with <span class="glyphicon glyphicon-flag text-warning"></span> are tests flagged by DefCore.</small></p>
 
 <!-- Loading animation divs -->
-<div cg-busy="{promise:versionsRequest,message:'Loading versions'}"></div>
-<div cg-busy="{promise:capsRequest,message:'Loading capabilities'}"></div>
+<div cg-busy="{promise:ctrl.versionsRequest,message:'Loading versions'}"></div>
+<div cg-busy="{promise:ctrl.capsRequest,message:'Loading capabilities'}"></div>
 
 <!-- Get the version-specific template -->
-<div ng-include src="detailsTemplate"></div>
+<div ng-include src="ctrl.detailsTemplate"></div>
 
 <div ng-show="showError" class="alert alert-danger" role="alert">
     <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
     <span class="sr-only">Error:</span>
-    {{error}}
+    {{ctrl.error}}
 </div>

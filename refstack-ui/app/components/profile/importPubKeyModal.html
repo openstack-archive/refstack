@@ -1,21 +1,21 @@
 <div class="modal-header">
-    <h4>Import public key</h4>
+    <h4>Import Public Key</h4>
 </div>
 <div class="modal-body container-fluid">
     <div class="row">
-        <div class="col-md-2">Public key</div>
+        <div class="col-md-2">Public Key</div>
         <div class="col-md-9 pull-right">
-        <textarea type="text" rows="11" cols="42" ng-model="raw_key" required></textarea>
+        <textarea type="text" rows="11" cols="42" ng-model="modal.raw_key" required></textarea>
         </div>
     </div>
     <div class="row">
         <div class="col-md-2">Signature</div>
         <div class="col-md-9 pull-right">
-        <textarea type="text" rows="11" cols="42" ng-model="self_signature" required></textarea>
+        <textarea type="text" rows="11" cols="42" ng-model="modal.self_signature" required></textarea>
         </div>
     </div>
     <div class="modal-footer">
-        <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
-        <button type="button" class="btn btn-default btn-sm" ng-click="importPubKey()">Import public key</button>
+        <button class="btn btn-warning" ng-click="modal.cancel()">Cancel</button>
+        <button type="button" class="btn btn-default btn-sm" ng-click="modal.importPubKey()">Import Public Key</button>
     </div>
 </div>

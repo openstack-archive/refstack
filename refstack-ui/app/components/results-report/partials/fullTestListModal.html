@@ -1,13 +1,13 @@
 <div class="modal-content">
     <div class="modal-header">
-        <h4>All Passed Tests ({{tests.length}})</h4>
+        <h4>All Passed Tests ({{modal.tests.length}})</h4>
     </div>
     <div class="modal-body tests-modal-content">
          <div class="form-group">
-             <textarea class="form-control" rows="20" id="tests" wrap="off">{{getTestListString()}}</textarea>
+             <textarea class="form-control" rows="20" id="tests" wrap="off">{{modal.getTestListString()}}</textarea>
          </div>
     </div>
     <div class="modal-footer">
-        <button class="btn btn-primary" type="button" ng-click="close()">Close</button>
+        <button class="btn btn-primary" type="button" ng-click="modal.close()">Close</button>
     </div>
 </div>

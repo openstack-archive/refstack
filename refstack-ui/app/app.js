@@ -1,16 +1,38 @@
-/** Main app module where application dependencies are listed. */
-var refstackApp = angular.module('refstackApp', [
-    'ui.router', 'ui.bootstrap', 'cgBusy', 'ngResource', 'angular-confirm']);
-
-/**
- * Handle application routing. Specific templates and controllers will be
- * used based on the URL route.
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-refstackApp.config([
-    '$stateProvider', '$urlRouterProvider',
-    function ($stateProvider, $urlRouterProvider) {
-        'use strict';
 
+(function () {
+    'use strict';
+
+    /** Main app module where application dependencies are listed. */
+    angular
+        .module('refstackApp', [
+            'ui.router','ui.bootstrap', 'cgBusy',
+            'ngResource', 'angular-confirm'
+        ]);
+
+    angular
+        .module('refstackApp')
+        .config(configureRoutes);
+
+    configureRoutes.$inject = ['$stateProvider', '$urlRouterProvider'];
+
+    /**
+     * Handle application routing. Specific templates and controllers will be
+     * used based on the URL route.
+     */
+    function configureRoutes($stateProvider, $urlRouterProvider) {
         $urlRouterProvider.otherwise('/');
         $stateProvider.
             state('home', {
@@ -24,70 +46,80 @@ refstackApp.config([
             state('capabilities', {
                 url: '/capabilities',
                 templateUrl: '/components/capabilities/capabilities.html',
-                controller: 'capabilitiesController'
+                controller: 'CapabilitiesController as ctrl'
             }).
             state('communityResults', {
                 url: '/community_results',
                 templateUrl: '/components/results/results.html',
-                controller: 'resultsController'
+                controller: 'ResultsController as ctrl'
             }).
             state('userResults', {
                 url: '/user_results',
                 templateUrl: '/components/results/results.html',
-                controller: 'resultsController'
+                controller: 'ResultsController as ctrl'
             }).
             state('resultsDetail', {
                 url: '/results/:testID',
-                templateUrl: '/components/results-report/resultsReport.html',
-                controller: 'resultsReportController'
+                templateUrl: '/components/results-report' +
+                             '/resultsReport.html',
+                controller: 'ResultsReportController as ctrl'
             }).
             state('profile', {
                 url: '/profile',
                 templateUrl: '/components/profile/profile.html',
-                controller: 'profileController'
+                controller: 'ProfileController as ctrl'
             }).
             state('authFailure', {
                 url: '/auth_failure/:message',
                 templateUrl: '/components/home/home.html',
-                controller: 'authFailureController'
+                controller: 'AuthFailureController as ctrl'
             });
     }
-]);
 
-/**
- * Injections in $rootscope
- */
+    angular
+        .module('refstackApp')
+        .run(setup);
 
-refstackApp.run(['$http', '$rootScope', '$window', '$state', 'refstackApiUrl',
-    function($http, $rootScope, $window, $state, refstackApiUrl) {
-        'use strict';
+    setup.$inject = [
+        '$http', '$rootScope', '$window', '$state', 'refstackApiUrl'
+    ];
+
+    /**
+     * Set up the app with injections into $rootscope. This is mainly for auth
+     * functions.
+     */
+    function setup($http, $rootScope, $window, $state, refstackApiUrl) {
 
         /**
          * This function injects sign in function in all scopes
          */
 
         $rootScope.auth = {};
+        $rootScope.auth.doSignIn = doSignIn;
+        $rootScope.auth.doSignOut = doSignOut;
+        $rootScope.auth.doSignCheck = doSignCheck;
 
         var sign_in_url = refstackApiUrl + '/auth/signin';
-        $rootScope.auth.doSignIn = function () {
-            $window.location.href = sign_in_url;
-        };
-
-        /**
-         * This function injects sign out function in all scopes
-         */
         var sign_out_url = refstackApiUrl + '/auth/signout';
-        $rootScope.auth.doSignOut = function () {
+        var profile_url = refstackApiUrl + '/profile';
+
+        /** This function initiates a sign in. */
+        function doSignIn() {
+            $window.location.href = sign_in_url;
+        }
+
+        /** This function will initate a sign out. */
+        function doSignOut() {
             $rootScope.currentUser = null;
             $rootScope.isAuthenticated = false;
             $window.location.href = sign_out_url;
-        };
+        }
 
         /**
-         * This block tries to authenticate user
+         * This function checks to see if a user is logged in and
+         * authenticated.
          */
-        var profile_url = refstackApiUrl + '/profile';
-        $rootScope.auth.doSignCheck = function () {
+        function doSignCheck() {
             return $http.get(profile_url, {withCredentials: true}).
                 success(function (data) {
                     $rootScope.auth.currentUser = data;
@@ -97,30 +129,38 @@ refstackApp.run(['$http', '$rootScope', '$window', '$state', 'refstackApiUrl',
                     $rootScope.auth.currentUser = null;
                     $rootScope.auth.isAuthenticated = false;
                 });
-        };
+        }
+
         $rootScope.auth.doSignCheck();
     }
-]);
 
-/**
- * Load config and start up the angular application.
- */
-angular.element(document).ready(function () {
-    'use strict';
+    angular
+        .element(document)
+        .ready(loadConfig);
 
-    var $http = angular.injector(['ng']).get('$http');
+    /**
+     * Load config and start up the angular application.
+     */
+    function loadConfig() {
 
-    function startApp(config) {
-        // Add config options as constants.
-        for (var key in config) {
-            angular.module('refstackApp').constant(key, config[key]);
+        var $http = angular.injector(['ng']).get('$http');
+
+        /**
+         * Store config variables as constants, and start the app.
+         */
+        function startApp(config) {
+            // Add config options as constants.
+            angular.forEach(config, function(value, key) {
+                angular.module('refstackApp').constant(key, value);
+            });
+
+            angular.bootstrap(document, ['refstackApp']);
         }
-        angular.bootstrap(document, ['refstackApp']);
-    }
 
-    $http.get('config.json').success(function (data) {
-        startApp(data);
-    }).error(function () {
-        startApp({});
-    });
-});
+        $http.get('config.json').success(function (data) {
+            startApp(data);
+        }).error(function () {
+            startApp({});
+        });
+    }
+})();

@@ -1,4 +1,4 @@
-<h3>{{pageHeader}}</h3>
+<h3>{{ctrl.pageHeader}}</h3>
 <p>The most recently uploaded community test results are listed here.</p>
 
 <div class="result-filters">
@@ -8,12 +8,11 @@
             <label for="cpid">Start Date</label>
             <p class="input-group">
                 <input type="text" class="form-control"
-                    datepicker-popup="{{format}}"
-                    ng-model="startDate" is-open="startOpen"
-                    datepicker-options="dateOptions"
+                    datepicker-popup="{{ctrl.format}}"
+                    ng-model="ctrl.startDate" is-open="ctrl.startOpen"
                     close-text="Close" />
                 <span class="input-group-btn">
-                    <button type="button" class="btn btn-default" ng-click="open($event, 'startOpen')">
+                    <button type="button" class="btn btn-default" ng-click="ctrl.open($event, 'startOpen')">
                         <i class="glyphicon glyphicon-calendar"></i>
                     </button>
                 </span>
@@ -23,62 +22,61 @@
             <label for="cpid">End Date</label>
             <p class="input-group">
                 <input type="text" class="form-control"
-                    datepicker-popup="{{format}}"
-                    ng-model="endDate" is-open="endOpen"
-                    datepicker-options="dateOptions"
+                    datepicker-popup="{{ctrl.format}}"
+                    ng-model="ctrl.endDate" is-open="ctrl.endOpen"
                     close-text="Close" />
                 <span class="input-group-btn">
-                    <button type="button" class="btn btn-default" ng-click="open($event, 'endOpen')">
+                    <button type="button" class="btn btn-default" ng-click="ctrl.open($event, 'endOpen')">
                         <i class="glyphicon glyphicon-calendar"></i>
                     </button>
                 </span>
             </p>
         </div>
         <div class="col-md-3"style="margin-top:24px;">
-            <button type="submit" class="btn btn-primary" ng-click="update()">Filter</button>
-            <button type="submit" class="btn btn-primary btn-danger" ng-click="clearFilters()">Clear</button>
+            <button type="submit" class="btn btn-primary" ng-click="ctrl.update()">Filter</button>
+            <button type="submit" class="btn btn-primary btn-danger" ng-click="ctrl.clearFilters()">Clear</button>
         </div>
     </div>
 </div>
-<div cg-busy="{promise:authRequest,message:'Loading'}"></div>
-<div cg-busy="{promise:resultsRequest,message:'Loading'}"></div>
-<div ng-show="data" class="results-table">
-    <table ng-show="data" class="table table-striped table-hover">
+<div cg-busy="{promise:ctrl.authRequest,message:'Loading'}"></div>
+<div cg-busy="{promise:ctrl.resultsRequest,message:'Loading'}"></div>
+<div ng-show="ctrl.data" class="results-table">
+    <table ng-show="ctrl.data" class="table table-striped table-hover">
         <thead>
             <tr>
                 <th>Upload Date</th>
                 <th>Test Run ID</th>
-                <th ng-if="::isUserResults">Shared</th>
+                <th ng-if="ctrl.isUserResults">Shared</th>
             </tr>
         </thead>
 
         <tbody>
-            <tr ng-repeat="result in data.results">
+            <tr ng-repeat="result in ctrl.data.results">
                 <td>{{result.created_at}}</td>
                 <td><a ui-sref="resultsDetail({testID: result.id})">{{result.id}}</a></td>
-                <td ng-if="::isUserResults"><span ng-show="result.meta.shared" class="glyphicon glyphicon-share"></span></td>
+                <td ng-if="ctrl.isUserResults"><span ng-show="result.meta.shared" class="glyphicon glyphicon-share"></span></td>
             </tr>
         </tbody>
     </table>
 
     <div class="pages">
         <pagination
-            total-items="totalItems"
-            ng-model="currentPage"
-            items-per-page="itemsPerPage"
-            max-size="maxSize"
+            total-items="ctrl.totalItems"
+            ng-model="ctrl.currentPage"
+            items-per-page="ctrl.itemsPerPage"
+            max-size="ctrl.maxSize"
             class="pagination-sm"
             boundary-links="true"
             rotate="false"
-            num-pages="numPages"
-            ng-change="update()">
+            num-pages="ctrl.numPages"
+            ng-change="ctrl.update()">
         </pagination>
     </div>
 </div>
 
-<div ng-show="showError" class="alert alert-danger" role="alert">
+<div ng-show="ctrl.showError" class="alert alert-danger" role="alert">
     <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
     <span class="sr-only">Error:</span>
-    {{error}}
+    {{ctrl.error}}
 </div>
 

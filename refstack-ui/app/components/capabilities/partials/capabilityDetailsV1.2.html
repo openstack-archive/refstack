@@ -4,20 +4,20 @@ This expects the JSON data of the capability file to be stored in scope
 variable 'capabilities'.
 -->
 
-<ol ng-show="capabilities" class="capabilities">
-  <li class="capability-list-item" ng-repeat="capability in capabilities.capabilities | arrayConverter | filter:filterStatus">
+<ol ng-show="ctrl.capabilities" class="capabilities">
+  <li class="capability-list-item" ng-repeat="capability in ctrl.capabilities.capabilities | arrayConverter | filter:ctrl.filterStatus | orderBy:'id'">
     <span class="capability-name">{{capability.id}}</span><br />
     <em>{{capability.description}}</em><br />
-    Status: <span class="{{targetCapabilities[capability.id]}}">{{targetCapabilities[capability.id]}}</span><br />
-    <a ng-click="hideAchievements = !hideAchievements">Achievements ({{capability.achievements.length}})</a><br />
-    <ol collapse="hideAchievements" class="list-inline">
+    Status: <span class="{{ctrl.targetCapabilities[capability.id]}}">{{ctrl.targetCapabilities[capability.id]}}</span><br />
+    <a ng-click="showAchievements = !showAchievements">Achievements ({{capability.achievements.length}})</a><br />
+    <ol collapse="!showAchievements" class="list-inline">
         <li ng-repeat="achievement in capability.achievements">
             {{achievement}}
         </li>
     </ol>
 
-    <a ng-click="hideTests = !hideTests">Tests ({{capability.tests.length}})</a>
-    <ul collapse="hideTests">
+    <a ng-click="showTests = !showTests">Tests ({{capability.tests.length}})</a>
+    <ul collapse="!showTests">
         <li ng-repeat="test in capability.tests">
            <span ng-class="{'glyphicon glyphicon-flag text-warning': capability.flagged.indexOf(test) > -1}"></span>
            {{test}}
@@ -26,12 +26,12 @@ variable 'capabilities'.
   </li>
 </ol>
 
-<div ng-show="capabilities" class="criteria">
+<div ng-show="ctrl.capabilities" class="criteria">
     <hr>
-    <h4><a ng-click="hideCriteria = !hideCriteria">Criteria</a></h4>
-    <div collapse="hideCriteria">
+    <h4><a ng-click="showCriteria = !showCriteria">Criteria</a></h4>
+    <div collapse="showCriteria">
         <ul>
-            <li ng-repeat="(key, criterion) in capabilities.criteria">
+            <li ng-repeat="(key, criterion) in ctrl.capabilities.criteria">
                 <span class="criterion-name">{{criterion.name}}</span><br />
                 <em>{{criterion.Description}}</em><br />
                 Weight: {{criterion.weight}}

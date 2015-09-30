@@ -1,31 +1,31 @@
 <h3>Test Run Results</h3>
 
-<div ng-show="resultsData"  class="container-fluid">
+<div ng-show="ctrl.resultsData"  class="container-fluid">
     <div class="row">
         <div class="pull-left">
             <div class="test-report">
-                <strong>Test ID:</strong> {{testId}}<br />
-                <div ng-if="isEditingAllowed()"><strong>Cloud ID:</strong> {{resultsData.cpid}}<br /></div>
-                <strong>Upload Date:</strong> {{resultsData.created_at}} UTC<br />
-                <strong>Duration:</strong> {{resultsData.duration_seconds}} seconds<br />
+                <strong>Test ID:</strong> {{ctrl.testId}}<br />
+                <div ng-if="ctrl.isEditingAllowed()"><strong>Cloud ID:</strong> {{ctrl.resultsData.cpid}}<br /></div>
+                <strong>Upload Date:</strong> {{ctrl.resultsData.created_at}} UTC<br />
+                <strong>Duration:</strong> {{ctrl.resultsData.duration_seconds}} seconds<br />
                 <strong>Total Number of Passed Tests:</strong>
-                <a title="See all passed tests" ng-click="openFullTestListModal()">
-                    {{resultsData.results.length}}
+                <a title="See all passed tests" ng-click="ctrl.openFullTestListModal()">
+                    {{ctrl.resultsData.results.length}}
                 </a><br />
                 <hr>
             </div>
         </div>
         <div class="pull-right">
-            <div ng-show="isEditingAllowed()">
-                <button class="btn btn-warning" ng-hide="isShared()" ng-click="shareTestRun(true)" confirm="Are you sure you want to share these test run results with the community?">Share</button>
-                <button class="btn btn-success" ng-show="isShared()" ng-click="shareTestRun(false)">Unshare</button>
-                <button type="button" class="btn btn-danger" ng-click="deleteTestRun()" confirm="Are you sure you want to delete these test run results?">Delete</button>
+            <div ng-show="ctrl.isEditingAllowed()">
+                <button class="btn btn-warning" ng-hide="ctrl.isShared()" ng-click="ctrl.shareTestRun(true)" confirm="Are you sure you want to share these test run results with the community?">Share</button>
+                <button class="btn btn-success" ng-show="ctrl.isShared()" ng-click="ctrl.shareTestRun(false)">Unshare</button>
+                <button type="button" class="btn btn-danger" ng-click="ctrl.deleteTestRun()" confirm="Are you sure you want to delete these test run results?">Delete</button>
             </div>
         </div>
     </div>
 </div>
 
-<div ng-show="resultsData">
+<div ng-show="ctrl.resultsData">
     <p>See how these results stack up against DefCore capabilities and OpenStack
         <a target="_blank" href="http://www.openstack.org/brand/interop/">target marketing programs.</a>
     </p>
@@ -34,14 +34,14 @@
     <div class="row">
         <div class="col-md-3">
             <strong>Capabilities Version:</strong>
-            <select ng-model="version" ng-change="updateCapabilities()" class="form-control">
+            <select ng-model="ctrl.version" ng-change="ctrl.updateCapabilities()" class="form-control">
                 <!-- Slicing the version file name here gets rid of the '.json' file extension -->
-                <option ng-repeat="versionFile in versionList" value="{{versionFile}}">{{versionFile.slice(0, -5)}}</option>
+                <option ng-repeat="versionFile in ctrl.versionList" value="{{versionFile}}">{{versionFile.slice(0, -5)}}</option>
             </select>
         </div>
         <div class="col-md-4">
             <strong>Target Program:</strong>
-            <select ng-model="target" class="form-control" ng-change="buildCapabilitiesObject()">
+            <select ng-model="ctrl.target" class="form-control" ng-change="ctrl.buildCapabilitiesObject()">
                 <option value="platform">OpenStack Powered Platform</option>
                 <option value="compute">OpenStack Powered Compute</option>
                 <option value="object">OpenStack Powered Object Storage</option>
@@ -53,28 +53,28 @@
     <br />
     <strong>Corresponding OpenStack Releases:</strong>
     <ul class="list-inline">
-        <li ng-repeat="release in capabilityData.releases">
+        <li ng-repeat="release in ctrl.capabilityData.releases">
             {{release | capitalize}}
         </li>
     </ul>
     <hr >
 
-    <div ng-show="capabilityData">
+    <div ng-show="ctrl.capabilityData">
         <strong>Status:</strong>
-        <p>This cloud passes <strong>{{requiredPassPercent | number:1}}% </strong>
-           ({{caps.required.passedCount}}/{{caps.required.count}})
-           of the tests in the <strong>{{version.slice(0, -5)}}</strong> <em>required</em> capabilities for the
-           <strong>{{targetMappings[target]}}</strong> program. <br />
+        <p>This cloud passes <strong>{{ctrl.requiredPassPercent | number:1}}% </strong>
+           ({{ctrl.caps.required.passedCount}}/{{ctrl.caps.required.count}})
+           of the tests in the <strong>{{ctrl.version.slice(0, -5)}}</strong> <em>required</em> capabilities for the
+           <strong>{{ctrl.targetMappings[target]}}</strong> program. <br />
            Excluding flagged tests, this cloud passes
-           <strong>{{nonFlagRequiredPassPercent | number:1}}%</strong>
-           ({{nonFlagPassCount}}/{{totalNonFlagCount}})
+           <strong>{{ctrl.nonFlagRequiredPassPercent | number:1}}%</strong>
+           ({{ctrl.nonFlagPassCount}}/{{ctrl.totalNonFlagCount}})
            of the <em>required</em> tests.
         </p>
 
-        <p>Compliance with <strong>{{version.slice(0, -5)}}</strong>:
+        <p>Compliance with <strong>{{ctrl.version.slice(0, -5)}}</strong>:
             <strong>
-                <span ng-if="nonFlagPassCount === totalNonFlagCount" class="yes">YES</span>
-                <span ng-if="nonFlagPassCount !== totalNonFlagCount" class="no">NO</span>
+                <span ng-if="ctrl.nonFlagPassCount === ctrl.totalNonFlagCount" class="yes">YES</span>
+                <span ng-if="ctrl.nonFlagPassCount !== ctrl.totalNonFlagCount" class="no">NO</span>
             </strong>
         </p>
 
@@ -83,20 +83,20 @@
 
         Test Filters:<br />
         <div class="btn-group button-margin" data-toggle="buttons">
-            <label class="btn btn-default" ng-class="{'active': testStatus === 'total'}">
-                <input type="radio" ng-model="testStatus" value="total">
+            <label class="btn btn-default" ng-class="{'active': ctrl.testStatus === 'total'}">
+                <input type="radio" ng-model="ctrl.testStatus" value="total">
                 <span class="text-primary">All</span>
             </label>
-            <label class="btn btn-default" ng-class="{'active': testStatus === 'passed'}">
-                <input type="radio" ng-model="testStatus" value="passed">
+            <label class="btn btn-default" ng-class="{'active': ctrl.testStatus === 'passed'}">
+                <input type="radio" ng-model="ctrl.testStatus" value="passed">
                 <span class="text-success">Passed</span>
             </label>
-            <label class="btn btn-default" ng-class="{'active': testStatus === 'not passed'}">
-                <input type="radio" ng-model="testStatus" value="not passed">
+            <label class="btn btn-default" ng-class="{'active': ctrl.testStatus === 'not passed'}">
+                <input type="radio" ng-model="ctrl.testStatus" value="not passed">
                 <span class="text-danger">Not Passed</span>
             </label>
-            <label class="btn btn-default" ng-class="{'active': testStatus === 'flagged'}">
-                <input type="radio" ng-model="testStatus" value="flagged">
+            <label class="btn btn-default" ng-class="{'active': ctrl.testStatus === 'flagged'}">
+                <input type="radio" ng-model="ctrl.testStatus" value="flagged">
                 <span class="text-warning">Flagged</span>
             </label>
         </div>
@@ -105,23 +105,23 @@
             <!-- The ng-repeat is used to pass in a local variable to the template. -->
             <ng-include
                 ng-repeat="status in ['required']"
-                src="detailsTemplate"
+                src="ctrl.detailsTemplate"
                 onload="isOpen = true">
             </ng-include>
             <br />
             <ng-include
                 ng-repeat="status in ['advisory']"
-                src="detailsTemplate">
+                src="ctrl.detailsTemplate">
             </ng-include>
             <br />
             <ng-include
                 ng-repeat="status in ['deprecated']"
-                src="detailsTemplate">
+                src="ctrl.detailsTemplate">
             </ng-include>
             <br />
             <ng-include
                 ng-repeat="status in ['removed']"
-                src="detailsTemplate">
+                src="ctrl.detailsTemplate">
             </ng-include>
         </accordion>
     </div>

@@ -9,7 +9,7 @@ describe('Refstack controllers', function () {
             $provide.constant('refstackApiUrl', fakeApiUrl);
         });
         module('refstackApp');
-        inject(function(_$httpBackend_){
+        inject(function(_$httpBackend_) {
             $httpBackend = _$httpBackend_;
         });
         $httpBackend.whenGET(fakeApiUrl + '/profile').respond(401);
@@ -17,45 +17,41 @@ describe('Refstack controllers', function () {
             .respond('<div>mock template</div>');
     });
 
-    describe('headerController', function () {
-        var scope, $location;
+    describe('HeaderController', function () {
+        var $location, ctrl;
 
-        beforeEach(inject(function ($rootScope, $controller, _$location_) {
-            scope = $rootScope.$new();
+        beforeEach(inject(function ($controller, _$location_) {
             $location = _$location_;
-            $controller('headerController', {$scope: scope});
+            ctrl = $controller('HeaderController', {});
         }));
 
         it('should set "navbarCollapsed" to true', function () {
-            expect(scope.navbarCollapsed).toBe(true);
+            expect(ctrl.navbarCollapsed).toBe(true);
         });
 
         it('should have a function to check if the URL path is active',
             function () {
                 $location.path('/');
                 expect($location.path()).toBe('/');
-                expect(scope.isActive('/')).toBe(true);
-                expect(scope.isActive('/about')).toBe(false);
+                expect(ctrl.isActive('/')).toBe(true);
+                expect(ctrl.isActive('/about')).toBe(false);
 
                 $location.path('/results?cpid=123&foo=bar');
                 expect($location.path()).toBe('/results?cpid=123&foo=bar');
-                expect(scope.isActive('/results')).toBe(true);
+                expect(ctrl.isActive('/results')).toBe(true);
             });
     });
 
-    describe('capabilitiesController', function () {
-        var scope;
+    describe('CapabilitiesController', function () {
+        var ctrl;
 
-        beforeEach(inject(function ($rootScope, $controller) {
-            scope = $rootScope.$new();
-            $controller('capabilitiesController', {$scope: scope});
+        beforeEach(inject(function ($controller) {
+            ctrl = $controller('CapabilitiesController', {});
         }));
 
         it('should set default states', function () {
-            expect(scope.hideAchievements).toBe(true);
-            expect(scope.hideTests).toBe(true);
-            expect(scope.target).toBe('platform');
-            expect(scope.status).toEqual({
+            expect(ctrl.target).toBe('platform');
+            expect(ctrl.status).toEqual({
                 required: true, advisory: false,
                 deprecated: false, removed: false
             });
@@ -84,24 +80,24 @@ describe('Refstack controllers', function () {
                 '/capabilities/2015.04.json').respond(fakeCaps);
                 $httpBackend.flush();
                 // The version list should be sorted latest first.
-                expect(scope.versionList).toEqual(['2015.04.json',
+                expect(ctrl.versionList).toEqual(['2015.04.json',
                                                    '2015.03.json']);
-                expect(scope.capabilities).toEqual(fakeCaps);
+                expect(ctrl.capabilities).toEqual(fakeCaps);
                 var expectedTemplate = 'components/capabilities/partials/' +
                                        'capabilityDetailsV1.3.html';
-                expect(scope.detailsTemplate).toEqual(expectedTemplate);
+                expect(ctrl.detailsTemplate).toEqual(expectedTemplate);
                 var expectedTargetCaps = {
                     'cap_id_1': 'required',
                     'cap_id_2': 'advisory',
                     'cap_id_3': 'deprecated',
                     'cap_id_4': 'removed'
                 };
-                expect(scope.targetCapabilities).toEqual(expectedTargetCaps);
+                expect(ctrl.targetCapabilities).toEqual(expectedTargetCaps);
             });
 
         it('should have a function to check if a capability status is selected',
             function () {
-                scope.targetCapabilities = {
+                ctrl.targetCapabilities = {
                     'cap_id_1': 'required',
                     'cap_id_2': 'advisory',
                     'cap_id_3': 'deprecated',
@@ -109,12 +105,12 @@ describe('Refstack controllers', function () {
                 };
 
                 // Expect only the required capability to return true.
-                expect(scope.filterStatus({'id': 'cap_id_1'})).toBe(true);
-                expect(scope.filterStatus({'id': 'cap_id_2'})).toBe(false);
-                expect(scope.filterStatus({'id': 'cap_id_3'})).toBe(false);
-                expect(scope.filterStatus({'id': 'cap_id_4'})).toBe(false);
+                expect(ctrl.filterStatus({'id': 'cap_id_1'})).toBe(true);
+                expect(ctrl.filterStatus({'id': 'cap_id_2'})).toBe(false);
+                expect(ctrl.filterStatus({'id': 'cap_id_3'})).toBe(false);
+                expect(ctrl.filterStatus({'id': 'cap_id_4'})).toBe(false);
 
-                scope.status = {
+                ctrl.status = {
                     required: true,
                     advisory: true,
                     deprecated: true,
@@ -122,10 +118,10 @@ describe('Refstack controllers', function () {
                 };
 
                 // Every capability should return true now.
-                expect(scope.filterStatus({'id': 'cap_id_1'})).toBe(true);
-                expect(scope.filterStatus({'id': 'cap_id_2'})).toBe(true);
-                expect(scope.filterStatus({'id': 'cap_id_3'})).toBe(true);
-                expect(scope.filterStatus({'id': 'cap_id_4'})).toBe(true);
+                expect(ctrl.filterStatus({'id': 'cap_id_1'})).toBe(true);
+                expect(ctrl.filterStatus({'id': 'cap_id_2'})).toBe(true);
+                expect(ctrl.filterStatus({'id': 'cap_id_3'})).toBe(true);
+                expect(ctrl.filterStatus({'id': 'cap_id_4'})).toBe(true);
             });
 
         it('should have a function to get the length of an object/dict',
@@ -138,12 +134,12 @@ describe('Refstack controllers', function () {
                         'idempotent_id': 'id-5678'
                     }
                 };
-                expect(scope.getObjectLength(testObject)).toBe(2);
+                expect(ctrl.getObjectLength(testObject)).toBe(2);
             });
     });
 
     describe('resultsController', function () {
-        var scope;
+        var scope, ctrl;
         var fakeResponse = {
             'pagination': {'current_page': 1, 'total_pages': 2},
             'results': [{
@@ -155,7 +151,7 @@ describe('Refstack controllers', function () {
 
         beforeEach(inject(function ($rootScope, $controller) {
             scope = $rootScope.$new();
-            $controller('resultsController', {$scope: scope});
+            ctrl = $controller('ResultsController', {$scope: scope});
         }));
 
         it('should fetch the first page of results with proper URL args',
@@ -164,46 +160,46 @@ describe('Refstack controllers', function () {
                 $httpBackend.expectGET(fakeApiUrl + '/results?page=1')
                     .respond(fakeResponse);
                 $httpBackend.flush();
-                expect(scope.data).toEqual(fakeResponse);
-                expect(scope.currentPage).toBe(1);
+                expect(ctrl.data).toEqual(fakeResponse);
+                expect(ctrl.currentPage).toBe(1);
 
                 // Simulate the user adding date filters.
-                scope.startDate = new Date('2015-03-10T11:51:00');
-                scope.endDate = new Date('2015-04-10T11:51:00');
-                scope.update();
+                ctrl.startDate = new Date('2015-03-10T11:51:00');
+                ctrl.endDate = new Date('2015-04-10T11:51:00');
+                ctrl.update();
                 $httpBackend.expectGET(fakeApiUrl +
                 '/results?page=1' +
                 '&start_date=2015-03-10 00:00:00' +
                 '&end_date=2015-04-10 23:59:59')
                     .respond(fakeResponse);
                 $httpBackend.flush();
-                expect(scope.data).toEqual(fakeResponse);
-                expect(scope.currentPage).toBe(1);
+                expect(ctrl.data).toEqual(fakeResponse);
+                expect(ctrl.currentPage).toBe(1);
             });
 
         it('should set an error when results cannot be retrieved', function () {
             $httpBackend.expectGET(fakeApiUrl + '/results?page=1').respond(404,
                 {'detail': 'Not Found'});
             $httpBackend.flush();
-            expect(scope.data).toBe(null);
-            expect(scope.error).toEqual('Error retrieving results listing ' +
+            expect(ctrl.data).toBe(null);
+            expect(ctrl.error).toEqual('Error retrieving results listing ' +
             'from server: {"detail":"Not Found"}');
-            expect(scope.totalItems).toBe(0);
-            expect(scope.showError).toBe(true);
+            expect(ctrl.totalItems).toBe(0);
+            expect(ctrl.showError).toBe(true);
         });
 
         it('should have an function to clear filters and update the view',
             function () {
-                scope.startDate = 'some date';
-                scope.endDate = 'some other date';
-                scope.clearFilters();
-                expect(scope.startDate).toBe(null);
-                expect(scope.endDate).toBe(null);
+                ctrl.startDate = 'some date';
+                ctrl.endDate = 'some other date';
+                ctrl.clearFilters();
+                expect(ctrl.startDate).toBe(null);
+                expect(ctrl.endDate).toBe(null);
             });
     });
 
-    describe('resultsReportController', function () {
-        var scope, stateparams;
+    describe('ResultsReportController', function () {
+        var stateparams, ctrl;
         var fakeResultResponse = {'results': ['test_id_1']};
         var fakeCapabilityResponse = {
             'platform': {'required': ['compute']},
@@ -224,11 +220,11 @@ describe('Refstack controllers', function () {
             }
         };
 
-        beforeEach(inject(function ($rootScope, $controller) {
+        beforeEach(inject(function ($controller) {
             stateparams = {testID: 1234};
-            scope = $rootScope.$new();
-            $controller('resultsReportController',
-                {$scope: scope, $stateParams: stateparams});
+            ctrl = $controller('ResultsReportController',
+                {$stateParams: stateparams}
+            );
         }));
 
         it('should make all necessary API requests to get results ' +
@@ -242,18 +238,18 @@ describe('Refstack controllers', function () {
                 $httpBackend.expectGET(fakeApiUrl +
                 '/capabilities/2015.04.json').respond(fakeCapabilityResponse);
                 $httpBackend.flush();
-                expect(scope.resultsData).toEqual(fakeResultResponse);
+                expect(ctrl.resultsData).toEqual(fakeResultResponse);
                 // The version list should be sorted latest first.
-                expect(scope.versionList).toEqual(['2015.04.json',
+                expect(ctrl.versionList).toEqual(['2015.04.json',
                                                    '2015.03.json']);
-                expect(scope.capabilityData).toEqual(fakeCapabilityResponse);
-                expect(scope.schemaVersion).toEqual('1.2');
+                expect(ctrl.capabilityData).toEqual(fakeCapabilityResponse);
+                expect(ctrl.schemaVersion).toEqual('1.2');
             });
 
         it('should have a method that creates an object containing each ' +
            'relevant capability and its highest priority status',
             function () {
-                scope.capabilityData = {
+                ctrl.capabilityData = {
                     'schema': '1.3',
                     'platform': {'required': ['compute', 'object']},
                     'components': {
@@ -276,16 +272,16 @@ describe('Refstack controllers', function () {
                     'cap_id_2': 'required',
                     'cap_id_3': 'advisory'
                 };
-                expect(scope.getTargetCapabilities()).toEqual(expected);
+                expect(ctrl.getTargetCapabilities()).toEqual(expected);
             });
 
         it('should be able to sort the results into a capability object for ' +
             'schema version 1.2',
             function () {
-                scope.resultsData = fakeResultResponse;
-                scope.capabilityData = fakeCapabilityResponse;
-                scope.schemaVersion = '1.2';
-                scope.buildCapabilitiesObject();
+                ctrl.resultsData = fakeResultResponse;
+                ctrl.capabilityData = fakeCapabilityResponse;
+                ctrl.schemaVersion = '1.2';
+                ctrl.buildCapabilitiesObject();
                 var expectedCapsObject = {
                     'required': {
                         'caps': [{
@@ -305,16 +301,16 @@ describe('Refstack controllers', function () {
                     'removed': {'caps': [], 'count': 0, 'passedCount': 0,
                                 'flagFailCount': 0, 'flagPassCount': 0}
                 };
-                expect(scope.caps).toEqual(expectedCapsObject);
-                expect(scope.requiredPassPercent).toEqual(50);
-                expect(scope.nonFlagPassCount).toEqual(0);
+                expect(ctrl.caps).toEqual(expectedCapsObject);
+                expect(ctrl.requiredPassPercent).toEqual(50);
+                expect(ctrl.nonFlagPassCount).toEqual(0);
             });
 
         it('should be able to sort the results into a capability object for ' +
             'schema version 1.3',
             function () {
-                scope.resultsData = fakeResultResponse;
-                scope.capabilityData = {
+                ctrl.resultsData = fakeResultResponse;
+                ctrl.capabilityData = {
                     'platform': {'required': ['compute']},
                     'schema': '1.3',
                     'components': {
@@ -333,7 +329,7 @@ describe('Refstack controllers', function () {
                                         'action': 'foo',
                                         'date': '2015-03-24',
                                         'reason': 'bar'
-                                     },
+                                    },
                                     'idempotent_id': 'id-1234'
                                 },
                                 'test_id_2': {
@@ -343,8 +339,8 @@ describe('Refstack controllers', function () {
                         }
                     }
                 };
-                scope.schemaVersion = '1.3';
-                scope.buildCapabilitiesObject();
+                ctrl.schemaVersion = '1.3';
+                ctrl.buildCapabilitiesObject();
                 var expectedCapsObject = {
                     'required': {
                         'caps': [{
@@ -364,9 +360,9 @@ describe('Refstack controllers', function () {
                     'removed': {'caps': [], 'count': 0, 'passedCount': 0,
                                 'flagFailCount': 0, 'flagPassCount': 0}
                 };
-                expect(scope.caps).toEqual(expectedCapsObject);
-                expect(scope.requiredPassPercent).toEqual(50);
-                expect(scope.nonFlagPassCount).toEqual(0);
+                expect(ctrl.caps).toEqual(expectedCapsObject);
+                expect(ctrl.requiredPassPercent).toEqual(50);
+                expect(ctrl.nonFlagPassCount).toEqual(0);
             });
 
         it('should have a method to determine if a test is flagged',
@@ -374,30 +370,31 @@ describe('Refstack controllers', function () {
                 var capObj = {'flagged': [ 'test1'],
                               'tests': ['test1', 'test2']};
 
-                scope.schemaVersion = '1.2';
-                expect(scope.isTestFlagged('test1', capObj)).toEqual(true);
-                expect(scope.isTestFlagged('test2', capObj)).toEqual(false);
+                ctrl.schemaVersion = '1.2';
+                expect(ctrl.isTestFlagged('test1', capObj)).toEqual(true);
+                expect(ctrl.isTestFlagged('test2', capObj)).toEqual(false);
 
-                capObj = {'tests': {
-                                'test1': {
-                                    'flagged': {
-                                        'action': 'foo',
-                                        'date': '2015-03-24',
-                                        'reason': 'bar'
-                                     },
-                                    'idempotent_id': 'id-1234'
-                                },
-                                'test2': {
-                                    'idempotent_id': 'id-5678'
-                                }
-                            }
-                         };
+                capObj = {
+                    'tests': {
+                        'test1': {
+                            'flagged': {
+                                'action': 'foo',
+                                'date': '2015-03-24',
+                                'reason': 'bar'
+                            },
+                            'idempotent_id': 'id-1234'
+                        },
+                        'test2': {
+                            'idempotent_id': 'id-5678'
+                        }
+                    }
+                };
 
-                scope.schemaVersion = '1.3';
-                expect(scope.isTestFlagged('test1', capObj)).toBeTruthy();
-                expect(scope.isTestFlagged('test2', capObj)).toBeFalsy();
+                ctrl.schemaVersion = '1.3';
+                expect(ctrl.isTestFlagged('test1', capObj)).toBeTruthy();
+                expect(ctrl.isTestFlagged('test2', capObj)).toBeFalsy();
 
-                expect(scope.isTestFlagged('test2', null)).toEqual(false);
+                expect(ctrl.isTestFlagged('test2', null)).toEqual(false);
             });
 
         it('should have a method to get the reason a flagged test is flagged',
@@ -405,27 +402,28 @@ describe('Refstack controllers', function () {
                 var capObj = {'flagged': [ 'test1'],
                               'tests': ['test1', 'test2']};
 
-                scope.schemaVersion = '1.2';
-                expect(scope.getFlaggedReason('test1', capObj)).toEqual(
+                ctrl.schemaVersion = '1.2';
+                expect(ctrl.getFlaggedReason('test1', capObj)).toEqual(
                     'DefCore has flagged this test.');
 
                 // Check that non-flagged test returns empty string.
-                expect(scope.getFlaggedReason('test2', capObj)).toEqual('');
+                expect(ctrl.getFlaggedReason('test2', capObj)).toEqual('');
 
-                capObj = {'tests': {
-                                'test1': {
-                                    'flagged': {
-                                        'action': 'foo',
-                                        'date': '2015-03-24',
-                                        'reason': 'bar'
-                                     },
-                                    'idempotent_id': 'id-1234'
-                                }
-                            }
-                         };
+                capObj = {
+                    'tests': {
+                        'test1': {
+                            'flagged': {
+                                'action': 'foo',
+                                'date': '2015-03-24',
+                                'reason': 'bar'
+                            },
+                            'idempotent_id': 'id-1234'
+                        }
+                    }
+                };
 
-                scope.schemaVersion = '1.3';
-                expect(scope.getFlaggedReason('test1', capObj)).toEqual('bar');
+                ctrl.schemaVersion = '1.3';
+                expect(ctrl.getFlaggedReason('test1', capObj)).toEqual('bar');
             });
 
         it('should have a method to determine whether a capability should ' +
@@ -445,23 +443,23 @@ describe('Refstack controllers', function () {
                             }];
 
                 // Check that all capabilities are shown by default.
-                expect(scope.isCapabilityShown(caps[0])).toEqual(true);
-                expect(scope.isCapabilityShown(caps[1])).toEqual(true);
+                expect(ctrl.isCapabilityShown(caps[0])).toEqual(true);
+                expect(ctrl.isCapabilityShown(caps[1])).toEqual(true);
 
                 // Check that only capabilities with passed tests are shown.
-                scope.testStatus = 'passed';
-                expect(scope.isCapabilityShown(caps[0])).toEqual(true);
-                expect(scope.isCapabilityShown(caps[1])).toEqual(false);
+                ctrl.testStatus = 'passed';
+                expect(ctrl.isCapabilityShown(caps[0])).toEqual(true);
+                expect(ctrl.isCapabilityShown(caps[1])).toEqual(false);
 
                 // Check that only capabilities with passed tests are shown.
-                scope.testStatus = 'not passed';
-                expect(scope.isCapabilityShown(caps[0])).toEqual(false);
-                expect(scope.isCapabilityShown(caps[1])).toEqual(true);
+                ctrl.testStatus = 'not passed';
+                expect(ctrl.isCapabilityShown(caps[0])).toEqual(false);
+                expect(ctrl.isCapabilityShown(caps[1])).toEqual(true);
 
                 // Check that only capabilities with flagged tests are shown.
-                scope.testStatus = 'flagged';
-                expect(scope.isCapabilityShown(caps[0])).toEqual(true);
-                expect(scope.isCapabilityShown(caps[1])).toEqual(false);
+                ctrl.testStatus = 'flagged';
+                expect(ctrl.isCapabilityShown(caps[0])).toEqual(true);
+                expect(ctrl.isCapabilityShown(caps[1])).toEqual(false);
             });
 
         it('should have a method to determine whether a test should be shown',
@@ -473,13 +471,13 @@ describe('Refstack controllers', function () {
                            'notPassedFlagged': []
                           };
 
-                expect(scope.isTestShown('test_id_1', cap)).toEqual(true);
-                scope.testStatus = 'passed';
-                expect(scope.isTestShown('test_id_1', cap)).toEqual(true);
-                scope.testStatus = 'not passed';
-                expect(scope.isTestShown('test_id_1', cap)).toEqual(false);
-                scope.testStatus = 'flagged';
-                expect(scope.isTestShown('test_id_1', cap)).toEqual(true);
+                expect(ctrl.isTestShown('test_id_1', cap)).toEqual(true);
+                ctrl.testStatus = 'passed';
+                expect(ctrl.isTestShown('test_id_1', cap)).toEqual(true);
+                ctrl.testStatus = 'not passed';
+                expect(ctrl.isTestShown('test_id_1', cap)).toEqual(false);
+                ctrl.testStatus = 'flagged';
+                expect(ctrl.isTestShown('test_id_1', cap)).toEqual(true);
             });
 
         it('should have a method to determine how many tests in a ' +
@@ -493,48 +491,48 @@ describe('Refstack controllers', function () {
                           };
 
                 // Should return the count of all tests.
-                expect(scope.getCapabilityTestCount(cap)).toEqual(7);
+                expect(ctrl.getCapabilityTestCount(cap)).toEqual(7);
 
                 // Should return the count of passed tests.
-                scope.testStatus = 'passed';
-                expect(scope.getCapabilityTestCount(cap)).toEqual(3);
+                ctrl.testStatus = 'passed';
+                expect(ctrl.getCapabilityTestCount(cap)).toEqual(3);
 
                 // Should return the count of failed tests.
-                scope.testStatus = 'not passed';
-                expect(scope.getCapabilityTestCount(cap)).toEqual(4);
+                ctrl.testStatus = 'not passed';
+                expect(ctrl.getCapabilityTestCount(cap)).toEqual(4);
 
                 // Should return the count of flagged tests.
-                scope.testStatus = 'flagged';
-                expect(scope.getCapabilityTestCount(cap)).toEqual(3);
+                ctrl.testStatus = 'flagged';
+                expect(ctrl.getCapabilityTestCount(cap)).toEqual(3);
             });
 
         it('should have a method to determine how many tests in a status ' +
            'belong under the current test filter',
             function () {
-                scope.caps = {'required': {'caps': [], 'count': 10,
+                ctrl.caps = {'required': {'caps': [], 'count': 10,
                               'passedCount': 6, 'flagFailCount': 3,
                               'flagPassCount': 2}};
 
                 // Should return the count of all tests (count).
-                expect(scope.getStatusTestCount('required')).toEqual(10);
+                expect(ctrl.getStatusTestCount('required')).toEqual(10);
 
                 // Should return the count of passed tests (passedCount).
-                scope.testStatus = 'passed';
-                expect(scope.getStatusTestCount('required')).toEqual(6);
+                ctrl.testStatus = 'passed';
+                expect(ctrl.getStatusTestCount('required')).toEqual(6);
 
                 // Should return the count of failed tests
                 // (count - passedCount).
-                scope.testStatus = 'not passed';
-                expect(scope.getStatusTestCount('required')).toEqual(4);
+                ctrl.testStatus = 'not passed';
+                expect(ctrl.getStatusTestCount('required')).toEqual(4);
 
                 // Should return the count of flagged tests
                 // (flagFailCount + flagPassCount).
-                scope.testStatus = 'flagged';
-                expect(scope.getStatusTestCount('required')).toEqual(5);
+                ctrl.testStatus = 'flagged';
+                expect(ctrl.getStatusTestCount('required')).toEqual(5);
 
                 // Test when caps has not been set yet.
-                scope.caps = null;
-                expect(scope.getStatusTestCount('required')).toEqual(-1);
+                ctrl.caps = null;
+                expect(ctrl.getStatusTestCount('required')).toEqual(-1);
             });
 
         it('should have a method to open a modal for the full passed test list',
@@ -544,71 +542,63 @@ describe('Refstack controllers', function () {
                     modal = $modal;
                 });
                 spyOn(modal, 'open');
-                scope.openFullTestListModal();
+                ctrl.openFullTestListModal();
                 expect(modal.open).toHaveBeenCalled();
             });
     });
 
-    describe('fullTestListModalController', function () {
-        var scope;
-        var modalInstance;
+    describe('FullTestListModalController', function () {
+        var modalInstance, ctrl;
 
-        beforeEach(inject(function ($rootScope, $controller) {
-            scope = $rootScope.$new();
+        beforeEach(inject(function ($controller) {
             modalInstance = {
                 dismiss: jasmine.createSpy('modalInstance.dismiss')
             };
-            $controller('fullTestListModalController', {
-                $scope: scope,
-                $modalInstance: modalInstance,
-                tests: ['t1', 't2']
-            });
+            ctrl = $controller('FullTestListModalController',
+                {$modalInstance: modalInstance, tests: ['t1', 't2']}
+            );
         }));
 
         it('should set a scope variable to the passed in tests', function () {
-            expect(scope.tests).toEqual(['t1', 't2']);
+            expect(ctrl.tests).toEqual(['t1', 't2']);
         });
 
         it('should have a method to close the modal',
             function () {
-                scope.close();
+                ctrl.close();
                 expect(modalInstance.dismiss).toHaveBeenCalledWith('exit');
             });
 
         it('should have a method to convert the tests to a string',
             function () {
-                scope.tests = ['t2', 't1', 't3'];
+                ctrl.tests = ['t2', 't1', 't3'];
                 var expectedString = 't1\nt2\nt3';
-                expect(scope.getTestListString()).toEqual(expectedString);
+                expect(ctrl.getTestListString()).toEqual(expectedString);
             });
     });
 
-    describe('testRaiseAlertModalController', function() {
-        var data;
-        var scope, modalInstance;
+    describe('TestRaiseAlertModalController', function() {
+        var data, modalInstance, ctrl;
 
         data = {
-                    mode: 'success',
-                    title: '',
-                    text: 'operation successful'
-                };
+            mode: 'success',
+            title: '',
+            text: 'operation successful'
+        };
 
-        beforeEach(inject(function ($rootScope, $controller) {
-            scope = $rootScope.$new();
+        beforeEach(inject(function ($controller) {
             modalInstance = {
                 dismiss: jasmine.createSpy('modalInstance.dismiss'),
                 close: jasmine.createSpy('modalInstance.close')
             };
-            $controller('raiseAlertModalController', {
-                $scope: scope,
-                $modalInstance: modalInstance,
-                data: data
-            });
+            ctrl = $controller('RaiseAlertModalController',
+                {$modalInstance: modalInstance, data: data}
+            );
         }));
 
         it('should close',
             function () {
-                scope.close();
+                ctrl.close();
                 expect(modalInstance.close).toHaveBeenCalledWith();
             });
     });

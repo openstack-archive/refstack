@@ -3,13 +3,13 @@ HTML for each accordion group that separates the status types on the results
 report page.
 -->
 
-<accordion-group is-open="isOpen" is-disabled="caps[status].caps.length == 0">
+<accordion-group is-open="isOpen" is-disabled="ctrl.caps[status].caps.length == 0">
     <accordion-heading>
         {{status | capitalize}}
         <small>
-            (<strong>Total:</strong> {{caps[status].caps.length}} capabilities, {{caps[status].count}} tests)
-            <span ng-if="testStatus !== 'total'">
-                (<strong>{{testStatus | capitalize}}:</strong> {{getStatusTestCount(status)}} tests)
+            (<strong>Total:</strong> {{ctrl.caps[status].caps.length}} capabilities, {{ctrl.caps[status].count}} tests)
+            <span ng-if="ctrl.testStatus !== 'total'">
+                (<strong>{{ctrl.testStatus | capitalize}}:</strong> {{ctrl.getStatusTestCount(status)}} tests)
             </span>
         </small>
         <i class="pull-right glyphicon"
@@ -17,18 +17,18 @@ report page.
         </i>
     </accordion-heading>
     <ol class="capabilities">
-        <li ng-repeat="capability in caps[status].caps | orderBy:'id'"
-            ng-if="isCapabilityShown(capability)">
+        <li ng-repeat="capability in ctrl.caps[status].caps | orderBy:'id'"
+            ng-if="ctrl.isCapabilityShown(capability)">
 
-            <a ng-click="hideTests = !hideTests"
-               title="{{capabilityData.capabilities[capability.id].description}}">
+            <a ng-click="ctrl.hideTests = !ctrl.hideTests"
+               title="{{ctrl.capabilityData.capabilities[capability.id].description}}">
                    {{capability.id}}
             </a>
-            <span ng-class="{'text-success': testStatus === 'passed',
-                             'text-danger': testStatus === 'not passed',
-                             'text-warning': testStatus === 'flagged'}"
-                  ng-if="testStatus !== 'total'">
-                [{{getCapabilityTestCount(capability)}}]
+            <span ng-class="{'text-success': ctrl.testStatus === 'passed',
+                             'text-danger': ctrl.testStatus === 'not passed',
+                             'text-warning': ctrl.testStatus === 'flagged'}"
+                  ng-if="ctrl.testStatus !== 'total'">
+                [{{ctrl.getCapabilityTestCount(capability)}}]
             </span>
             <span ng-class="{'text-success': (capability.passedTests.length > 0 &&
                                               capability.notPassedTests.length == 0),
@@ -36,31 +36,31 @@ report page.
                                              capability.notPassedTests.length > 0),
                              'text-warning': (capability.passedTests.length > 0 &&
                                               capability.notPassedTests.length > 0)}"
-                  ng-if="testStatus === 'total'">
+                  ng-if="ctrl.testStatus === 'total'">
                 [{{capability.passedTests.length}}/{{capability.passedTests.length +
                                                      capability.notPassedTests.length}}]
             </span>
 
-            <ul class="list-unstyled" collapse="hideTests">
+            <ul class="list-unstyled" collapse="ctrl.hideTests">
                 <li ng-repeat="test in capability.passedTests | orderBy:'toString()'"
-                    ng-if="isTestShown(test, capability)">
+                    ng-if="ctrl.isTestShown(test, capability)">
 
                     <span class="glyphicon glyphicon-ok text-success"
                           aria-hidden="true">
                     </span>
                     <span ng-class="{'glyphicon glyphicon-flag text-warning':
-                                     isTestFlagged(test, capabilityData.capabilities[capability.id])}"
-                          title="{{getFlaggedReason(test, capabilityData.capabilities[capability.id])}}">
+                                     ctrl.isTestFlagged(test, ctrl.capabilityData.capabilities[capability.id])}"
+                          title="{{ctrl.getFlaggedReason(test, ctrl.capabilityData.capabilities[capability.id])}}">
                     </span>
                     {{test}}
                 </li>
                 <li ng-repeat="test in capability.notPassedTests | orderBy:'toString()'"
-                    ng-if="isTestShown(test, capability)">
+                    ng-if="ctrl.isTestShown(test, capability)">
 
                     <span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span>
                     <span ng-class="{'glyphicon glyphicon-flag text-warning':
-                                     isTestFlagged(test, capabilityData.capabilities[capability.id])}"
-                          title="{{getFlaggedReason(test, capabilityData.capabilities[capability.id])}}">
+                                     ctrl.isTestFlagged(test, ctrl.capabilityData.capabilities[capability.id])}"
+                          title="{{ctrl.getFlaggedReason(test, ctrl.capabilityData.capabilities[capability.id])}}">
                     </span>
                     {{test}}
                 </li>
