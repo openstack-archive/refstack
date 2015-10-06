@@ -36,6 +36,13 @@ FAKE_TESTS_RESULT = {
     ]
 }
 
+FAKE_JSON_WITH_EMPTY_RESULTS = {
+    'cpid': 'foo',
+    'duration_seconds': 20,
+    'results': [
+    ]
+}
+
 
 class TestResultsController(api.FunctionalTest):
     """Test case for ResultsController."""
@@ -56,6 +63,14 @@ class TestResultsController(api.FunctionalTest):
             uuid.UUID(actual_response.get('test_id'), version=4)
         except ValueError:
             self.fail("actual_response doesn't contain test_id")
+
+    def test_post_with_empty_result(self):
+        """Test results endpoint with empty test results request."""
+        results = json.dumps(FAKE_JSON_WITH_EMPTY_RESULTS)
+        self.assertRaises(webtest.app.AppError,
+                          self.post_json,
+                          self.URL,
+                          params=results)
 
     def test_post_with_invalid_schema(self):
         """Test post request with invalid schema."""
