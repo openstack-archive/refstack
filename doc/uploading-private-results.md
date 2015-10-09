@@ -65,7 +65,7 @@ like below:
 
 ####Upload the ssh public key and the signature
 
-Sign into [http://refstack.net](http://refstack.net) with
+Sign into [https://refstack.openstack.org](https://refstack.openstack.org) with
 your OpenStack ID. Click the "Profile" link in the upper right corner. Now
 click the "Import public key" button on your profile page. A popup window with
 two entry fields will appear. Just copy and paste the key and signature
@@ -75,14 +75,14 @@ complete, click the 'Import public key' button.
 
 ####Upload the test result with refstack-client
 
-- `./refstack-client upload  /path_to_testresult_json_file  --url http://refstack.net/api -i  ~/.ssh/id_rsa`
+- `./refstack-client upload  /path_to_testresult_json_file  --url https://refstack.openstack.org/api -i  ~/.ssh/id_rsa`
 
 The 'path\_to\_testresult\_json\_file' here is the json file of your test
 result. If the command runs correctly, there will be output like below:
 
-    Test results will be uploaded to http://refstack.net/api. Ok? (yes/y): y
+    Test results will be uploaded to https://refstack.openstack.org/api. Ok? (yes/y): y
     Test results uploaded!
-    URL: http://refstack.net/#/results/88a1e6f4-707d-4627-b658-b14b7e6ba70d.
+    URL: https://refstack.openstack.org/#/results/88a1e6f4-707d-4627-b658-b14b7e6ba70d.
 
 You can find your uploaded test results by clicking the 'My Results' link on
 the RefStack website.

@@ -55,5 +55,5 @@ after their software has been incorporated into the distro or cloud.
 * Mailing List: fits@OpenStack.org
 * IRC: #refstack on Freenode
 * Dev Meetings: Mondays @ 19:00 UTC in #openstack-meeting-alt on Freenode
-* Web-site: http://refstack.net
+* Web-site: https://refstack.openstack.org
 * Wiki: https://wiki.OpenStack.org/wiki/RefStack

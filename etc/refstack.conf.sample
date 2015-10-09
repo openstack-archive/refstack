@@ -97,7 +97,7 @@
 
 # Url of user interface for Refstack. Need for redirects after sign in
 # and sign out. (string value)
-#ui_url = http://refstack.net
+#ui_url = https://refstack.openstack.org
 
 # The backend to use for database. (string value)
 #db_backend = sqlalchemy
@@ -110,7 +110,7 @@
 #
 
 # Url of public Refstack API. (string value)
-#api_url = http://api.refstack.net
+#api_url = https://refstack.openstack.org/api
 
 # The directory where your static files can be found. Pecan comes with
 # middleware that can be used to serve static files (like CSS and

@@ -37,16 +37,16 @@ PROJECT_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                             os.pardir)
 UI_OPTS = [
     cfg.StrOpt('ui_url',
-               default='http://refstack.net',
-               help='Url of user interface for Refstack. Need for redirects '
+               default='https://refstack.openstack.org',
+               help='Url of user interface for RefStack. Need for redirects '
                     'after sign in and sign out.'
                ),
 ]
 
 API_OPTS = [
     cfg.StrOpt('api_url',
-               default='http://refstack.net',
-               help='Url of public Refstack API.'
+               default='https://refstack.openstack.org/api',
+               help='Url of public RefStack API.'
                ),
     cfg.StrOpt('static_root',
                default='refstack-ui/app',
