@@ -47,7 +47,6 @@ def checker_uuid(inst):
 
 
 class BaseValidator(object):
-
     """Base class for validators."""
 
     schema = {}
@@ -75,7 +74,6 @@ class BaseValidator(object):
 
 
 class TestResultValidator(BaseValidator):
-
     """Validator for incoming test results."""
 
     schema = {
@@ -141,7 +139,6 @@ class TestResultValidator(BaseValidator):
 
 
 class PubkeyValidator(BaseValidator):
-
     """Validator for uploaded public pubkeys."""
 
     schema = {

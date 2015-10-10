@@ -26,7 +26,6 @@ from refstack import db
 
 
 class PublicKeysController(validation.BaseRestControllerWithValidation):
-
     """/v1/profile/pubkeys handler."""
 
     __validator__ = validators.PubkeyValidator
@@ -68,7 +67,6 @@ class PublicKeysController(validation.BaseRestControllerWithValidation):
 
 
 class ProfileController(rest.RestController):
-
     """Controller provides user information in OpenID 2.0 IdP.
 
     /v1/profile handler

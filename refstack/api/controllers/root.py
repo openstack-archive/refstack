@@ -24,8 +24,7 @@ CONF = cfg.CONF
 
 
 class RootController(object):
-
-    """root handler."""
+    """Root handler."""
 
     v1 = v1.V1Controller()
 

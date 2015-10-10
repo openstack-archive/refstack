@@ -17,14 +17,12 @@
 
 
 class ParseInputsError(Exception):
-
     """Raise if input params are invalid."""
 
     pass
 
 
 class ValidationError(Exception):
-
     """Raise if request doesn't pass trough validation process."""
 
     def __init__(self, title, exc=None):

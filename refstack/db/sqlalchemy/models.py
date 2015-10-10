@@ -32,7 +32,6 @@ BASE = declarative_base()
 class RefStackBase(models.ModelBase,
                    models.TimestampMixin,
                    models.SoftDeleteMixin):
-
     """Base class for RefStack Models."""
 
     __table_args__ = {'mysql_engine': 'InnoDB'}
@@ -51,7 +50,6 @@ class RefStackBase(models.ModelBase,
 
 
 class Test(BASE, RefStackBase):  # pragma: no cover
-
     """Test."""
 
     __tablename__ = 'test'
@@ -80,7 +78,6 @@ class Test(BASE, RefStackBase):  # pragma: no cover
 
 
 class TestResults(BASE, RefStackBase):  # pragma: no cover
-
     """Test results."""
 
     __tablename__ = 'results'
@@ -104,7 +101,6 @@ class TestResults(BASE, RefStackBase):  # pragma: no cover
 
 
 class TestMeta(BASE, RefStackBase):  # pragma: no cover
-
     """Test metadata."""
 
     __tablename__ = 'meta'
@@ -124,7 +120,6 @@ class TestMeta(BASE, RefStackBase):  # pragma: no cover
 
 
 class User(BASE, RefStackBase):  # pragma: no cover
-
     """User information."""
 
     __tablename__ = 'user'
@@ -147,7 +142,6 @@ class User(BASE, RefStackBase):  # pragma: no cover
 
 
 class PubKey(BASE, RefStackBase):  # pragma: no cover
-
     """User public pubkeys."""
 
     __tablename__ = 'pubkeys'

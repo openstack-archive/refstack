@@ -33,7 +33,6 @@ from refstack.db import migration
 
 
 class FunctionalTest(base.BaseTestCase):
-
     """Base class for functional test case.
 
     Used for functional tests where you need to test your.

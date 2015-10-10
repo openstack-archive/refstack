@@ -22,7 +22,6 @@ from pecan import rest
 
 
 class BaseRestControllerWithValidation(rest.RestController):
-
     """Rest controller with validation.
 
     Controller provides validation for POSTed data

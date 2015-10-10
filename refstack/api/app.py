@@ -111,7 +111,6 @@ log.register_options(CONF)
 
 
 class JSONErrorHook(pecan.hooks.PecanHook):
-
     """A pecan hook that translates webob HTTP errors into a JSON format."""
 
     def __init__(self):
@@ -154,7 +153,6 @@ class JSONErrorHook(pecan.hooks.PecanHook):
 
 
 class CORSHook(pecan.hooks.PecanHook):
-
     """A pecan hook that handles Cross-Origin Resource Sharing."""
 
     def __init__(self):

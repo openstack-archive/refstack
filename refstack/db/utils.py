@@ -22,7 +22,6 @@ LOG = log.getLogger(__name__)
 
 
 class PluggableBackend(object):
-
     """A pluggable backend loaded lazily based on some value."""
 
     def __init__(self, pivot, **backends):

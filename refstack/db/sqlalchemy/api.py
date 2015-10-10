@@ -37,14 +37,12 @@ db_options.set_defaults(cfg.CONF)
 
 
 class NotFound(Exception):
-
     """Raise if item not found in db."""
 
     pass
 
 
 class Duplication(Exception):
-
     """Raise if unique constraint violates."""
 
     pass

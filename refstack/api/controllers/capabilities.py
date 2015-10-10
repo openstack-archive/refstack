@@ -33,7 +33,6 @@ requests_cache.install_cache(cache_name='github_cache',
 
 
 class CapabilitiesController(rest.RestController):
-
     """/v1/capabilities handler.
 
     This acts as a proxy for retrieving capability files

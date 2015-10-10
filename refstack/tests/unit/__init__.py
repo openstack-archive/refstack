@@ -19,7 +19,6 @@ from oslotest import base
 
 
 class RefstackBaseTestCase(base.BaseTestCase):
-
     """Refstack test base class."""
 
     def setup_mock(self, *args, **kwargs):

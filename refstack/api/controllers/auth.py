@@ -92,7 +92,6 @@ CONF.register_opts(OPENID_OPTS, opt_group)
 
 
 class AuthController(rest.RestController):
-
     """Controller provides user authentication in OpenID 2.0 IdP."""
 
     _custom_actions = {

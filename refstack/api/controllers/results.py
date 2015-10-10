@@ -34,7 +34,6 @@ CONF = cfg.CONF
 
 @api_utils.check_permissions(level=const.ROLE_USER)
 class MetadataController(rest.RestController):
-
     """/v1/results/<test_id>/meta handler."""
 
     rw_access_keys = ('shared',)
@@ -66,7 +65,6 @@ class MetadataController(rest.RestController):
 
 
 class ResultsController(validation.BaseRestControllerWithValidation):
-
     """/v1/results handler."""
 
     __validator__ = validators.TestResultValidator
