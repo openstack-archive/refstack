@@ -213,7 +213,8 @@ def setup_app(config):
 
     beaker_conf = {
         'session.key': 'refstack',
-        'session.type': 'memory',
+        'session.type': 'ext:database',
+        'session.url': CONF.database.connection,
         'session.timeout': 604800,
         'session.validate_key': api_utils.get_token(),
     }

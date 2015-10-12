@@ -196,6 +196,9 @@ class SetupAppTestCase(base.BaseTestCase):
         self.CONF.set_override('static_root',
                                'fake_static_root',
                                'api')
+        self.CONF.set_override('connection',
+                               'fake_connection',
+                               'database')
 
         os_join.return_value = 'fake_project_root'
 
@@ -222,7 +225,8 @@ class SetupAppTestCase(base.BaseTestCase):
         session_middleware.assert_called_once_with(
             'fake_app',
             {'session.key': 'refstack',
-             'session.type': 'memory',
+             'session.type': 'ext:database',
+             'session.url': 'fake_connection',
              'session.timeout': 604800,
              'session.validate_key': get_token.return_value}
         )
