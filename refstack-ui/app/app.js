@@ -78,6 +78,24 @@
 
     angular
         .module('refstackApp')
+        .config(disableHttpCache);
+
+    disableHttpCache.$inject = ['$httpProvider'];
+
+    /**
+     * Disable caching in $http requests. This is primarily for IE, as it
+     * tends to cache Angular IE requests.
+     */
+    function disableHttpCache($httpProvider) {
+        if (!$httpProvider.defaults.headers.get) {
+            $httpProvider.defaults.headers.get = {};
+        }
+        $httpProvider.defaults.headers.get['Cache-Control'] = 'no-cache';
+        $httpProvider.defaults.headers.get.Pragma = 'no-cache';
+    }
+
+    angular
+        .module('refstackApp')
         .run(setup);
 
     setup.$inject = [
