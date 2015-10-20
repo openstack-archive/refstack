@@ -413,6 +413,8 @@ class AuthControllerTestCase(BaseControllerTestCase):
         self.CONF = self.useFixture(self.config_fixture).conf
         self.CONF.set_override('app_dev_mode', True, 'api')
         self.CONF.set_override('ui_url', 'http://127.0.0.1')
+        self.CONF.set_override('openid_logout_endpoint', 'http://some-url',
+                               'osid')
 
     @mock.patch('refstack.api.utils.get_user_session')
     @mock.patch('pecan.redirect', side_effect=webob.exc.HTTPRedirection)
@@ -527,7 +529,8 @@ class AuthControllerTestCase(BaseControllerTestCase):
             const.CSRF_TOKEN: 42
         }
         self.assertRaises(webob.exc.HTTPRedirection, self.controller.signout)
-        mock_redirect.assert_called_with('http://127.0.0.1')
+        mock_redirect.assert_called_with('http://127.0.0.1/#/logout?'
+                                         'openid_logout=http%3A%2F%2Fsome-url')
         self.assertNotIn(const.CSRF_TOKEN,
                          mock_request.environ['beaker.session'])
 
