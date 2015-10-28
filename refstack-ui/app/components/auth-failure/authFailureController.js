@@ -19,13 +19,15 @@
         .module('refstackApp')
         .controller('AuthFailureController', AuthFailureController);
 
-    AuthFailureController.$inject = ['$stateParams', '$state', 'raiseAlert'];
+    AuthFailureController.$inject = ['$location', '$state', 'raiseAlert'];
     /**
      * Refstack Auth Failure Controller
      * This controller handles messages from Refstack API if user auth fails.
      */
-    function AuthFailureController($stateParams, $state, raiseAlert) {
-        raiseAlert('danger', 'Authentication Failure:', $stateParams.message);
+    function AuthFailureController($location, $state, raiseAlert) {
+        var ctrl = this;
+        ctrl.message = $location.search().message;
+        raiseAlert('danger', 'Authentication Failure:', ctrl.message);
         $state.go('home');
     }
 })();

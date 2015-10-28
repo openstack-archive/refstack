@@ -105,8 +105,12 @@ class AuthController(rest.RestController):
     }
 
     def _auth_failure(self, message):
-        pecan.redirect(parse.urljoin(CONF.ui_url,
-                                     '/#/auth_failure/%s') % message)
+        params = {
+            'message': message
+        }
+        url = parse.urljoin(CONF.ui_url,
+                            '/#/auth_failure?' + parse.urlencode(params))
+        pecan.redirect(url)
 
     @pecan.expose()
     def signin(self):

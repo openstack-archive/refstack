@@ -454,7 +454,7 @@ class AuthControllerTestCase(BaseControllerTestCase):
         self.assertRaises(webob.exc.HTTPRedirection,
                           self.controller.signin_return)
         mock_redirect.assert_called_once_with(
-            'http://127.0.0.1/#/auth_failure/foo is not bar!!!')
+            'http://127.0.0.1/#/auth_failure?message=foo+is+not+bar%21%21%21')
         self.assertNotIn(const.CSRF_TOKEN,
                          self.mock_request.environ['beaker.session'])
 
@@ -468,7 +468,7 @@ class AuthControllerTestCase(BaseControllerTestCase):
         self.assertRaises(webob.exc.HTTPRedirection,
                           self.controller.signin_return)
         mock_redirect.assert_called_once_with(
-            'http://127.0.0.1/#/auth_failure/Authentication canceled.')
+            'http://127.0.0.1/#/auth_failure?message=Authentication+canceled.')
         self.assertNotIn(const.CSRF_TOKEN,
                          self.mock_request.environ['beaker.session'])
 
@@ -480,8 +480,8 @@ class AuthControllerTestCase(BaseControllerTestCase):
         self.assertRaises(webob.exc.HTTPRedirection,
                           self.controller.signin_return)
         mock_redirect.assert_called_once_with(
-            'http://127.0.0.1/#/auth_failure/'
-            'Authentication failed. Please try again.')
+            'http://127.0.0.1/#/auth_failure'
+            '?message=Authentication+failed.+Please+try+again.')
         self.assertNotIn(const.CSRF_TOKEN,
                          self.mock_request.environ['beaker.session'])
 
@@ -494,8 +494,8 @@ class AuthControllerTestCase(BaseControllerTestCase):
         self.assertRaises(webob.exc.HTTPRedirection,
                           self.controller.signin_return)
         mock_redirect.assert_called_once_with(
-            'http://127.0.0.1/#/auth_failure/'
-            'Authentication failed. Please try again.')
+            'http://127.0.0.1/#/auth_failure'
+            '?message=Authentication+failed.+Please+try+again.')
         self.assertNotIn(const.CSRF_TOKEN,
                          self.mock_request.environ['beaker.session'])
 

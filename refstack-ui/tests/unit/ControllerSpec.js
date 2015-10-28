@@ -627,4 +627,21 @@ describe('Refstack controllers', function () {
                 expect(modalInstance.close).toHaveBeenCalledWith();
             });
     });
+
+    describe('AuthFailureController', function() {
+        var $location, ctrl;
+
+        beforeEach(inject(function ($controller, _$location_) {
+            $location = _$location_;
+            $location.url('/auth_failure?message=some_error_message');
+            ctrl = $controller('AuthFailureController', {});
+        }));
+
+        it('should set the authentication failure url based on error message',
+            function () {
+                expect($location.url()).toBe('/auth_failure?message=' +
+                'some_error_message');
+                expect(ctrl.message).toBe('some_error_message');
+            });
+    });
 });
