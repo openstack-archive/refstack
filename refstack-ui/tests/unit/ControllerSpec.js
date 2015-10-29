@@ -42,6 +42,22 @@ describe('Refstack controllers', function () {
             });
     });
 
+    describe('LogoutController', function () {
+        var $location, ctrl;
+
+        beforeEach(inject(function ($controller, _$location_) {
+            $location = _$location_;
+            $location.url('/logout?openid_logout=some_url');
+            ctrl = $controller('LogoutController', {});
+        }));
+
+        it('should set the openID logout URL based on query string',
+            function () {
+                expect($location.url()).toBe('/logout?openid_logout=some_url');
+                expect(ctrl.openid_logout_url).toBe('some_url');
+            });
+    });
+
     describe('CapabilitiesController', function () {
         var ctrl;
 

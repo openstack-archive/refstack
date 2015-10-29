@@ -271,6 +271,9 @@
 # OpenStackID Auth Server URI. (string value)
 #openstack_openid_endpoint = https://openstackid.org/accounts/openid2
 
+# OpenStackID logout URI. (string value)
+#openid_logout_endpoint = https://openstackid.org/accounts/user/logout
+
 # Interaction mode. Specifies whether Openstack Id IdP may interact
 # with the user to determine the outcome of the request. (string
 # value)
