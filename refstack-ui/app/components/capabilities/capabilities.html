@@ -21,6 +21,11 @@
 </div>
 
 <br />
+<div ng-if="ctrl.capabilities">
+    <strong>Guideline Status:</strong>
+    {{ctrl.capabilities.status | capitalize}}
+</div>
+
 <div ng-show="ctrl.capabilities">
     <strong>Corresponding OpenStack Releases:</strong>
     <ul class="list-inline">
