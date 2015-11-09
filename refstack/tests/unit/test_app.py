@@ -228,5 +228,6 @@ class SetupAppTestCase(base.BaseTestCase):
              'session.type': 'ext:database',
              'session.url': 'fake_connection',
              'session.timeout': 604800,
-             'session.validate_key': get_token.return_value}
+             'session.validate_key': get_token.return_value,
+             'session.sa.pool_recycle': 600}
         )
