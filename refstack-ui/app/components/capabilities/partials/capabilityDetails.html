@@ -1,5 +1,5 @@
 <!--
-HTML for capabilites page when the Defcore capabilities schema is 1.2.
+HTML for capabilites page for all Defcore capabilities schemas
 This expects the JSON data of the capability file to be stored in scope
 variable 'capabilities'.
 -->
@@ -9,18 +9,27 @@ variable 'capabilities'.
     <span class="capability-name">{{capability.id}}</span><br />
     <em>{{capability.description}}</em><br />
     Status: <span class="{{ctrl.targetCapabilities[capability.id]}}">{{ctrl.targetCapabilities[capability.id]}}</span><br />
-    <a ng-click="showAchievements = !showAchievements">Achievements ({{capability.achievements.length}})</a><br />
+    <span ng-if="capability.project">Project: {{capability.project | capitalize}}<br /></span>
+    <a ng-click="showAchievements = !hshowAchievements">Achievements ({{capability.achievements.length}})</a><br />
     <ol collapse="!showAchievements" class="list-inline">
         <li ng-repeat="achievement in capability.achievements">
             {{achievement}}
         </li>
     </ol>
 
-    <a ng-click="showTests = !showTests">Tests ({{capability.tests.length}})</a>
+    <a ng-click="showTests = !showTests">Tests ({{ctrl.getObjectLength(capability.tests)}})</a>
     <ul collapse="!showTests">
-        <li ng-repeat="test in capability.tests">
+        <li ng-if="ctrl.capabilities.schema === '1.2'" ng-repeat="test in capability.tests">
            <span ng-class="{'glyphicon glyphicon-flag text-warning': capability.flagged.indexOf(test) > -1}"></span>
            {{test}}
+        </li>
+        <li ng-if="ctrl.capabilities.schema > '1.2'" ng-repeat="(testName, testDetails) in capability.tests">
+           <span ng-class="{'glyphicon glyphicon-flag text-warning': testDetails.flagged}" title="{{testDetails.flagged.reason}}"></span>
+           {{testName}}
+           <div class="test-detail" ng-if="testDetails.aliases">
+               <strong>Aliases:</strong>
+               <ul><li ng-repeat="alias in testDetails.aliases">{{alias}}</li></ul>
+           </div>
         </li>
     </ul>
   </li>

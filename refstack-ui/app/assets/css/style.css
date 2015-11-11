@@ -180,3 +180,11 @@ h1, h2, h3, h4, h5, h6 {
 .tests-modal-content textarea {
   font-size: .9em;
 }
+
+.test-detail {
+  padding-left: 10px;
+}
+
+.test-detail ul {
+  padding-left: 20px;
+}

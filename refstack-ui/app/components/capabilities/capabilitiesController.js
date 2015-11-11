@@ -47,10 +47,10 @@
         };
 
         /**
-         * The template to load for displaying capability details. The value
-         * of this depends on the schema version of the capabilities file.
+         * The template to load for displaying capability details.
          */
-        ctrl.detailsTemplate = null;
+        ctrl.detailsTemplate = 'components/capabilities/partials/' +
+                               'capabilityDetails.html';
 
         /**
          * Retrieve an array of available capability files from the Refstack
@@ -80,14 +80,10 @@
          * version.
          */
         function update() {
-            var content_url = refstackApiUrl + '/capabilities/' +
-                ctrl.version;
+            var content_url = refstackApiUrl + '/capabilities/' + ctrl.version;
             ctrl.capsRequest =
                 $http.get(content_url).success(function (data) {
                     ctrl.capabilities = data;
-                    ctrl.detailsTemplate = 'components/capabilities/' +
-                                           'partials/capabilityDetailsV' +
-                                           data.schema + '.html';
                     ctrl.updateTargetCapabilities();
                 }).error(function (error) {
                     ctrl.showError = true;

@@ -20,7 +20,7 @@ report page.
         <li ng-repeat="capability in ctrl.caps[status].caps | orderBy:'id'"
             ng-if="ctrl.isCapabilityShown(capability)">
 
-            <a ng-click="ctrl.hideTests = !ctrl.hideTests"
+            <a ng-click="showTests = !showTests"
                title="{{ctrl.capabilityData.capabilities[capability.id].description}}">
                    {{capability.id}}
             </a>
@@ -41,7 +41,7 @@ report page.
                                                      capability.notPassedTests.length}}]
             </span>
 
-            <ul class="list-unstyled" collapse="ctrl.hideTests">
+            <ul class="list-unstyled" collapse="!showTests">
                 <li ng-repeat="test in capability.passedTests | orderBy:'toString()'"
                     ng-if="ctrl.isTestShown(test, capability)">
 

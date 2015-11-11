@@ -56,9 +56,6 @@
         /** The testID extracted from the URL route. */
         ctrl.testId = $stateParams.testID;
 
-        /** Whether to hide tests on start.*/
-        ctrl.hideTests = true;
-
         /** The target OpenStack marketing program to compare against. */
         ctrl.target = 'platform';
 
@@ -305,9 +302,9 @@
         }
 
         /**
-         * This will build the a capability object for schema version 1.3.
-         * This object will contain the information needed to form a report in
-         * the HTML template.
+         * This will build the a capability object for schema version 1.3 and
+         * 1.4. This object will contain the information needed to form a
+         * report in the HTML template.
          * @param {String} capId capability ID
          */
         function buildCapabilityV1_3(capId) {
@@ -321,9 +318,26 @@
             // Loop through each test belonging to the capability.
             angular.forEach(ctrl.capabilityData.capabilities[capId].tests,
                 function (details, testId) {
-                    // If the test ID is in the results' test list, add
-                    // it to the passedTests array.
+                    var passed = false;
+
+                    // If the test ID is in the results' test list.
                     if (ctrl.resultsData.results.indexOf(testId) > -1) {
+                        passed = true;
+                    }
+                    else if ('aliases' in details) {
+                        var len = details.aliases.length;
+                        for (var i = 0; i < len; i++) {
+                            var alias = details.aliases[i];
+                            if (ctrl.resultsData.results.indexOf(alias) > -1) {
+                                passed = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    // Add to correct array based on whether the test was
+                    // passed or not.
+                    if (passed) {
                         cap.passedTests.push(testId);
                         if ('flagged' in details) {
                             cap.passedFlagged.push(testId);
@@ -365,6 +379,7 @@
                     var capMethod = 'buildCapabilityV1_2';
                     break;
                 case '1.3':
+                case '1.4':
                     capMethod = 'buildCapabilityV1_3';
                     break;
                 default:
@@ -420,7 +435,7 @@
             }
             return (((ctrl.schemaVersion === '1.2') &&
                 (capObj.flagged.indexOf(test) > -1)) ||
-                    ((ctrl.schemaVersion === '1.3') &&
+                    ((ctrl.schemaVersion >= '1.3') &&
                 (capObj.tests[test].flagged)));
         }
 
@@ -439,7 +454,7 @@
                 // provide flag reasons.
                 return 'DefCore has flagged this test.';
             }
-            else if ((ctrl.schemaVersion === '1.3') &&
+            else if ((ctrl.schemaVersion >= '1.3') &&
                 (ctrl.isTestFlagged(test, capObj))) {
 
                 return capObj.tests[test].flagged.reason;
