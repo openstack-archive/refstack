@@ -72,6 +72,11 @@
         ctrl.pageHeader = ctrl.isUserResults ?
             'Private test results' : 'Community test results';
 
+        ctrl.pageParagraph = ctrl.isUserResults ?
+            'Your most recently uploaded test results are listed here.' :
+            'The most recently uploaded community test results are listed ' +
+            'here.';
+
         if (ctrl.isUserResults) {
             ctrl.authRequest = $scope.auth.doSignCheck()
                 .then(ctrl.update);
