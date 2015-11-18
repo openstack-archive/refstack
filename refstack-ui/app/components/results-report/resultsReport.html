@@ -51,6 +51,11 @@
     <!-- End User Options -->
 
     <br />
+    <div ng-if="ctrl.capabilityData">
+        <strong>Guideline Status:</strong>
+        {{ctrl.capabilityData.status | capitalize}}
+    </div>
+
     <strong>Corresponding OpenStack Releases:</strong>
     <ul class="list-inline">
         <li ng-repeat="release in ctrl.capabilityData.releases">

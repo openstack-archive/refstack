@@ -78,6 +78,7 @@ describe('Refstack controllers', function () {
             function () {
                 var fakeCaps = {
                     'schema': '1.3',
+                    'status': 'approved',
                     'platform': {'required': ['compute']},
                     'components': {
                         'compute': {
@@ -99,6 +100,8 @@ describe('Refstack controllers', function () {
                 expect(ctrl.versionList).toEqual(['2015.04.json',
                                                    '2015.03.json']);
                 expect(ctrl.capabilities).toEqual(fakeCaps);
+                // The guideline status should be approved.
+                expect(ctrl.capabilities.status).toEqual('approved');
                 var expectedTargetCaps = {
                     'cap_id_1': 'required',
                     'cap_id_2': 'advisory',
@@ -217,6 +220,7 @@ describe('Refstack controllers', function () {
         var fakeCapabilityResponse = {
             'platform': {'required': ['compute']},
             'schema': '1.2',
+            'status': 'approved',
             'components': {
                 'compute': {
                     'required': ['cap_id_1'],
@@ -256,6 +260,8 @@ describe('Refstack controllers', function () {
                 expect(ctrl.versionList).toEqual(['2015.04.json',
                                                    '2015.03.json']);
                 expect(ctrl.capabilityData).toEqual(fakeCapabilityResponse);
+                // The guideline status should be approved.
+                expect(ctrl.capabilityData.status).toEqual('approved');
                 expect(ctrl.schemaVersion).toEqual('1.2');
             });
 
