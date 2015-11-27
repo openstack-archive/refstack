@@ -160,7 +160,7 @@ describe('Refstack controllers', function () {
             'pagination': {'current_page': 1, 'total_pages': 2},
             'results': [{
                 'created_at': '2015-03-09 01:23:45',
-                'test_id': 'some-id',
+                'id': 'some-id',
                 'cpid': 'some-cpid'
             }]
         };
@@ -212,11 +212,56 @@ describe('Refstack controllers', function () {
                 expect(ctrl.startDate).toBe(null);
                 expect(ctrl.endDate).toBe(null);
             });
+
+        it('should have a function to associate metadata to a test run',
+            function () {
+                $httpBackend.expectGET(fakeApiUrl + '/results?page=1')
+                    .respond(fakeResponse);
+                ctrl.data = fakeResponse;
+                ctrl.data.results[0].targetEdit = true;
+                ctrl.associateMeta(0, 'target', 'platform');
+                $httpBackend.expectPOST(
+                    fakeApiUrl + '/results/some-id/meta/target',
+                    'platform')
+                    .respond(201, '');
+                $httpBackend.flush();
+                expect(ctrl.data.results[0].targetEdit).toBe(false);
+            });
+
+        it('should have a function to delete metadata from a test run',
+            function () {
+                $httpBackend.expectGET(fakeApiUrl + '/results?page=1')
+                    .respond(fakeResponse);
+                ctrl.data = fakeResponse;
+                ctrl.data.results[0].targetEdit = true;
+                ctrl.associateMeta(0, 'target', '');
+                $httpBackend.expectDELETE(
+                    fakeApiUrl + '/results/some-id/meta/target')
+                    .respond(200, '');
+                $httpBackend.flush();
+                expect(ctrl.data.results[0].targetEdit).toBe(false);
+            });
+
+        it('should have a function to get guideline versions',
+            function () {
+                $httpBackend.expectGET(fakeApiUrl + '/results?page=1')
+                    .respond(fakeResponse);
+                $httpBackend.expectGET(fakeApiUrl +
+                    '/capabilities').respond(['2015.03.json', '2015.04.json']);
+                ctrl.getVersionList();
+                $httpBackend.flush();
+                // Expect the list to have the latest guideline first.
+                expect(ctrl.versionList).toEqual(['2015.04.json',
+                                                  '2015.03.json']);
+            });
     });
 
     describe('ResultsReportController', function () {
         var stateparams, ctrl;
-        var fakeResultResponse = {'results': ['test_id_1']};
+        var fakeResultResponse = {'results': ['test_id_1'], 'meta': {
+            'public_key': 'ssh-rsa', 'guideline': '2015.04.json', 'target':
+            'object'
+        }};
         var fakeCapabilityResponse = {
             'platform': {'required': ['compute']},
             'schema': '1.2',

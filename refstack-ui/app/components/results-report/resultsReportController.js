@@ -89,7 +89,9 @@
             ctrl.versionsRequest =
                 $http.get(content_url).success(function (data) {
                     ctrl.versionList = data.sort().reverse();
-                    ctrl.version = ctrl.versionList[0];
+                    if (!ctrl.version) {
+                        ctrl.version = ctrl.versionList[0];
+                    }
                     ctrl.updateCapabilities();
                 }).error(function (error) {
                     ctrl.showError = true;
@@ -109,6 +111,10 @@
             ctrl.resultsRequest =
                 $http.get(content_url).success(function (data) {
                     ctrl.resultsData = data;
+                    ctrl.version = ctrl.resultsData.meta.guideline;
+                    if (ctrl.resultsData.meta.target) {
+                        ctrl.target = ctrl.resultsData.meta.target;
+                    }
                     getVersionList();
                 }).error(function (error) {
                     ctrl.showError = true;

@@ -20,7 +20,7 @@
         .controller('ResultsController', ResultsController);
 
     ResultsController.$inject = [
-        '$scope', '$http', '$filter', '$state', 'refstackApiUrl'
+        '$scope', '$http', '$filter', '$state', 'refstackApiUrl','raiseAlert'
     ];
 
     /**
@@ -28,12 +28,22 @@
      * This controller is for the '/results' page where a user can browse
      * a listing of community uploaded results.
      */
-    function ResultsController($scope, $http, $filter, $state, refstackApiUrl) {
+    function ResultsController($scope, $http, $filter, $state, refstackApiUrl,
+        raiseAlert) {
         var ctrl = this;
 
         ctrl.update = update;
         ctrl.open = open;
         ctrl.clearFilters = clearFilters;
+        ctrl.associateMeta = associateMeta;
+        ctrl.getVersionList = getVersionList;
+
+        /** Mappings of DefCore components to marketing program names. */
+        ctrl.targetMappings = {
+            'platform': 'Openstack Powered Platform',
+            'compute': 'OpenStack Powered Compute',
+            'object': 'OpenStack Powered Object Storage'
+        };
 
         /** Initial page to be on. */
         ctrl.currentPage = 1;
@@ -143,5 +153,58 @@
             ctrl.endDate = null;
             ctrl.update();
         }
+
+        /**
+         * This will send an API request in order to associate a metadata
+         * key-value pair with the given testId
+         * @param {Number} index - index of the test object in the results list
+         * @param {String} key - metadata key
+         * @param {String} value - metadata value
+         */
+        function associateMeta(index, key, value) {
+            var testId = ctrl.data.results[index].id;
+            var metaUrl = [
+                refstackApiUrl, '/results/', testId, '/meta/', key
+            ].join('');
+
+            var editFlag = key + 'Edit';
+            if (value) {
+                ctrl.associateRequest = $http.post(metaUrl, value)
+                    .success(function () {
+                        ctrl.data.results[index][editFlag] = false;
+                    }).error(function (error) {
+                        raiseAlert('danger', error.title, error.detail);
+                    });
+            }
+            else {
+                ctrl.unassociateRequest = $http.delete(metaUrl)
+                    .success(function () {
+                        ctrl.data.results[index][editFlag] = false;
+                    }).error(function (error) {
+                        raiseAlert('danger', error.title, error.detail);
+                    });
+            }
+        }
+
+        /**
+         * Retrieve an array of available capability files from the Refstack
+         * API server, sort this array reverse-alphabetically, and store it in
+         * a scoped variable.
+         * Sample API return array: ["2015.03.json", "2015.04.json"]
+         */
+        function getVersionList() {
+            if (ctrl.versionList) {
+                return;
+            }
+            var content_url = refstackApiUrl + '/capabilities';
+            ctrl.versionsRequest =
+                $http.get(content_url).success(function (data) {
+                    ctrl.versionList = data.sort().reverse();
+                }).error(function (error) {
+                    raiseAlert('danger', error.title,
+                               'Unable to retrieve version list');
+                });
+        }
+
     }
 })();
