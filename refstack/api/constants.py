@@ -41,7 +41,7 @@ CSRF_TOKEN = 'csrf_token'
 USER_OPENID = 'user_openid'
 
 # Test metadata fields
-PUBLIC_KEY = 'public_key'
+USER = 'user'
 SHARED_TEST_RUN = 'shared'
 
 # Roles

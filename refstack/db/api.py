@@ -139,6 +139,14 @@ def user_save(user_info):
     return IMPL.user_save(user_info)
 
 
+def get_pubkey(key):
+    """Get pubkey info for a given key.
+
+    :param key: public key
+    """
+    return IMPL.get_pubkey(key)
+
+
 def store_pubkey(pubkey_info):
     """Store public key in to DB."""
     return IMPL.store_pubkey(pubkey_info)

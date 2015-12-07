@@ -92,12 +92,17 @@ class ResultsController(validation.BaseRestControllerWithValidation):
         """Handler for storing item. Should return new item id."""
         test_ = test.copy()
         if pecan.request.headers.get('X-Public-Key'):
+            key = pecan.request.headers.get('X-Public-Key').strip().split()[1]
             if 'meta' not in test_:
                 test_['meta'] = {}
-            test_['meta'][const.PUBLIC_KEY] = \
-                pecan.request.headers.get('X-Public-Key')
+            pubkey = db.get_pubkey(key)
+            if not pubkey:
+                pecan.abort(400, 'User with specified key not found. '
+                                 'Please log into the RefStack server to '
+                                 'upload your key.')
+
+            test_['meta'][const.USER] = pubkey.openid
         test_id = db.store_results(test_)
-        LOG.debug(test_)
         return {'test_id': test_id,
                 'url': parse.urljoin(CONF.ui_url,
                                      CONF.api.test_results_url) % test_id}

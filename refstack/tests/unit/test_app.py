@@ -58,11 +58,14 @@ class JSONErrorHookTestCase(base.BaseTestCase):
         self.CONF.set_override('app_dev_mode', False, 'api')
         exc = mock.Mock(spec=webob.exc.HTTPError,
                         status=418, status_int=418,
-                        title='fake_title')
+                        title='fake_title',
+                        detail='fake_detail')
 
         self._on_error(
             response, exc, expected_status_code=exc.status,
-            expected_body={'code': exc.status_int, 'title': exc.title}
+            expected_body={'code': exc.status_int,
+                           'title': exc.title,
+                           'detail': exc.detail}
         )
 
     @mock.patch.object(webob, 'Response')

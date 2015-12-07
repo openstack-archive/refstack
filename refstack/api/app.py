@@ -124,7 +124,8 @@ class JSONErrorHook(pecan.hooks.PecanHook):
         elif isinstance(exc, webob.exc.HTTPError):
             return webob.Response(
                 body=json.dumps({'code': exc.status_int,
-                                 'title': exc.title}),
+                                 'title': exc.title,
+                                 'detail': exc.detail}),
                 status=exc.status_int,
                 content_type='application/json'
             )

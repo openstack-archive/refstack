@@ -158,12 +158,16 @@ class ResultsControllerTestCase(BaseControllerTestCase):
         mock_store_results.assert_called_once_with({'answer': 42})
 
     @mock.patch('refstack.db.store_results')
-    def test_post_with_sign(self, mock_store_results):
+    @mock.patch('refstack.db.get_pubkey')
+    def test_post_with_sign(self, mock_get_pubkey, mock_store_results):
         self.mock_request.body = '{"answer": 42}'
         self.mock_request.headers = {
             'X-Signature': 'fake-sign',
-            'X-Public-Key': 'fake-key'
+            'X-Public-Key': 'ssh-rsa Zm9vIGJhcg=='
         }
+
+        mock_get_pubkey.return_value.openid = 'fake_openid'
+
         mock_store_results.return_value = 'fake_test_id'
         result = self.controller.post()
         self.assertEqual(result,
@@ -171,7 +175,7 @@ class ResultsControllerTestCase(BaseControllerTestCase):
                           'url': self.test_results_url % 'fake_test_id'})
         self.assertEqual(self.mock_response.status, 201)
         mock_store_results.assert_called_once_with(
-            {'answer': 42, 'meta': {const.PUBLIC_KEY: 'fake-key'}}
+            {'answer': 42, 'meta': {const.USER: 'fake_openid'}}
         )
 
     @mock.patch('refstack.db.get_test')

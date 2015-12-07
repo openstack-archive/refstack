@@ -59,8 +59,8 @@ def _get_input_params_from_request(expected_params):
 def parse_input_params(expected_input_params):
     """Parse input parameters from request.
 
-    :param expecred_params: (array) Expected input
-                            params specified in constants.
+    :param expected_input_params: (array) Expected input
+                                  params specified in constants.
     """
     raw_filters = _get_input_params_from_request(expected_input_params)
     filters = copy.deepcopy(raw_filters)
@@ -84,10 +84,6 @@ def parse_input_params(expected_input_params):
     if const.SIGNED in filters:
         if is_authenticated():
             filters[const.OPENID] = get_user_id()
-            filters[const.USER_PUBKEYS] = [
-                ' '.join((pk['format'], pk['pubkey']))
-                for pk in get_user_public_keys()
-            ]
         else:
             raise api_exc.ParseInputsError(
                 'To see signed test results you need to authenticate')
@@ -228,8 +224,8 @@ def get_user_role(test_id):
 
 def _check_user(test_id):
     """Check that user has access to shared test run."""
-    test_pubkey = db.get_test_meta_key(test_id, const.PUBLIC_KEY)
-    if not test_pubkey:
+    test_owner = db.get_test_meta_key(test_id, const.USER)
+    if not test_owner:
         return True
     elif db.get_test_meta_key(test_id, const.SHARED_TEST_RUN):
         return True
@@ -241,9 +237,8 @@ def _check_owner(test_id):
     """Check that user has access to specified test run as owner."""
     if not is_authenticated():
         return False
-    test_pubkey = db.get_test_meta_key(test_id, const.PUBLIC_KEY)
-    return test_pubkey in [' '.join((pk['format'], pk['pubkey']))
-                           for pk in get_user_public_keys()]
+    user = db.get_test_meta_key(test_id, const.USER)
+    return user and user == get_user_id()
 
 
 def check_permissions(level):
