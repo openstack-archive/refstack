@@ -36,7 +36,7 @@ CONF = cfg.CONF
 class MetadataController(rest.RestController):
     """/v1/results/<test_id>/meta handler."""
 
-    rw_access_keys = ('shared',)
+    rw_access_keys = ('shared', 'guideline', 'target',)
 
     @pecan.expose('json')
     def get(self, test_id):
