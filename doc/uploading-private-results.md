@@ -69,16 +69,27 @@ Sign into [https://refstack.openstack.org](https://refstack.openstack.org) with
 your OpenStack ID. Click the "Profile" link in the upper right corner. Now
 click the "Import public key" button on your profile page. A popup window with
 two entry fields will appear. Just copy and paste the key and signature
-generated in the previous step into the corresponding textboxes. Note that
-the strings 'Public key:' and 'Self signature:' are not needed here. Once
-complete, click the 'Import public key' button.
+generated in the previous step into the corresponding textboxes.  
+
+Note that the literal strings 'Public key:' and 'Self signature:' from the refstack-client "sign" command output should not be copied/pasted into the text boxes. Otherwise you will get an error like:
+
+- `Bad Request Request doesnt correspond to schema`
+
+ Once complete, click the 'Import public key' button.
 
 ####Upload the test result with refstack-client
 
-- `./refstack-client upload  /path_to_testresult_json_file  --url https://refstack.openstack.org/api -i  ~/.ssh/id_rsa`
+- `./refstack-client upload /path_to_testresult_json_file  --url https://refstack.openstack.org/api -i  ~/.ssh/id_rsa`
 
-The 'path\_to\_testresult\_json\_file' here is the json file of your test
-result. If the command runs correctly, there will be output like below:
+** NOTE ** Users may need to add the '--insecure' optional agrument to the command string if certificate validation issues occur when uploading test result. To use with insecure:
+
+- `./refstack-client upload --insecure /path_to_testresult_json_file  --url https://refstack.openstack.org/api -i  ~/.ssh/id_rsa`
+
+The `path_to_testresult_json_file` here is the json file of your test result.  
+By default, it's in `.tempest/.testrespository/<test-run-number>.json` where refstack-client runs from.  
+Here '<test-run-number>' is a serial number that matches its corresponding subunit file name.  
+
+If the command runs correctly, there will be output like below:
 
     Test results will be uploaded to https://refstack.openstack.org/api. Ok? (yes/y): y
     Test results uploaded!
