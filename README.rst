@@ -52,7 +52,7 @@ after their software has been incorporated into the distro or cloud.
 
 **Get involved!**
 
-* Mailing List: fits@OpenStack.org
+* Mailing List: openstack-dev@lists.openstack.org
 * IRC: #refstack on Freenode
 * Dev Meetings: Mondays @ 19:00 UTC in #openstack-meeting-alt on Freenode
 * Web-site: https://refstack.openstack.org
