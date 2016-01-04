@@ -390,7 +390,7 @@ class APIUtilsTestCase(base.BaseTestCase):
             ('fake_test', const.USER): 'some_other_user',
             ('fake_test', const.SHARED_TEST_RUN): None,
         }.get(args)
-        self.assertEqual(None, api_utils.get_user_role('fake_test'))
+        self.assertIsNone(api_utils.get_user_role('fake_test'))
         self.assertRaises(exc.HTTPError, api_utils.enforce_permissions,
                           'fake_test', const.ROLE_USER)
         self.assertRaises(exc.HTTPError, api_utils.enforce_permissions,

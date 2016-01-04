@@ -532,7 +532,7 @@ class DBBackendTestCase(base.BaseTestCase):
         # Test no key match.
         filtered.all.return_value = []
         result = api.get_pubkey(key)
-        self.assertEqual(None, result)
+        self.assertIsNone(result)
 
         session.query.assert_called_once_with(mock_model)
         query.filter_by.assert_called_once_with(md5_hash=khash)
