@@ -320,11 +320,11 @@ class APIUtilsTestCase(base.BaseTestCase):
         mock_get_user_session.return_value = mock_session
         mock_get_user = mock_db.user_get
         mock_get_user.return_value = 'Dobby'
-        self.assertEqual(True, api_utils.is_authenticated())
+        self.assertTrue(api_utils.is_authenticated())
         mock_db.user_get.called_once_with(mock_session)
         mock_db.NotFound = db.NotFound
         mock_get_user.side_effect = mock_db.NotFound('User')
-        self.assertEqual(False, api_utils.is_authenticated())
+        self.assertFalse(api_utils.is_authenticated())
 
     @mock.patch('pecan.abort', side_effect=exc.HTTPError)
     @mock.patch('refstack.db.get_test_meta_key')
@@ -458,7 +458,7 @@ class APIUtilsTestCase(base.BaseTestCase):
             const.OPENID_NS_SREG_EMAIL: 'foo@bar.org',
             const.OPENID_NS_SREG_FULLNAME: 'foo'
         }
-        self.assertEqual(True, api_utils.verify_openid_request(mock_request))
+        self.assertTrue(api_utils.verify_openid_request(mock_request))
 
         mock_response.content = ('is_valid:false\n'
                                  'ns:http://specs.openid.net/auth/2.0\n')
