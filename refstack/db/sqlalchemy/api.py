@@ -335,3 +335,24 @@ def get_user_pubkeys(user_openid):
     session = get_session()
     pubkeys = session.query(models.PubKey).filter_by(openid=user_openid).all()
     return _to_dict(pubkeys)
+
+
+def add_user_to_group(user_openid, group_id, created_by_user):
+    """Add specified user to specified group."""
+    item = models.UserToGroup()
+    session = get_session()
+    with session.begin():
+        item.user_openid = user_openid
+        item.group_id = group_id
+        item.created_by_user = created_by_user
+        item.save(session=session)
+
+
+def remove_user_from_group(user_openid, group_id):
+    """Remove specified user from specified group."""
+    session = get_session()
+    with session.begin():
+        (session.query(models.UserToGroup).
+         filter_by(user_openid=user_openid).
+         filter_by(group_id=group_id).
+         delete(synchronize_session=False))

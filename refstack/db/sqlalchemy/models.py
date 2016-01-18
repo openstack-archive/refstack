@@ -159,3 +159,37 @@ class PubKey(BASE, RefStackBase):  # pragma: no cover
     def default_allowed_keys(self):
         """Default keys."""
         return 'id', 'openid', 'format', 'pubkey', 'comment'
+
+
+class Group(BASE, RefStackBase):  # pragma: no cover
+    """Group definition."""
+
+    __tablename__ = 'group'
+
+    id = sa.Column(sa.String(36), primary_key=True,
+                   default=lambda: six.text_type(uuid.uuid4()))
+    name = sa.Column(sa.String(80), nullable=False)
+    description = sa.Column(sa.Text())
+
+    @property
+    def default_allowed_keys(self):
+        """Default keys."""
+        return 'id', 'name', 'description'
+
+
+class UserToGroup(BASE, RefStackBase):  # pragma: no cover
+    """user-group as many-to-many."""
+
+    __tablename__ = 'user_to_group'
+
+    created_by_user = sa.Column(sa.String(128), nullable=False)
+    _id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
+    user_openid = sa.Column(sa.String(128), sa.ForeignKey('user.openid'),
+                            nullable=False, index=True)
+    group_id = sa.Column(sa.String(36), sa.ForeignKey('group.id'),
+                         nullable=False)
+
+    @property
+    def default_allowed_keys(self):
+        """Default keys."""
+        return 'user_openid', 'group_id'
