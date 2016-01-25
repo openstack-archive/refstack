@@ -160,3 +160,13 @@ def delete_pubkey(pubkey_id):
 def get_user_pubkeys(user_openid):
     """Get public pubkeys for specified user."""
     return IMPL.get_user_pubkeys(user_openid)
+
+
+def add_user_to_group(user_openid, group_id, created_by_user):
+    """Add specified user to specified group."""
+    return IMPL.add_user_to_group(user_openid, group_id, created_by_user)
+
+
+def remove_user_from_group(user_openid, group_id):
+    """Remove specified user from specified group."""
+    return IMPL.remove_user_from_group(user_openid, group_id)

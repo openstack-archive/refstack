@@ -614,3 +614,27 @@ class DBBackendTestCase(base.BaseTestCase):
         session.query.return_value.filter_by.assert_called_once_with(
             openid='user_id')
         self.assertEqual(keys, actual_keys)
+
+    @mock.patch.object(api, 'get_session')
+    @mock.patch('refstack.db.sqlalchemy.models.UserToGroup')
+    def test_add_user_to_group(self, mock_model, mock_get_session):
+        session = mock_get_session.return_value
+        api.add_user_to_group('user-123', 'GUID', 'user-321')
+
+        mock_model.assert_called_once_with()
+        mock_get_session.assert_called_once_with()
+        mock_model.return_value.save.assert_called_once_with(session=session)
+        session.begin.assert_called_once_with()
+
+    @mock.patch.object(api, 'get_session')
+    @mock.patch('refstack.db.sqlalchemy.api.models')
+    def test_remove_user_from_group(self, mock_models, mock_get_session):
+        session = mock_get_session.return_value
+        db.remove_user_from_group('user-123', 'GUID')
+
+        session.query.assert_called_once_with(mock_models.UserToGroup)
+        session.query.return_value.filter_by.assert_has_calls((
+            mock.call(user_openid='user-123'),
+            mock.call().filter_by(group_id='GUID'),
+            mock.call().filter_by().delete(synchronize_session=False)))
+        session.begin.assert_called_once_with()
