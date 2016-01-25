@@ -47,3 +47,23 @@ SHARED_TEST_RUN = 'shared'
 # Roles
 ROLE_USER = 'user'
 ROLE_OWNER = 'owner'
+
+# Organization types.
+# OpenStack Foundation
+FOUNDATION = 0
+# User's private unofficial Vendor (allows creation and testing
+# of user's products)
+PRIVATE_VENDOR = 1
+# Vendor applied and waiting for official status.
+PENDING_VENDOR = 2
+# Official Vendor approved by the Foundation.
+OFFICIAL_VENDOR = 3
+
+# Product object types.
+CLOUD = 0
+SOFTWARE = 1
+
+# Product specific types.
+DISTRO = 0
+PUBLIC_CLOUD = 1
+HOSTED_PRIVATE_CLOUD = 2

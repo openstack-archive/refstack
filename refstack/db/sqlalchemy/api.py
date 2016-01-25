@@ -356,3 +356,130 @@ def remove_user_from_group(user_openid, group_id):
          filter_by(user_openid=user_openid).
          filter_by(group_id=group_id).
          delete(synchronize_session=False))
+
+
+def add_organization(organization_info, creator):
+    """Add organization."""
+    session = get_session()
+    with session.begin():
+        group = models.Group()
+        group.name = 'Group for %s' % organization_info['name']
+        group.save(session=session)
+        group_id = group.id
+
+        item = models.UserToGroup()
+        item.user_openid = creator
+        item.group_id = group_id
+        item.created_by_user = creator
+        item.save(session=session)
+
+        organization = models.Organization()
+        organization.type = organization_info.get(
+            'type', api_const.PRIVATE_VENDOR)
+        organization.name = organization_info['name']
+        organization.description = organization_info.get('description')
+        organization.group_id = group_id
+        organization.created_by_user = creator
+        organization.properties = organization_info.get('properties')
+        organization.save(session=session)
+
+        return _to_dict(organization)
+
+
+def update_organization(organization_info):
+    """Update organization."""
+    session = get_session()
+    _id = organization_info['id']
+    organization = (session.query(models.Organization).
+                    filter_by(id=_id).first())
+    if organization is None:
+        raise NotFound('Organization with id %s not found' % _id)
+
+    with session.begin():
+        organization.type = organization_info.get(
+            'type', organization.type)
+        organization.name = organization_info.get(
+            'name', organization.name)
+        organization.description = organization_info.get(
+            'description', organization.description)
+        organization.properties = organization_info.get(
+            'properties', organization.properties)
+        organization.save(session=session)
+
+
+def get_organization(organization_id):
+    """Get organization by id."""
+    session = get_session()
+    organization = (session.query(models.Organization).
+                    filter_by(id=organization_id).first())
+    if organization is None:
+        raise NotFound('Organization with id %s not found' % organization_id)
+    return _to_dict(organization)
+
+
+def delete_organization(organization_id):
+    """delete organization by id."""
+    session = get_session()
+    with session.begin():
+        (session.query(models.Product).
+         filter_by(organization_id=organization_id).
+         delete(synchronize_session=False))
+        (session.query(models.Organization).
+         filter_by(id=organization_id).
+         delete(synchronize_session=False))
+
+
+def add_product(product_info, creator):
+    """Add product."""
+    product = models.Product()
+    _id = six.text_type(uuid.uuid4())
+    product.id = _id
+    product.type = product_info['type']
+    product.product_type = product_info['product_type']
+    product.product_id = product_info['product_id']
+    product.name = product_info['name']
+    product.description = product_info.get('description')
+    product.organization_id = product_info['organization_id']
+    product.created_by_user = creator
+    product.public = product_info.get('public', False)
+    product.properties = product_info.get('properties')
+
+    session = get_session()
+    with session.begin():
+        product.save(session=session)
+        return _to_dict(product)
+
+
+def update_product(product_info):
+    """Update product by product_id."""
+    session = get_session()
+    _id = product_info.get('product_id')
+    product = session.query(models.Product).filter_by(product_id=_id).first()
+    if product is None:
+        raise NotFound('Product with product_id %s not found' % _id)
+
+    product.name = product_info.get('name', product.name)
+    product.description = product_info.get('description', product.description)
+    product.public = product_info.get('public', product.public)
+    product.properties = product_info.get('properties', product.properties)
+
+    with session.begin():
+        product.save(session=session)
+        return _to_dict(product)
+
+
+def get_product(id):
+    """Get product by id."""
+    session = get_session()
+    product = session.query(models.Product).filter_by(id=id).first()
+    if product is None:
+        raise NotFound('Product with id "%s" not found' % id)
+    return _to_dict(product)
+
+
+def delete_product(id):
+    """delete product by id."""
+    session = get_session()
+    with session.begin():
+        (session.query(models.Product).filter_by(id=id).
+         delete(synchronize_session=False))

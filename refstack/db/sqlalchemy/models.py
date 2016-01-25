@@ -193,3 +193,52 @@ class UserToGroup(BASE, RefStackBase):  # pragma: no cover
     def default_allowed_keys(self):
         """Default keys."""
         return 'user_openid', 'group_id'
+
+
+class Organization(BASE, RefStackBase):  # pragma: no cover
+    """Organization definition."""
+
+    __tablename__ = 'organization'
+
+    id = sa.Column(sa.String(36), primary_key=True,
+                   default=lambda: six.text_type(uuid.uuid4()))
+    type = sa.Column(sa.Integer, nullable=False)
+    name = sa.Column(sa.String(80), nullable=False)
+    description = sa.Column(sa.Text())
+    group_id = sa.Column(sa.String(36), sa.ForeignKey('group.id'),
+                         nullable=False)
+    created_by_user = sa.Column(sa.String(128), sa.ForeignKey('user.openid'),
+                                nullable=False)
+    properties = sa.Column(sa.Text())
+
+    @property
+    def default_allowed_keys(self):
+        """Default keys."""
+        return ('id', 'type', 'name', 'description', 'group_id',
+                'created_by_user', 'properties')
+
+
+class Product(BASE, RefStackBase):  # pragma: no cover
+    """Product definition."""
+
+    __tablename__ = 'product'
+
+    id = sa.Column(sa.Integer(), primary_key=True)
+    product_id = sa.Column(sa.String(36), nullable=False)
+    name = sa.Column(sa.String(80), nullable=False)
+    description = sa.Column(sa.Text())
+    organization_id = sa.Column(sa.String(36),
+                                sa.ForeignKey('organization.id'),
+                                nullable=False)
+    created_by_user = sa.Column(sa.String(128), sa.ForeignKey('user.openid'),
+                                nullable=False)
+    public = sa.Column(sa.Boolean(), nullable=False)
+    properties = sa.Column(sa.Text())
+    type = sa.Column(sa.Integer(), nullable=False)
+    product_type = sa.Column(sa.Integer(), nullable=False)
+
+    @property
+    def default_allowed_keys(self):
+        """Default keys."""
+        return ('id', 'product_id', 'name', 'description', 'organization_id',
+                'created_by_user', 'properties', 'type', 'product_type')

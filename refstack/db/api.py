@@ -170,3 +170,43 @@ def add_user_to_group(user_openid, group_id, created_by_user):
 def remove_user_from_group(user_openid, group_id):
     """Remove specified user from specified group."""
     return IMPL.remove_user_from_group(user_openid, group_id)
+
+
+def add_organization(organization_info, creator):
+    """Add organization."""
+    return IMPL.add_organization(organization_info, creator)
+
+
+def update_organization(organization_info):
+    """Update organization."""
+    return IMPL.update_organization(organization_info)
+
+
+def get_organization(organization_id):
+    """Get organization by id."""
+    return IMPL.get_organization(organization_id)
+
+
+def delete_organization(organization_id):
+    """delete organization by id."""
+    return IMPL.delete_organization(organization_id)
+
+
+def add_product(product_info, creator):
+    """Add product from product_info dicionary with creator."""
+    return IMPL.add_product(product_info, creator)
+
+
+def update_product(product_info):
+    """Update product from prodict_info dicionary."""
+    return IMPL.update_product(product_info)
+
+
+def get_product(id):
+    """Get product by id."""
+    return IMPL.get_product(id)
+
+
+def delete_product(id):
+    """delete product by id."""
+    return IMPL.delete_product(id)
