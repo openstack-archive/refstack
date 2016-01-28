@@ -71,7 +71,7 @@
                         'shortKey': [
                             key.pubkey.slice(0, 10),
                             '.',
-                            key.pubkey.slice(-10, -1)
+                            key.pubkey.slice(-10)
                         ].join('.'),
                         'pubkey': key.pubkey,
                         'comment': key.comment
