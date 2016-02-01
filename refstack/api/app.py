@@ -22,7 +22,6 @@ import os
 from beaker.middleware import SessionMiddleware
 from oslo_config import cfg
 from oslo_log import log
-from oslo_log import loggers
 import pecan
 import six
 import webob
@@ -153,6 +152,19 @@ class JSONErrorHook(pecan.hooks.PecanHook):
         )
 
 
+class WritableLogger(object):
+    """A thin wrapper that responds to `write` and logs."""
+
+    def __init__(self, logger, level):
+        """Init the WritableLogger by getting logger and log level."""
+        self.logger = logger
+        self.level = level
+
+    def write(self, msg):
+        """Invoke logger with log level and message."""
+        self.logger.log(self.level, msg.rstrip())
+
+
 class CORSHook(pecan.hooks.PecanHook):
     """A pecan hook that handles Cross-Origin Resource Sharing."""
 
@@ -208,7 +220,7 @@ def setup_app(config):
         template_path=template_path,
         hooks=[JSONErrorHook(), CORSHook(), pecan.hooks.RequestViewerHook(
             {'items': ['status', 'method', 'controller', 'path', 'body']},
-            headers=False, writer=loggers.WritableLogger(LOG, logging.DEBUG)
+            headers=False, writer=WritableLogger(LOG, logging.DEBUG)
         )]
     )
 
