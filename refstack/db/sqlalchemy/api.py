@@ -95,7 +95,7 @@ def _to_dict(sqlalchemy_object, allowed_keys=None):
                     for item in value}
             elif hasattr(value, 'default_allowed_keys'):
                 result[key] = _to_dict(value)
-            elif (isinstance(value, list)
+            elif (isinstance(value, list) and value
                   and hasattr(value[0], 'default_allowed_keys')):
                 result[key] = [_to_dict(item) for item in value]
             else:
