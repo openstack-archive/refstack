@@ -42,9 +42,9 @@ The following tables will be added to the RefStack database:
 * A table named "product"
 
   This table will contain the product information. Each product must be owned
-  by a vendor.  A "type" column will be used to identify the different types
-  of products. The types of products are pre-defined constants (enum) with
-  descriptive names as defined in the OpenStack Marketplace
+  by a vendor.  A "product_type" column will be used to identify the different
+  types of products. The types of products are pre-defined constants (enum)
+  with descriptive names as defined in the OpenStack Marketplace
   ( http://www.openstack.org/marketplace/). For example: 1 = distro,
   2 = public_cloud, 3 = hosted_private_cloud, etc.
 
@@ -95,6 +95,8 @@ The following tables will be added to the RefStack database.
   +------------------------+-------------+----------+
   | group_id               | varchar(36) | FK       |
   +------------------------+-------------+----------+
+  | properties             | text        |          |
+  +------------------------+-------------+----------+
 
 
 * "product" table
@@ -122,12 +124,15 @@ The following tables will be added to the RefStack database.
   +------------------------+-------------+----------+
   | type                   | int(11)     |          |
   +------------------------+-------------+----------+
+  | product_type           | int(11)     |          |
+  +------------------------+-------------+----------+
   | public                 | tinyint(1)  |          |
   +------------------------+-------------+----------+
   | organization_id        | varchar(36) | FK       |
   +------------------------+-------------+----------+
   | properties             | text        |          |
   +------------------------+-------------+----------+
+
 
   **Notes:**
 
@@ -140,6 +145,15 @@ The following tables will be added to the RefStack database.
 
   Ideally, the "deleted" column should be of type tinyint(1) (which is a
   boolean in SQLAlchemy).  Int(11) is used here for being consistent with Oslo.
+
+  The product_type column will store the pre-defined constants (enum) with
+  descriptive names as defined in the OpenStack Marketplace
+  ( http://www.openstack.org/marketplace/). For example: 1 = distro,
+  2 = public_cloud, 3 = hosted_private_cloud, etc.
+
+  The values in the "type" column are used by RefStack to identity the type of
+  the vendor object.
+
 
 REST API impact
 ---------------
