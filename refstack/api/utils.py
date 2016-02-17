@@ -304,3 +304,10 @@ def verify_openid_request(request):
             pecan.abort(401, 'Authentication is failed. %s' % error)
 
     return True
+
+
+def check_user_is_foundation_admin():
+    """Check is user in foundation group or not."""
+    user = get_user_id()
+    org_users = db.get_foundation_users()
+    return user in org_users

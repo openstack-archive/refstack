@@ -483,3 +483,17 @@ def delete_product(id):
     with session.begin():
         (session.query(models.Product).filter_by(id=id).
          delete(synchronize_session=False))
+
+
+def get_foundation_users():
+    """Get users' openid-s that belong to group of foundation."""
+    session = get_session()
+    organization = (
+        session.query(models.Organization.group_id)
+        .filter_by(type=api_const.FOUNDATION).first())
+    if organization is None:
+        raise NotFound('Foundation record could not found in DB.')
+    group_id = organization.group_id
+    users = (session.query(models.UserToGroup.user_openid).
+             filter_by(group_id=group_id))
+    return [user.user_openid for user in users]

@@ -210,3 +210,8 @@ def get_product(id):
 def delete_product(id):
     """delete product by id."""
     return IMPL.delete_product(id)
+
+
+def get_foundation_users():
+    """Get users' openid-s that belong to group of foundation."""
+    return IMPL.get_foundation_users()

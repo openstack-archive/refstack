@@ -82,5 +82,6 @@ class ProfileController(rest.RestController):
         return {
             "openid": user.openid,
             "email": user.email,
-            "fullname": user.fullname
+            "fullname": user.fullname,
+            "is_admin": api_utils.check_user_is_foundation_admin()
         }

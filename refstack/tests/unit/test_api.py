@@ -395,17 +395,21 @@ class ProfileControllerTestCase(BaseControllerTestCase):
         super(ProfileControllerTestCase, self).setUp()
         self.controller = user.ProfileController()
 
+    @mock.patch('refstack.db.get_foundation_users',
+                return_value=['foo@bar.org'])
     @mock.patch('refstack.db.user_get',
                 return_value=mock.Mock(openid='foo@bar.org',
                                        email='foo@bar.org',
                                        fullname='Dobby'))
     @mock.patch('refstack.api.utils.get_user_session',
                 return_value={const.USER_OPENID: 'foo@bar.org'})
-    def test_get(self, mock_get_user_session, mock_user_get):
+    def test_get(self, mock_get_user_session, mock_user_get,
+                 mock_get_foundation_users):
         actual_result = self.controller.get()
         self.assertEqual({'openid': 'foo@bar.org',
                           'email': 'foo@bar.org',
-                          'fullname': 'Dobby'}, actual_result)
+                          'fullname': 'Dobby',
+                          'is_admin': True}, actual_result)
 
 
 class AuthControllerTestCase(BaseControllerTestCase):
