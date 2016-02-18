@@ -129,8 +129,8 @@
 
         /** This function will initate a sign out. */
         function doSignOut() {
-            $rootScope.currentUser = null;
-            $rootScope.isAuthenticated = false;
+            $rootScope.auth.currentUser = null;
+            $rootScope.auth.isAuthenticated = false;
             $window.location.href = sign_out_url;
         }
 
