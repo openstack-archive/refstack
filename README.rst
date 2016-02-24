@@ -40,7 +40,7 @@ after their software has been incorporated into the distro or cloud.
    vendors. It can be used by vendors in house to compare interoperability
    data over time.
 
-   * API and UI install docs: `doc/refstack.md <doc/refstack.md>`_
+   * API and UI install docs: http://github.com/openstack/refstack/blob/master/doc/refstack.md
    * repository: http://git.openstack.org/cgit/openstack/refstack
    * reviews: https://review.openstack.org/#q,status:open+refstack,n,z
 
