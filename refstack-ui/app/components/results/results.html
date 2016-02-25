@@ -8,7 +8,7 @@
             <label for="cpid">Start Date</label>
             <p class="input-group">
                 <input type="text" class="form-control"
-                    datepicker-popup="{{ctrl.format}}"
+                    uib-datepicker-popup="{{ctrl.format}}"
                     ng-model="ctrl.startDate" is-open="ctrl.startOpen"
                     close-text="Close" />
                 <span class="input-group-btn">
@@ -22,7 +22,7 @@
             <label for="cpid">End Date</label>
             <p class="input-group">
                 <input type="text" class="form-control"
-                    datepicker-popup="{{ctrl.format}}"
+                    uib-datepicker-popup="{{ctrl.format}}"
                     ng-model="ctrl.endDate" is-open="ctrl.endOpen"
                     close-text="Close" />
                 <span class="input-group-btn">
@@ -149,7 +149,7 @@
     </table>
 
     <div class="pages">
-        <pagination
+        <uib-pagination
             total-items="ctrl.totalItems"
             ng-model="ctrl.currentPage"
             items-per-page="ctrl.itemsPerPage"
@@ -159,7 +159,7 @@
             rotate="false"
             num-pages="ctrl.numPages"
             ng-change="ctrl.update()">
-        </pagination>
+        </uib-pagination>
     </div>
 </div>
 

@@ -19,15 +19,15 @@
         .module('refstackApp')
         .factory('raiseAlert', raiseAlert);
 
-    raiseAlert.$inject = ['$modal'];
+    raiseAlert.$inject = ['$uibModal'];
 
     /**
      * This allows alert pop-ups to be raised. Just inject it as a dependency
      * in the calling controller.
      */
-    function raiseAlert($modal) {
+    function raiseAlert($uibModal) {
         return function(mode, title, text) {
-            $modal.open({
+            $uibModal.open({
                 templateUrl: '/shared/alerts/alertModal.html',
                 controller: 'RaiseAlertModalController as alert',
                 backdrop: true,
@@ -51,12 +51,12 @@
         .module('refstackApp')
         .controller('RaiseAlertModalController', RaiseAlertModalController);
 
-    RaiseAlertModalController.$inject = ['$modalInstance', 'data'];
+    RaiseAlertModalController.$inject = ['$uibModalInstance', 'data'];
 
     /**
      * This is the controller for the alert pop-up.
      */
-    function RaiseAlertModalController($modalInstance, data) {
+    function RaiseAlertModalController($uibModalInstance, data) {
         var ctrl = this;
 
         ctrl.close = close;
@@ -68,7 +68,7 @@
          * modal.
          */
         function close() {
-            $modalInstance.close();
+            $uibModalInstance.close();
         }
     }
 })();

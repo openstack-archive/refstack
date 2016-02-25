@@ -3,8 +3,8 @@ HTML for each accordion group that separates the status types on the results
 report page.
 -->
 
-<accordion-group is-open="isOpen" is-disabled="ctrl.caps[status].caps.length == 0">
-    <accordion-heading>
+<uib-accordion-group is-open="isOpen" is-disabled="ctrl.caps[status].caps.length == 0">
+    <uib-accordion-heading>
         {{status | capitalize}}
         <small>
             (<strong>Total:</strong> {{ctrl.caps[status].caps.length}} capabilities, {{ctrl.caps[status].count}} tests)
@@ -15,7 +15,7 @@ report page.
         <i class="pull-right glyphicon"
            ng-class="{'glyphicon-chevron-down': isOpen, 'glyphicon-chevron-right': !isOpen}">
         </i>
-    </accordion-heading>
+    </uib-accordion-heading>
     <ol class="capabilities">
         <li ng-repeat="capability in ctrl.caps[status].caps | orderBy:'id'"
             ng-if="ctrl.isCapabilityShown(capability)">
@@ -41,7 +41,7 @@ report page.
                                                      capability.notPassedTests.length}}]
             </span>
 
-            <ul class="list-unstyled" collapse="!showTests">
+            <ul class="list-unstyled" uib-collapse="!showTests">
                 <!-- Start passed test list -->
                 <li ng-repeat="test in capability.passedTests | orderBy:'toString()'"
                     ng-if="ctrl.isTestShown(test, capability)">
@@ -72,4 +72,4 @@ report page.
             </ul>
         </li>
     </ol>
-</accordion-group>
+</uib-accordion-group>

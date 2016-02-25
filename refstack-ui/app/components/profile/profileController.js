@@ -35,7 +35,7 @@
 
     ProfileController.$inject = [
         '$scope', '$http', 'refstackApiUrl', 'PubKeys',
-        '$modal', 'raiseAlert', '$state'
+        '$uibModal', 'raiseAlert', '$state'
     ];
 
     /**
@@ -44,7 +44,7 @@
      * account-specific information.
      */
     function ProfileController($scope, $http, refstackApiUrl,
-        PubKeys, $modal, raiseAlert, $state) {
+        PubKeys, $uibModal, raiseAlert, $state) {
 
         var ctrl = this;
 
@@ -85,7 +85,7 @@
          * for importing a public key.
          */
         function openImportPubKeyModal() {
-            $modal.open({
+            $uibModal.open({
                 templateUrl: '/components/profile/importPubKeyModal.html',
                 backdrop: true,
                 windowClass: 'modal',
@@ -101,7 +101,7 @@
          * @param {Object} pubKey resource
          */
         function openShowPubKeyModal(pubKey) {
-            $modal.open({
+            $uibModal.open({
                 templateUrl: '/components/profile/showPubKeyModal.html',
                 backdrop: true,
                 windowClass: 'modal',
@@ -124,7 +124,7 @@
         .controller('ImportPubKeyModalController', ImportPubKeyModalController);
 
     ImportPubKeyModalController.$inject = [
-        '$modalInstance', 'PubKeys', 'raiseAlert'
+        '$uibModalInstance', 'PubKeys', 'raiseAlert'
     ];
 
     /**
@@ -132,7 +132,9 @@
      * This controller is for the modal that appears if a user wants to import
      * a public key.
      */
-    function ImportPubKeyModalController($modalInstance, PubKeys, raiseAlert) {
+    function ImportPubKeyModalController($uibModalInstance,
+        PubKeys, raiseAlert) {
+
         var ctrl = this;
 
         ctrl.importPubKey = importPubKey;
@@ -148,7 +150,7 @@
             newPubKey.$save(
                 function(newPubKey_) {
                     raiseAlert('success', '', 'Public key saved successfully');
-                    $modalInstance.close(newPubKey_);
+                    $uibModalInstance.close(newPubKey_);
                 },
                 function(httpResp) {
                     raiseAlert('danger',
@@ -162,7 +164,7 @@
          * This function will dismiss the modal.
          */
         function cancel() {
-            $modalInstance.dismiss('cancel');
+            $uibModalInstance.dismiss('cancel');
         }
     }
 
@@ -171,7 +173,7 @@
         .controller('ShowPubKeyModalController', ShowPubKeyModalController);
 
     ShowPubKeyModalController.$inject = [
-        '$modalInstance', 'raiseAlert', 'pubKey'
+        '$uibModalInstance', 'raiseAlert', 'pubKey'
     ];
 
     /**
@@ -179,7 +181,7 @@
      * This controller is for the modal that appears if a user wants to see the
      * full details of one of their public keys.
      */
-    function ShowPubKeyModalController($modalInstance, raiseAlert, pubKey) {
+    function ShowPubKeyModalController($uibModalInstance, raiseAlert, pubKey) {
         var ctrl = this;
 
         ctrl.deletePubKey = deletePubKey;
@@ -197,7 +199,7 @@
                 function() {
                     raiseAlert('success',
                         '', 'Public key deleted successfully');
-                    $modalInstance.close(ctrl.pubKey.id);
+                    $uibModalInstance.close(ctrl.pubKey.id);
                 },
                 function(httpResp) {
                     raiseAlert('danger',
@@ -211,7 +213,7 @@
          * This method will dismiss the modal.
          */
         function cancel() {
-            $modalInstance.dismiss('cancel');
+            $uibModalInstance.dismiss('cancel');
         }
     }
 })();

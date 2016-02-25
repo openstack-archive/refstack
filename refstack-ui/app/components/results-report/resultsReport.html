@@ -108,7 +108,7 @@
             </label>
         </div>
 
-        <accordion close-others=false>
+        <uib-accordion close-others=false>
             <!-- The ng-repeat is used to pass in a local variable to the template. -->
             <ng-include
                 ng-repeat="status in ['required']"
@@ -130,7 +130,7 @@
                 ng-repeat="status in ['removed']"
                 src="ctrl.detailsTemplate">
             </ng-include>
-        </accordion>
+        </uib-accordion>
     </div>
 </div>
 

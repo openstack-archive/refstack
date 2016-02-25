@@ -614,8 +614,8 @@ describe('Refstack controllers', function () {
         it('should have a method to open a modal for the full passed test list',
             function () {
                 var modal;
-                inject(function ($modal) {
-                    modal = $modal;
+                inject(function ($uibModal) {
+                    modal = $uibModal;
                 });
                 spyOn(modal, 'open');
                 ctrl.openFullTestListModal();
@@ -631,7 +631,7 @@ describe('Refstack controllers', function () {
                 dismiss: jasmine.createSpy('modalInstance.dismiss')
             };
             ctrl = $controller('FullTestListModalController',
-                {$modalInstance: modalInstance, tests: ['t1', 't2']}
+                {$uibModalInstance: modalInstance, tests: ['t1', 't2']}
             );
         }));
 
@@ -668,7 +668,7 @@ describe('Refstack controllers', function () {
                 close: jasmine.createSpy('modalInstance.close')
             };
             ctrl = $controller('RaiseAlertModalController',
-                {$modalInstance: modalInstance, data: data}
+                {$uibModalInstance: modalInstance, data: data}
             );
         }));
 
