@@ -215,3 +215,13 @@ def delete_product(id):
 def get_foundation_users():
     """Get users' openid-s that belong to group of foundation."""
     return IMPL.get_foundation_users()
+
+
+def get_organization_users(organization_id):
+    """Get users with info that belong to group of organization."""
+    return IMPL.get_organization_users(organization_id)
+
+
+def get_organizations():
+    """Get all organizations."""
+    return IMPL.get_organizations()

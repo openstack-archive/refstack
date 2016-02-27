@@ -478,3 +478,15 @@ class APIUtilsTestCase(base.BaseTestCase):
             401, 'Authentication is failed. '
                  'Please permit access to your name.'
         )
+
+    @mock.patch('refstack.db.get_organization_users')
+    @mock.patch.object(api_utils, 'get_user_id', return_value='fake_id')
+    def test_check_user_is_vendor_admin(self, mock_user, mock_db):
+        mock_user.return_value = 'some-user'
+        mock_db.return_value = ['some-user', 'another-user']
+        result = api_utils.check_user_is_vendor_admin('some-vendor')
+        self.assertTrue(result)
+
+        mock_db.return_value = ['another-user']
+        result = api_utils.check_user_is_vendor_admin('some-vendor')
+        self.assertFalse(result)

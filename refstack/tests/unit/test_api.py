@@ -30,8 +30,9 @@ from refstack.api import exceptions as api_exc
 from refstack.api.controllers import auth
 from refstack.api.controllers import capabilities
 from refstack.api.controllers import results
-from refstack.api.controllers import validation
 from refstack.api.controllers import user
+from refstack.api.controllers import validation
+from refstack.api.controllers import vendors
 from refstack.tests import unit as base
 
 
@@ -57,7 +58,7 @@ class BaseControllerTestCase(base.RefstackBaseTestCase):
             self.setup_mock('refstack.api.utils.get_user_role')
         self.mock_is_authenticated = \
             self.setup_mock('refstack.api.utils.is_authenticated',
-                            return_value=True)
+                            return_value=True, spec=self.setUp)
 
 
 class RootControllerTestCase(BaseControllerTestCase):
@@ -641,3 +642,73 @@ class PublicKeysControllerTestCase(BaseControllerTestCase):
 
         self.assertRaises(webob.exc.HTTPError,
                           self.controller.delete, 'other_key_id')
+
+
+class VendorUsersControllerTestCase(BaseControllerTestCase):
+
+    def setUp(self):
+        super(VendorUsersControllerTestCase, self).setUp()
+        self.controller = vendors.UsersController()
+
+    @mock.patch('refstack.db.get_organization_users')
+    @mock.patch('refstack.api.utils.check_user_is_foundation_admin')
+    @mock.patch('refstack.api.utils.check_user_is_vendor_admin')
+    def test_get(self, mock_vendor, mock_foundation, mock_db_get_org_users):
+        mock_vendor.return_value = True
+        mock_foundation.return_value = False
+        mock_db_get_org_users.return_value = {
+            'foobar': {
+                'openid': 'foobar',
+                'fullname': 'Foo Bar',
+                'email': 'foo@bar.com'
+            }
+        }
+        expected = [{'openid': 'foobar',
+                     'fullname': 'Foo Bar',
+                     'email': 'foo@bar.com'}]
+        self.assertEqual(expected, self.controller.get('some-org'))
+
+        mock_vendor.return_value = False
+        self.assertIsNone(self.controller.get('some-org'))
+
+        mock_foundation.return_value = True
+        self.assertEqual(expected, self.controller.get('some-org'))
+
+    @mock.patch('refstack.db.add_user_to_group')
+    @mock.patch('refstack.db.get_organization')
+    @mock.patch('refstack.api.utils.check_user_is_foundation_admin')
+    @mock.patch('refstack.api.utils.check_user_is_vendor_admin')
+    @mock.patch('refstack.api.utils.get_user_id')
+    def test_put(self, mock_get_user, mock_vendor, mock_foundation,
+                 mock_db_org, mock_add):
+        # This is 'foo' in Base64
+        encoded_openid = 'Zm9v'
+        mock_vendor.return_value = True
+        mock_foundation.return_value = False
+        mock_db_org.return_value = {'group_id': 'abc'}
+        mock_get_user.return_value = 'fake-id'
+
+        self.controller.put('fake-vendor', encoded_openid)
+        mock_add.assert_called_once_with(b'foo', 'abc', 'fake-id')
+
+        mock_vendor.return_value = False
+        self.assertRaises(webob.exc.HTTPError,
+                          self.controller.put, 'fake-vendor', encoded_openid)
+
+    @mock.patch('refstack.db.remove_user_from_group')
+    @mock.patch('refstack.db.get_organization')
+    @mock.patch('refstack.api.utils.check_user_is_foundation_admin')
+    @mock.patch('refstack.api.utils.check_user_is_vendor_admin')
+    def test_delete(self, mock_vendor, mock_foundation, mock_db_org,
+                    mock_remove):
+        # This is 'foo' in Base64
+        encoded_openid = 'Zm9v'
+        mock_vendor.return_value = True
+        mock_foundation.return_value = False
+        mock_db_org.return_value = {'group_id': 'abc'}
+        self.controller.delete('fake-vendor', encoded_openid)
+        mock_remove.assert_called_with(b'foo', 'abc')
+
+        mock_vendor.return_value = False
+        self.assertRaises(webob.exc.HTTPError, self.controller.delete,
+                          'fake-vendor', encoded_openid)
