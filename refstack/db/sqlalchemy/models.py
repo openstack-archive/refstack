@@ -223,7 +223,8 @@ class Product(BASE, RefStackBase):  # pragma: no cover
 
     __tablename__ = 'product'
 
-    id = sa.Column(sa.Integer(), primary_key=True)
+    id = sa.Column(sa.String(36), primary_key=True,
+                   default=lambda: six.text_type(uuid.uuid4()))
     product_id = sa.Column(sa.String(36), nullable=False)
     name = sa.Column(sa.String(80), nullable=False)
     description = sa.Column(sa.Text())

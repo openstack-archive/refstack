@@ -432,8 +432,6 @@ def delete_organization(organization_id):
 def add_product(product_info, creator):
     """Add product."""
     product = models.Product()
-    _id = six.text_type(uuid.uuid4())
-    product.id = _id
     product.type = product_info['type']
     product.product_type = product_info['product_type']
     product.product_id = product_info['product_id']
