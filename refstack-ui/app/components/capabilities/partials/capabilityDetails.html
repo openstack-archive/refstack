@@ -10,7 +10,7 @@ variable 'capabilities'.
     <em>{{capability.description}}</em><br />
     Status: <span class="{{ctrl.targetCapabilities[capability.id]}}">{{ctrl.targetCapabilities[capability.id]}}</span><br />
     <span ng-if="capability.project">Project: {{capability.project | capitalize}}<br /></span>
-    <a ng-click="showAchievements = !hshowAchievements">Achievements ({{capability.achievements.length}})</a><br />
+    <a ng-click="showAchievements = !showAchievements">Achievements ({{capability.achievements.length}})</a><br />
     <ol uib-collapse="!showAchievements" class="list-inline">
         <li ng-repeat="achievement in capability.achievements">
             {{achievement}}

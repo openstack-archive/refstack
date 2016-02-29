@@ -1,0 +1,24 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" aria-hidden="true" ng-click="modal.close()">&times;</button>
+        <h4>Test List ({{modal.tests.length}})</h4>
+        <p>Use this test list with <a title="refstack-client" target="_blank"href="https://github.com/openstack/refstack-client">refstack-client</a>
+           to run only tests in the {{modal.version}} DefCore guideline from capabilities with the following statuses:
+        </p>
+            <ul class="list-inline">
+                <li class="required" ng-if="modal.status.required"> Required</li>
+                <li class="advisory" ng-if="modal.status.advisory"> Advisory</li>
+                <li class="deprecated" ng-if="modal.status.deprecated"> Deprecated</li>
+                <li class="removed" ng-if="modal.status.removed"> Removed</li>
+            </ul>
+    </div>
+    <div class="modal-body tests-modal-content">
+         <div class="form-group">
+             <textarea class="form-control" rows="20" id="tests" wrap="off">{{modal.getTestListString()}}</textarea>
+         </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" type="button" ng-click="modal.downloadTestList()">Download</button>
+        <button class="btn btn-primary" type="button" ng-click="modal.close()">Close</button>
+    </div>
+</div>
