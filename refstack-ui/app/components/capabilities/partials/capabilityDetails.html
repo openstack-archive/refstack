@@ -11,14 +11,14 @@ variable 'capabilities'.
     Status: <span class="{{ctrl.targetCapabilities[capability.id]}}">{{ctrl.targetCapabilities[capability.id]}}</span><br />
     <span ng-if="capability.project">Project: {{capability.project | capitalize}}<br /></span>
     <a ng-click="showAchievements = !hshowAchievements">Achievements ({{capability.achievements.length}})</a><br />
-    <ol collapse="!showAchievements" class="list-inline">
+    <ol uib-collapse="!showAchievements" class="list-inline">
         <li ng-repeat="achievement in capability.achievements">
             {{achievement}}
         </li>
     </ol>
 
     <a ng-click="showTests = !showTests">Tests ({{ctrl.getObjectLength(capability.tests)}})</a>
-    <ul collapse="!showTests">
+    <ul uib-collapse="!showTests">
         <li ng-if="ctrl.capabilities.schema === '1.2'" ng-repeat="test in capability.tests">
            <span ng-class="{'glyphicon glyphicon-flag text-warning': capability.flagged.indexOf(test) > -1}"></span>
            {{test}}
@@ -38,7 +38,7 @@ variable 'capabilities'.
 <div ng-show="ctrl.capabilities" class="criteria">
     <hr>
     <h4><a ng-click="showCriteria = !showCriteria">Criteria</a></h4>
-    <div collapse="showCriteria">
+    <div uib-collapse="showCriteria">
         <ul>
             <li ng-repeat="(key, criterion) in ctrl.capabilities.criteria">
                 <span class="criterion-name">{{criterion.name}}</span><br />

@@ -21,7 +21,7 @@
 
     ResultsReportController.$inject = [
         '$http', '$stateParams', '$window',
-        '$modal', 'refstackApiUrl', 'raiseAlert'
+        '$uibModal', 'refstackApiUrl', 'raiseAlert'
     ];
 
     /**
@@ -30,7 +30,7 @@
      * view details for a specific test run.
      */
     function ResultsReportController($http, $stateParams, $window,
-        $modal, refstackApiUrl, raiseAlert) {
+        $uibModal, refstackApiUrl, raiseAlert) {
 
         var ctrl = this;
 
@@ -566,7 +566,7 @@
          * tests for the current results.
          */
         function openFullTestListModal() {
-            $modal.open({
+            $uibModal.open({
                 templateUrl: '/components/results-report/partials' +
                         '/fullTestListModal.html',
                 backdrop: true,
@@ -589,14 +589,14 @@
         .module('refstackApp')
         .controller('FullTestListModalController', FullTestListModalController);
 
-    FullTestListModalController.$inject = ['$modalInstance', 'tests'];
+    FullTestListModalController.$inject = ['$uibModalInstance', 'tests'];
 
     /**
      * Full Test List Modal Controller
      * This controller is for the modal that appears if a user wants to see the
      * full list of passed tests on a report page.
      */
-    function FullTestListModalController($modalInstance, tests) {
+    function FullTestListModalController($uibModalInstance, tests) {
         var ctrl = this;
 
         ctrl.tests = tests;
@@ -605,7 +605,7 @@
          * This function will close/dismiss the modal.
          */
         ctrl.close = function () {
-            $modalInstance.dismiss('exit');
+            $uibModalInstance.dismiss('exit');
         };
 
         /**
