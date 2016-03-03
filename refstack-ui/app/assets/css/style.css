@@ -192,3 +192,11 @@ h1, h2, h3, h4, h5, h6 {
 a.glyphicon {
   text-decoration: none;
 }
+
+.test-list-dl {
+  word-spacing: normal;
+}
+
+.test-list-dl:hover {
+  text-decoration: none;
+}

@@ -19,14 +19,14 @@
         .module('refstackApp')
         .controller('CapabilitiesController', CapabilitiesController);
 
-    CapabilitiesController.$inject = ['$http', 'refstackApiUrl'];
+    CapabilitiesController.$inject = ['$http', '$uibModal', 'refstackApiUrl'];
 
     /**
      * RefStack Capabilities Controller
      * This controller is for the '/capabilities' page where a user can browse
      * through tests belonging to DefCore-defined capabilities.
      */
-    function CapabilitiesController($http, refstackApiUrl) {
+    function CapabilitiesController($http, $uibModal, refstackApiUrl) {
         var ctrl = this;
 
         ctrl.getVersionList = getVersionList;
@@ -34,6 +34,8 @@
         ctrl.updateTargetCapabilities = updateTargetCapabilities;
         ctrl.filterStatus = filterStatus;
         ctrl.getObjectLength = getObjectLength;
+        ctrl.getTestList = getTestList;
+        ctrl.openTestListModal = openTestListModal;
 
         /** The target OpenStack marketing program to show capabilities for. */
         ctrl.target = 'platform';
@@ -182,6 +184,118 @@
             return Object.keys(object).length;
         }
 
+        /**
+         * This will give a list of tests belonging to capabilities with
+         * the selected status(es).
+         */
+        function getTestList() {
+            var caps = ctrl.capabilities.capabilities;
+            var tests = [];
+            angular.forEach(ctrl.targetCapabilities,
+                function (status, cap) {
+                    if (ctrl.status[status]) {
+                        if (ctrl.capabilities.schema === '1.2') {
+                            tests.push.apply(tests, caps[cap].tests);
+                        }
+                        else {
+                            angular.forEach(caps[cap].tests,
+                                function(info, test) {
+                                    tests.push(test);
+                                });
+                        }
+                    }
+                });
+            return tests;
+        }
+
+        /**
+         * This will open the modal that will show a list of all tests
+         * belonging to capabilities with the selected status(es).
+         */
+        function openTestListModal() {
+            $uibModal.open({
+                templateUrl: '/components/capabilities/partials' +
+                        '/testListModal.html',
+                backdrop: true,
+                windowClass: 'modal',
+                animation: true,
+                controller: 'TestListModalController as modal',
+                size: 'lg',
+                resolve: {
+                    tests: function () {
+                        return ctrl.getTestList();
+                    },
+                    version: function () {
+                        return ctrl.version.slice(0, -5);
+                    },
+                    status: function () {
+                        return ctrl.status;
+                    }
+                }
+            });
+        }
+
         ctrl.getVersionList();
+    }
+
+    angular
+        .module('refstackApp')
+        .controller('TestListModalController', TestListModalController);
+
+    TestListModalController.$inject = [
+        '$uibModalInstance', '$window', 'tests', 'version', 'status'
+    ];
+
+    /**
+     * Test List Modal Controller
+     * This controller is for the modal that appears if a user wants to see the
+     * ftest list corresponding to DefCore capabilities with the selected
+     * statuses.
+     */
+    function TestListModalController($uibModalInstance, $window, tests,
+        version, status) {
+
+        var ctrl = this;
+
+        ctrl.tests = tests;
+        ctrl.version = version;
+        ctrl.status = status;
+        ctrl.close = close;
+        ctrl.getTestListString = getTestListString;
+        ctrl.downloadTestList = downloadTestList;
+
+        /**
+         * This function will close/dismiss the modal.
+         */
+        function close() {
+            $uibModalInstance.dismiss('exit');
+        }
+
+        /**
+         * This function will return a string representing the sorted
+         * tests list separated by newlines.
+         */
+        function getTestListString() {
+            return ctrl.tests.sort().join('\n');
+        }
+
+        /**
+         * Serve the test list as a downloadable file.
+         */
+        function downloadTestList() {
+            var blob = new Blob([ctrl.getTestListString()], {type: 'text/csv'});
+            var filename = ctrl.version + '-test-list.txt';
+            if ($window.navigator.msSaveOrOpenBlob) {
+                $window.navigator.msSaveBlob(blob, filename);
+            }
+            else {
+                var a = $window.document.createElement('a');
+                a.href = $window.URL.createObjectURL(blob);
+                a.download = filename;
+                $window.document.body.appendChild(a);
+                a.click();
+                $window.document.body.removeChild(a);
+            }
+        }
     }
 })();

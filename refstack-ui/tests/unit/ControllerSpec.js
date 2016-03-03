@@ -152,6 +152,110 @@ describe('Refstack controllers', function () {
                 };
                 expect(ctrl.getObjectLength(testObject)).toBe(2);
             });
+
+        it('should have a function to get a list of tests belonging to ' +
+           'capabilities with the selected statuses',
+            function () {
+                ctrl.targetCapabilities = {'cap-1': 'required',
+                                           'cap-2': 'advisory'};
+                ctrl.capabilities = {
+                    'schema': 1.4,
+                    'capabilities' : {
+                        'cap-1': {
+                            'tests': {
+                                'test_1': {'idempotent_id': 'id-1234'},
+                                'test_2': {'idempotent_id': 'id-5678'}
+                            }
+                        },
+                        'cap-2': {
+                            'tests': {
+                                'test_3': {'idempotent_id': 'id-1233'}
+                            }
+                        }
+                    }
+                };
+                expect(ctrl.getTestList()).toEqual(['test_1', 'test_2']);
+                ctrl.capabilities = {
+                    'schema': 1.2,
+                    'capabilities' : {
+                        'cap-1': {
+                            'tests': ['test_1', 'test_2']
+                        },
+                        'cap-2': {
+                            'tests': ['test_3']
+                        }
+                    }
+                };
+            });
+
+        it('should have a method to open a modal for the relevant test list',
+            function () {
+                var modal;
+                inject(function ($uibModal) {
+                    modal = $uibModal;
+                });
+                spyOn(modal, 'open');
+                ctrl.openTestListModal();
+                expect(modal.open).toHaveBeenCalled();
+            });
+    });
+
+    describe('TestListModalController', function () {
+        var modalInstance, ctrl, $window;
+
+        beforeEach(inject(function ($controller, _$window_) {
+            modalInstance = {
+                dismiss: jasmine.createSpy('modalInstance.dismiss')
+            };
+            $window = _$window_;
+            ctrl = $controller('TestListModalController',
+                {$uibModalInstance: modalInstance,
+                 tests: ['t1', 't2'],
+                 version: '2016.01',
+                 status: {required: true, advisory: false}}
+            );
+        }));
+
+        it('should assign inputs to variables', function () {
+            expect(ctrl.tests).toEqual(['t1', 't2']);
+            expect(ctrl.version).toEqual('2016.01');
+            expect(ctrl.status).toEqual({required: true, advisory: false});
+        });
+
+        it('should have a method to close the modal',
+            function () {
+                ctrl.close();
+                expect(modalInstance.dismiss).toHaveBeenCalledWith('exit');
+            });
+
+        it('should have a method to convert the tests to a string',
+            function () {
+                ctrl.tests = ['t2', 't1', 't3'];
+                var expectedString = 't1\nt2\nt3';
+                expect(ctrl.getTestListString()).toEqual(expectedString);
+            });
+
+        it('should have a method to download a test list',
+            function () {
+                var fakeElement = $window.document.createElement('a');
+                spyOn($window.document, 'createElement').and.callFake(
+                    function() {
+                        return fakeElement;
+                    });
+                spyOn($window.document.body, 'appendChild').and.callFake(
+                    function() {
+                        return true;
+                    });
+                spyOn($window.document.body, 'removeChild').and.callFake(
+                    function() {
+                        return true;
+                    });
+                ctrl.downloadTestList();
+                var doc = $window.document;
+                expect(doc.createElement).toHaveBeenCalledWith('a');
+                expect(doc.body.appendChild).toHaveBeenCalled();
+                expect(doc.body.removeChild).toHaveBeenCalled();
+            });
     });
 
     describe('resultsController', function () {
