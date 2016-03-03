@@ -23,6 +23,7 @@ import uuid
 from oslo_config import cfg
 from oslo_db import options as db_options
 from oslo_db.sqlalchemy import session as db_session
+from oslo_log import log
 import six
 
 from refstack.api import constants as api_const
@@ -32,6 +33,7 @@ from refstack.db.sqlalchemy import models
 CONF = cfg.CONF
 
 _FACADE = None
+LOG = log.getLogger(__name__)
 
 db_options.set_defaults(cfg.CONF)
 
@@ -490,7 +492,8 @@ def get_foundation_users():
         session.query(models.Organization.group_id)
         .filter_by(type=api_const.FOUNDATION).first())
     if organization is None:
-        raise NotFound('Foundation record could not found in DB.')
+        LOG.warning('Foundation organization record not found in DB.')
+        return []
     group_id = organization.group_id
     users = (session.query(models.UserToGroup.user_openid).
              filter_by(group_id=group_id))

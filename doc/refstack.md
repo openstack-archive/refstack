@@ -196,3 +196,35 @@ Now available:
 
 - `http://<your server IP>:8000/v1/results/<test run id>` with response JSON
   including the detail test results of the specified `<test run id>`
+
+####(Optional) Configure Foundation organization and group
+
+Overall RefStack admin access is given to users belonging to a "Foundation"
+organization. To become a Foundation admin, first a "Foundation" organization
+must be created. Note that you must have logged into RefStack at least once so
+that a user record for your account is created.
+
+- Log into MySQL: `mysql -u root -p`
+
+- Create a group for the "Foundation" organization:
+
+  `INSERT INTO refstack.group (id, name, created_at) VALUES (UUID(), 'Foundation Group', NOW());`
+
+- Get the group ID for the group you just created:
+
+  `SELECT id from refstack.group WHERE name = 'Foundation Group';`
+
+- Get your OpenID:
+
+  `SELECT openid from refstack.user WHERE email = '<your email>';`
+
+- Add your user account to the previously created "Foundation" group. Replace
+  `<Group ID>` and `<Your OpenID>` with the values retrieved in the two previous steps:
+
+  `INSERT INTO refstack.user_to_group (created_by_user, user_openid, group_id, created_at)
+   VALUES ('<Your OpenID>', '<Your OpenID>', '<Group ID>', NOW());`
+
+- Create the actual "Foundation" organization using this group:
+
+  `INSERT INTO refstack.organization (id, type, name, group_id, created_by_user, created_at)
+   VALUES (UUID(), 0, 'Foundation', '<Group ID>', '<Your OpenID>', NOW());`
