@@ -40,7 +40,7 @@
         ctrl.isShared = isShared;
         ctrl.shareTestRun = shareTestRun;
         ctrl.deleteTestRun = deleteTestRun;
-        ctrl.updateCapabilities = updateCapabilities;
+        ctrl.updateGuidelines = updateGuidelines;
         ctrl.getTargetCapabilities = getTargetCapabilities;
         ctrl.buildCapabilityV1_2 = buildCapabilityV1_2;
         ctrl.buildCapabilityV1_3 = buildCapabilityV1_3;
@@ -66,7 +66,7 @@
             'object': 'OpenStack Powered Object Storage'
         };
 
-        /** The schema version of the currently selected capabilities data. */
+        /** The schema version of the currently selected guideline data. */
         ctrl.schemaVersion = null;
 
         /** The selected test status used for test filtering. */
@@ -77,7 +77,7 @@
                                'reportDetails.html';
 
         /**
-         * Retrieve an array of available capability files from the Refstack
+         * Retrieve an array of available guideline files from the Refstack
          * API server, sort this array reverse-alphabetically, and store it in
          * a scoped variable. The scope's selected version is initialized to
          * the latest (i.e. first) version here as well. After a successful API
@@ -85,14 +85,14 @@
          * Sample API return array: ["2015.03.json", "2015.04.json"]
          */
         function getVersionList() {
-            var content_url = refstackApiUrl + '/capabilities';
+            var content_url = refstackApiUrl + '/guidelines';
             ctrl.versionsRequest =
                 $http.get(content_url).success(function (data) {
                     ctrl.versionList = data.sort().reverse();
                     if (!ctrl.version) {
                         ctrl.version = ctrl.versionList[0];
                     }
-                    ctrl.updateCapabilities();
+                    ctrl.updateGuidelines();
                 }).error(function (error) {
                     ctrl.showError = true;
                     ctrl.error = 'Error retrieving version list: ' +
@@ -189,24 +189,24 @@
 
         /**
          * This will contact the Refstack API server to retrieve the JSON
-         * content of the capability file corresponding to the selected
+         * content of the guideline file corresponding to the selected
          * version. A function to construct an object from the capability
-         * date will be called upon successful retrieval.
+         * data will be called upon successful retrieval.
          */
-        function updateCapabilities() {
-            ctrl.capabilityData = null;
+        function updateGuidelines() {
+            ctrl.guidelineData = null;
             ctrl.showError = false;
-            var content_url = refstackApiUrl + '/capabilities/' +
+            var content_url = refstackApiUrl + '/guidelines/' +
                 ctrl.version;
             ctrl.capsRequest =
                 $http.get(content_url).success(function (data) {
-                    ctrl.capabilityData = data;
+                    ctrl.guidelineData = data;
                     ctrl.schemaVersion = data.schema;
                     ctrl.buildCapabilitiesObject();
                 }).error(function (error) {
                     ctrl.showError = true;
-                    ctrl.capabilityData = null;
-                    ctrl.error = 'Error retrieving capabilities: ' +
+                    ctrl.guidelineData = null;
+                    ctrl.error = 'Error retrieving guideline date: ' +
                         angular.toJson(error);
                 });
         }
@@ -217,7 +217,7 @@
          * @returns {Object} Object containing each capability and their status
          */
         function getTargetCapabilities() {
-            var components = ctrl.capabilityData.components;
+            var components = ctrl.guidelineData.components;
             var targetCaps = {};
 
             // The 'platform' target is comprised of multiple components, so
@@ -225,7 +225,7 @@
             // components.
             if (ctrl.target === 'platform') {
                 var platform_components =
-                    ctrl.capabilityData.platform.required;
+                    ctrl.guidelineData.platform.required;
 
                 // This will contain status priority values, where lower
                 // values mean higher priorities.
@@ -285,7 +285,7 @@
                 'passedFlagged': [],
                 'notPassedFlagged': []
             };
-            var capDetails = ctrl.capabilityData.capabilities[capId];
+            var capDetails = ctrl.guidelineData.capabilities[capId];
             // Loop through each test belonging to the capability.
             angular.forEach(capDetails.tests,
                 function (testId) {
@@ -322,7 +322,7 @@
                 'notPassedFlagged': []
             };
             // Loop through each test belonging to the capability.
-            angular.forEach(ctrl.capabilityData.capabilities[capId].tests,
+            angular.forEach(ctrl.guidelineData.capabilities[capId].tests,
                 function (details, testId) {
                     var passed = false;
 
@@ -390,8 +390,8 @@
                     break;
                 default:
                     ctrl.showError = true;
-                    ctrl.capabilityData = null;
-                    ctrl.error = 'The schema version for the capabilities ' +
+                    ctrl.guidelineData = null;
+                    ctrl.error = 'The schema version for the guideline ' +
                          'file selected (' + ctrl.schemaVersion +
                          ') is currently not supported.';
                     return;

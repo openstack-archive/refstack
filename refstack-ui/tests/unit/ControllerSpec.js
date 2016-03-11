@@ -58,11 +58,11 @@ describe('Refstack controllers', function () {
             });
     });
 
-    describe('CapabilitiesController', function () {
+    describe('GuidelinesController', function () {
         var ctrl;
 
         beforeEach(inject(function ($controller) {
-            ctrl = $controller('CapabilitiesController', {});
+            ctrl = $controller('GuidelinesController', {});
         }));
 
         it('should set default states', function () {
@@ -91,17 +91,17 @@ describe('Refstack controllers', function () {
                 };
 
                 $httpBackend.expectGET(fakeApiUrl +
-                '/capabilities').respond(['2015.03.json', '2015.04.json']);
+                '/guidelines').respond(['2015.03.json', '2015.04.json']);
                 // Should call request with latest version.
                 $httpBackend.expectGET(fakeApiUrl +
-                '/capabilities/2015.04.json').respond(fakeCaps);
+                '/guidelines/2015.04.json').respond(fakeCaps);
                 $httpBackend.flush();
                 // The version list should be sorted latest first.
                 expect(ctrl.versionList).toEqual(['2015.04.json',
                                                    '2015.03.json']);
-                expect(ctrl.capabilities).toEqual(fakeCaps);
+                expect(ctrl.guidelines).toEqual(fakeCaps);
                 // The guideline status should be approved.
-                expect(ctrl.capabilities.status).toEqual('approved');
+                expect(ctrl.guidelines.status).toEqual('approved');
                 var expectedTargetCaps = {
                     'cap_id_1': 'required',
                     'cap_id_2': 'advisory',
@@ -158,8 +158,8 @@ describe('Refstack controllers', function () {
             function () {
                 ctrl.targetCapabilities = {'cap-1': 'required',
                                            'cap-2': 'advisory'};
-                ctrl.capabilities = {
-                    'schema': 1.4,
+                ctrl.guidelines = {
+                    'schema': '1.4',
                     'capabilities' : {
                         'cap-1': {
                             'tests': {
@@ -175,8 +175,8 @@ describe('Refstack controllers', function () {
                     }
                 };
                 expect(ctrl.getTestList()).toEqual(['test_1', 'test_2']);
-                ctrl.capabilities = {
-                    'schema': 1.2,
+                ctrl.guidelines = {
+                    'schema': '1.2',
                     'capabilities' : {
                         'cap-1': {
                             'tests': ['test_1', 'test_2']
@@ -186,6 +186,7 @@ describe('Refstack controllers', function () {
                         }
                     }
                 };
+                expect(ctrl.getTestList()).toEqual(['test_1', 'test_2']);
             });
 
         it('should have a method to open a modal for the relevant test list',
@@ -351,7 +352,7 @@ describe('Refstack controllers', function () {
                 $httpBackend.expectGET(fakeApiUrl + '/results?page=1')
                     .respond(fakeResponse);
                 $httpBackend.expectGET(fakeApiUrl +
-                    '/capabilities').respond(['2015.03.json', '2015.04.json']);
+                    '/guidelines').respond(['2015.03.json', '2015.04.json']);
                 ctrl.getVersionList();
                 $httpBackend.flush();
                 // Expect the list to have the latest guideline first.
@@ -394,30 +395,30 @@ describe('Refstack controllers', function () {
         }));
 
         it('should make all necessary API requests to get results ' +
-            'and capabilities',
+            'and guidelines',
             function () {
                 $httpBackend.expectGET(fakeApiUrl +
                 '/results/1234').respond(fakeResultResponse);
                 $httpBackend.expectGET(fakeApiUrl +
-                '/capabilities').respond(['2015.03.json', '2015.04.json']);
+                '/guidelines').respond(['2015.03.json', '2015.04.json']);
                 // Should call request with latest version.
                 $httpBackend.expectGET(fakeApiUrl +
-                '/capabilities/2015.04.json').respond(fakeCapabilityResponse);
+                '/guidelines/2015.04.json').respond(fakeCapabilityResponse);
                 $httpBackend.flush();
                 expect(ctrl.resultsData).toEqual(fakeResultResponse);
                 // The version list should be sorted latest first.
                 expect(ctrl.versionList).toEqual(['2015.04.json',
                                                    '2015.03.json']);
-                expect(ctrl.capabilityData).toEqual(fakeCapabilityResponse);
+                expect(ctrl.guidelineData).toEqual(fakeCapabilityResponse);
                 // The guideline status should be approved.
-                expect(ctrl.capabilityData.status).toEqual('approved');
+                expect(ctrl.guidelineData.status).toEqual('approved');
                 expect(ctrl.schemaVersion).toEqual('1.2');
             });
 
         it('should have a method that creates an object containing each ' +
            'relevant capability and its highest priority status',
             function () {
-                ctrl.capabilityData = {
+                ctrl.guidelineData = {
                     'schema': '1.3',
                     'platform': {'required': ['compute', 'object']},
                     'components': {
@@ -447,7 +448,7 @@ describe('Refstack controllers', function () {
             'schema version 1.2',
             function () {
                 ctrl.resultsData = fakeResultResponse;
-                ctrl.capabilityData = fakeCapabilityResponse;
+                ctrl.guidelineData = fakeCapabilityResponse;
                 ctrl.schemaVersion = '1.2';
                 ctrl.buildCapabilitiesObject();
                 var expectedCapsObject = {
@@ -481,7 +482,7 @@ describe('Refstack controllers', function () {
                                                 'old_test_id_3',
                                                 'test_id_4']
                                    };
-                ctrl.capabilityData = {
+                ctrl.guidelineData = {
                     'platform': {'required': ['compute']},
                     'schema': '1.4',
                     'components': {

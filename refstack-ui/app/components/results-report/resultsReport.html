@@ -36,7 +36,7 @@
             <strong>Guideline Version:</strong>
             <!-- Slicing the version file name here gets rid of the '.json' file extension -->
             <select ng-model="ctrl.version"
-                    ng-change="ctrl.updateCapabilities()"
+                    ng-change="ctrl.updateGuidelines()"
                     class="form-control"
                     ng-options="versionFile.slice(0,-5) for versionFile in ctrl.versionList">
             </select>
@@ -53,20 +53,20 @@
     <!-- End User Options -->
 
     <br />
-    <div ng-if="ctrl.capabilityData">
+    <div ng-if="ctrl.guidelineData">
         <strong>Guideline Status:</strong>
-        {{ctrl.capabilityData.status | capitalize}}
+        {{ctrl.guidelineData.status | capitalize}}
     </div>
 
     <strong>Corresponding OpenStack Releases:</strong>
     <ul class="list-inline">
-        <li ng-repeat="release in ctrl.capabilityData.releases">
+        <li ng-repeat="release in ctrl.guidelineData.releases">
             {{release | capitalize}}
         </li>
     </ul>
     <hr >
 
-    <div ng-show="ctrl.capabilityData">
+    <div ng-show="ctrl.guidelineData">
         <strong>Status:</strong>
         <p>This cloud passes <strong>{{ctrl.requiredPassPercent | number:1}}% </strong>
            ({{ctrl.caps.required.passedCount}}/{{ctrl.caps.required.count}})

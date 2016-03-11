@@ -226,12 +226,12 @@ class TestResultsController(api.FunctionalTest):
                 self.assertEqual(r, filtering_results)
 
 
-class TestCapabilitiesController(api.FunctionalTest):
-    """Test case for CapabilitiesController."""
+class TestGuidelinesController(api.FunctionalTest):
+    """Test case for GuidelinesController."""
 
-    URL = '/v1/capabilities/'
+    URL = '/v1/guidelines/'
 
-    def test_get_capability_list(self):
+    def test_get_guideline_list(self):
         @httmock.all_requests
         def github_api_mock(url, request):
             headers = {'content-type': 'application/json'}
@@ -247,7 +247,7 @@ class TestCapabilitiesController(api.FunctionalTest):
         expected_response = ['2015.03.json']
         self.assertEqual(expected_response, actual_response)
 
-    def test_get_capability_file(self):
+    def test_get_guideline_file(self):
         @httmock.all_requests
         def github_mock(url, request):
             content = {'foo': 'bar'}

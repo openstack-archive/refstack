@@ -17,16 +17,16 @@
 
     angular
         .module('refstackApp')
-        .controller('CapabilitiesController', CapabilitiesController);
+        .controller('GuidelinesController', GuidelinesController);
 
-    CapabilitiesController.$inject = ['$http', '$uibModal', 'refstackApiUrl'];
+    GuidelinesController.$inject = ['$http', '$uibModal', 'refstackApiUrl'];
 
     /**
-     * RefStack Capabilities Controller
-     * This controller is for the '/capabilities' page where a user can browse
+     * RefStack Guidelines Controller
+     * This controller is for the '/guidelines' page where a user can browse
      * through tests belonging to DefCore-defined capabilities.
      */
-    function CapabilitiesController($http, $uibModal, refstackApiUrl) {
+    function GuidelinesController($http, $uibModal, refstackApiUrl) {
         var ctrl = this;
 
         ctrl.getVersionList = getVersionList;
@@ -51,11 +51,11 @@
         /**
          * The template to load for displaying capability details.
          */
-        ctrl.detailsTemplate = 'components/capabilities/partials/' +
-                               'capabilityDetails.html';
+        ctrl.detailsTemplate = 'components/guidelines/partials/' +
+                               'guidelineDetails.html';
 
         /**
-         * Retrieve an array of available capability files from the Refstack
+         * Retrieve an array of available guideline files from the Refstack
          * API server, sort this array reverse-alphabetically, and store it in
          * a scoped variable. The scope's selected version is initialized to
          * the latest (i.e. first) version here as well. After a successful API
@@ -63,7 +63,7 @@
          * Sample API return array: ["2015.03.json", "2015.04.json"]
          */
         function getVersionList() {
-            var content_url = refstackApiUrl + '/capabilities';
+            var content_url = refstackApiUrl + '/guidelines';
             ctrl.versionsRequest =
                 $http.get(content_url).success(function (data) {
                     ctrl.versionList = data.sort().reverse();
@@ -78,19 +78,19 @@
 
         /**
          * This will contact the Refstack API server to retrieve the JSON
-         * content of the capability file corresponding to the selected
+         * content of the guideline file corresponding to the selected
          * version.
          */
         function update() {
-            var content_url = refstackApiUrl + '/capabilities/' + ctrl.version;
+            var content_url = refstackApiUrl + '/guidelines/' + ctrl.version;
             ctrl.capsRequest =
                 $http.get(content_url).success(function (data) {
-                    ctrl.capabilities = data;
+                    ctrl.guidelines = data;
                     ctrl.updateTargetCapabilities();
                 }).error(function (error) {
                     ctrl.showError = true;
-                    ctrl.capabilities = null;
-                    ctrl.error = 'Error retrieving capabilities: ' +
+                    ctrl.guidelines = null;
+                    ctrl.error = 'Error retrieving guideline content: ' +
                         angular.toJson(error);
                 });
         }
@@ -103,14 +103,14 @@
          */
         function updateTargetCapabilities() {
             ctrl.targetCapabilities = {};
-            var components = ctrl.capabilities.components;
+            var components = ctrl.guidelines.components;
             var targetCaps = ctrl.targetCapabilities;
 
             // The 'platform' target is comprised of multiple components, so
             // we need to get the capabilities belonging to each of its
             // components.
             if (ctrl.target === 'platform') {
-                var platform_components = ctrl.capabilities.platform.required;
+                var platform_components = ctrl.guidelines.platform.required;
 
                 // This will contain status priority values, where lower
                 // values mean higher priorities.
@@ -189,12 +189,12 @@
          * the selected status(es).
          */
         function getTestList() {
-            var caps = ctrl.capabilities.capabilities;
+            var caps = ctrl.guidelines.capabilities;
             var tests = [];
             angular.forEach(ctrl.targetCapabilities,
                 function (status, cap) {
                     if (ctrl.status[status]) {
-                        if (ctrl.capabilities.schema === '1.2') {
+                        if (ctrl.guidelines.schema === '1.2') {
                             tests.push.apply(tests, caps[cap].tests);
                         }
                         else {
@@ -214,7 +214,7 @@
          */
         function openTestListModal() {
             $uibModal.open({
-                templateUrl: '/components/capabilities/partials' +
+                templateUrl: '/components/guidelines/partials' +
                         '/testListModal.html',
                 backdrop: true,
                 windowClass: 'modal',
@@ -249,7 +249,7 @@
     /**
      * Test List Modal Controller
      * This controller is for the modal that appears if a user wants to see the
-     * ftest list corresponding to DefCore capabilities with the selected
+     * test list corresponding to DefCore capabilities with the selected
      * statuses.
      */
     function TestListModalController($uibModalInstance, $window, tests,

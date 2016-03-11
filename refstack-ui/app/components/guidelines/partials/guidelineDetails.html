@@ -1,11 +1,11 @@
 <!--
-HTML for capabilites page for all Defcore capabilities schemas
-This expects the JSON data of the capability file to be stored in scope
-variable 'capabilities'.
+HTML for guidelines page for all Defcore guideline schemas
+This expects the JSON data of the guidelines file to be stored in scope
+variable 'guidelines'.
 -->
 
-<ol ng-show="ctrl.capabilities" class="capabilities">
-  <li class="capability-list-item" ng-repeat="capability in ctrl.capabilities.capabilities | arrayConverter | filter:ctrl.filterStatus | orderBy:'id'">
+<ol ng-show="ctrl.guidelines" class="capabilities">
+  <li class="capability-list-item" ng-repeat="capability in ctrl.guidelines.capabilities | arrayConverter | filter:ctrl.filterStatus | orderBy:'id'">
     <span class="capability-name">{{capability.id}}</span><br />
     <em>{{capability.description}}</em><br />
     Status: <span class="{{ctrl.targetCapabilities[capability.id]}}">{{ctrl.targetCapabilities[capability.id]}}</span><br />
@@ -19,11 +19,11 @@ variable 'capabilities'.
 
     <a ng-click="showTests = !showTests">Tests ({{ctrl.getObjectLength(capability.tests)}})</a>
     <ul uib-collapse="!showTests">
-        <li ng-if="ctrl.capabilities.schema === '1.2'" ng-repeat="test in capability.tests">
+        <li ng-if="ctrl.guidelines.schema === '1.2'" ng-repeat="test in capability.tests">
            <span ng-class="{'glyphicon glyphicon-flag text-warning': capability.flagged.indexOf(test) > -1}"></span>
            {{test}}
         </li>
-        <li ng-if="ctrl.capabilities.schema > '1.2'" ng-repeat="(testName, testDetails) in capability.tests">
+        <li ng-if="ctrl.guidelines.schema > '1.2'" ng-repeat="(testName, testDetails) in capability.tests">
            <span ng-class="{'glyphicon glyphicon-flag text-warning': testDetails.flagged}" title="{{testDetails.flagged.reason}}"></span>
            {{testName}}
            <div class="test-detail" ng-if="testDetails.aliases">
@@ -35,12 +35,12 @@ variable 'capabilities'.
   </li>
 </ol>
 
-<div ng-show="ctrl.capabilities" class="criteria">
+<div ng-show="ctrl.guidelines" class="criteria">
     <hr>
     <h4><a ng-click="showCriteria = !showCriteria">Criteria</a></h4>
     <div uib-collapse="showCriteria">
         <ul>
-            <li ng-repeat="(key, criterion) in ctrl.capabilities.criteria">
+            <li ng-repeat="(key, criterion) in ctrl.guidelines.criteria">
                 <span class="criterion-name">{{criterion.name}}</span><br />
                 <em>{{criterion.Description}}</em><br />
                 Weight: {{criterion.weight}}

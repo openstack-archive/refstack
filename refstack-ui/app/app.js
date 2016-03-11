@@ -43,10 +43,10 @@
                 url: '/about',
                 templateUrl: '/components/about/about.html'
             }).
-            state('capabilities', {
-                url: '/capabilities',
-                templateUrl: '/components/capabilities/capabilities.html',
-                controller: 'CapabilitiesController as ctrl'
+            state('guidelines', {
+                url: '/guidelines',
+                templateUrl: '/components/guidelines/guidelines.html',
+                controller: 'GuidelinesController as ctrl'
             }).
             state('communityResults', {
                 url: '/community_results',

@@ -1,6 +1,6 @@
 <h3>DefCore Guidelines</h3>
 
-<!-- Capability Filters -->
+<!-- Guideline Filters -->
 <div class="row">
     <div class="col-md-3">
         <strong>Version:</strong>
@@ -21,15 +21,15 @@
 </div>
 
 <br />
-<div ng-if="ctrl.capabilities">
+<div ng-if="ctrl.guidelines">
     <strong>Guideline Status:</strong>
-    {{ctrl.capabilities.status | capitalize}}
+    {{ctrl.guidelines.status | capitalize}}
 </div>
 
-<div ng-show="ctrl.capabilities">
+<div ng-show="ctrl.guidelines">
     <strong>Corresponding OpenStack Releases:</strong>
     <ul class="list-inline">
-        <li ng-repeat="release in ctrl.capabilities.releases">
+        <li ng-repeat="release in ctrl.guidelines.releases">
             {{release | capitalize}}
         </li>
     </ul>

@@ -196,7 +196,7 @@
             if (ctrl.versionList) {
                 return;
             }
-            var content_url = refstackApiUrl + '/capabilities';
+            var content_url = refstackApiUrl + '/guidelines';
             ctrl.versionsRequest =
                 $http.get(content_url).success(function (data) {
                     ctrl.versionList = data.sort().reverse();

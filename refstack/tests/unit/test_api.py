@@ -16,32 +16,20 @@
 """Tests for API's controllers"""
 
 import json
-import sys
 
-import httmock
 import mock
 from oslo_config import fixture as config_fixture
-import requests
 from six.moves.urllib import parse
 import webob.exc
 
 from refstack.api import constants as const
 from refstack.api import exceptions as api_exc
 from refstack.api.controllers import auth
-from refstack.api.controllers import capabilities
+from refstack.api.controllers import guidelines
 from refstack.api.controllers import results
 from refstack.api.controllers import validation
 from refstack.api.controllers import user
 from refstack.tests import unit as base
-
-
-def safe_json_dump(content):
-    if isinstance(content, (dict, list)):
-        if sys.version_info[0] == 3:
-            content = bytes(json.dumps(content), 'utf-8')
-        else:
-            content = json.dumps(content)
-    return content
 
 
 class BaseControllerTestCase(base.RefstackBaseTestCase):
@@ -289,76 +277,41 @@ class ResultsControllerTestCase(BaseControllerTestCase):
                           self.controller.delete, 'test_id')
 
 
-class CapabilitiesControllerTestCase(BaseControllerTestCase):
+class GuidelinesControllerTestCase(BaseControllerTestCase):
 
     def setUp(self):
-        super(CapabilitiesControllerTestCase, self).setUp()
-        self.controller = capabilities.CapabilitiesController()
+        super(GuidelinesControllerTestCase, self).setUp()
+        self.controller = guidelines.GuidelinesController()
         self.mock_abort.side_effect = None
 
-    def test_get_capabilities(self):
-        """Test when getting a list of all capability files."""
-        @httmock.all_requests
-        def github_api_mock(url, request):
-            headers = {'content-type': 'application/json'}
-            content = [{'name': '2015.03.json', 'type': 'file'},
-                       {'name': '2015.next.json', 'type': 'file'},
-                       {'name': '2015.03', 'type': 'dir'}]
-            content = safe_json_dump(content)
-            return httmock.response(200, content, headers, None, 5, request)
-
-        with httmock.HTTMock(github_api_mock):
-            result = self.controller.get()
+    @mock.patch('refstack.api.guidelines.Guidelines.get_guideline_list')
+    def test_get_guidelines(self, mock_list):
+        """Test when getting a list of all guideline files."""
+        mock_list.return_value = ['2015.03.json']
+        result = self.controller.get()
         self.assertEqual(['2015.03.json'], result)
 
-    def test_get_capabilities_error_code(self):
-        """Test when the HTTP status code isn't a 200 OK. The status should
-           be propogated."""
-        @httmock.all_requests
-        def github_api_mock(url, request):
-            content = {'title': 'Not Found'}
-            return httmock.response(404, content, None, None, 5, request)
-
-        with httmock.HTTMock(github_api_mock):
-            self.controller.get()
-        self.mock_abort.assert_called_with(404)
-
-    @mock.patch('requests.get')
-    def test_get_capabilities_exception(self, mock_requests_get):
-        """Test when the GET request raises an exception."""
-        mock_requests_get.side_effect = requests.exceptions.RequestException()
+    @mock.patch('refstack.api.guidelines.Guidelines.get_guideline_list')
+    def test_get_guidelines_error(self, mock_list):
+        """Test when there is a problem getting the guideline list and
+        nothing is returned."""
+        mock_list.return_value = None
         self.controller.get()
-        self.mock_abort.assert_called_with(500)
+        self.mock_abort.assert_called_with(500, mock.ANY)
 
-    def test_get_capability_file(self):
-        """Test when getting a specific capability file"""
-        @httmock.all_requests
-        def github_mock(url, request):
-            content = {'foo': 'bar'}
-            return httmock.response(200, content, None, None, 5, request)
-
-        with httmock.HTTMock(github_mock):
-            result = self.controller.get_one('2015.03')
+    @mock.patch('refstack.api.guidelines.Guidelines.get_guideline_contents')
+    def test_get_guideline_file(self, mock_get_contents):
+        """Test when getting a specific guideline file"""
+        mock_get_contents.return_value = {'foo': 'bar'}
+        result = self.controller.get_one('2015.03')
         self.assertEqual({'foo': 'bar'}, result)
 
-    def test_get_capability_file_error_code(self):
-        """Test when the HTTP status code isn't a 200 OK. The status should
-           be propogated."""
-        @httmock.all_requests
-        def github_api_mock(url, request):
-            content = {'title': 'Not Found'}
-            return httmock.response(404, content, None, None, 5, request)
-
-        with httmock.HTTMock(github_api_mock):
-            self.controller.get_one('2010.03')
-        self.mock_abort.assert_called_with(404)
-
-    @mock.patch('requests.get')
-    def test_get_capability_file_exception(self, mock_requests_get):
-        """Test when the GET request raises an exception."""
-        mock_requests_get.side_effect = requests.exceptions.RequestException()
+    @mock.patch('refstack.api.guidelines.Guidelines.get_guideline_contents')
+    def test_get_guideline_file_error(self, mock_get_contents):
+        """Test when there is a problem getting the guideline file contents."""
+        mock_get_contents.return_value = None
         self.controller.get_one('2010.03')
-        self.mock_abort.assert_called_with(500)
+        self.mock_abort.assert_called_with(500, mock.ANY)
 
 
 class BaseRestControllerWithValidationTestCase(BaseControllerTestCase):
