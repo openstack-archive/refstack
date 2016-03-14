@@ -1,21 +1,27 @@
 <div class="modal-header">
     <h4>Import Public Key</h4>
+    <p>Instructions for adding a public key and signature can be found
+       <a href="https://github.com/openstack/refstack/blob/master/doc/uploading-private-results.md#generate-ssh-keys-locally"
+          target="_blank"
+          title="How to generate and upload SSH key and signature with refstack-client">here.
+       </a>
+    </p>
 </div>
 <div class="modal-body container-fluid">
     <div class="row">
         <div class="col-md-2">Public Key</div>
         <div class="col-md-9 pull-right">
-        <textarea type="text" rows="11" cols="42" ng-model="modal.raw_key" required></textarea>
+        <textarea type="text" rows="10" cols="42" ng-model="modal.raw_key" required></textarea>
         </div>
     </div>
     <div class="row">
         <div class="col-md-2">Signature</div>
         <div class="col-md-9 pull-right">
-        <textarea type="text" rows="11" cols="42" ng-model="modal.self_signature" required></textarea>
+        <textarea type="text" rows="10" cols="42" ng-model="modal.self_signature" required></textarea>
         </div>
     </div>
     <div class="modal-footer">
-        <button class="btn btn-warning" ng-click="modal.cancel()">Cancel</button>
+        <button class="btn btn-warning btn-sm" ng-click="modal.cancel()">Cancel</button>
         <button type="button" class="btn btn-default btn-sm" ng-click="modal.importPubKey()">Import Public Key</button>
     </div>
 </div>

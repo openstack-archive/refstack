@@ -200,3 +200,7 @@ a.glyphicon {
 .test-list-dl:hover {
   text-decoration: none;
 }
+
+.modal-body .row {
+  margin-bottom: 10px;
+}
