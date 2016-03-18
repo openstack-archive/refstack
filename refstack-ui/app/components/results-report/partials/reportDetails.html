@@ -54,6 +54,12 @@ report page.
                           title="{{ctrl.getFlaggedReason(test, ctrl.guidelineData.capabilities[capability.id])}}">
                     </span>
                     {{test}}
+                    <span ng-if="ctrl.guidelineData.capabilities[capability.id].tests[test].aliases"> &mdash;
+                        <a ng-click="showAliases = !showAliases">[Aliases]</a>
+                        <div class="test-detail-report" ng-if="ctrl.guidelineData.capabilities[capability.id].tests[test].aliases && showAliases">
+                           <ul><li ng-repeat="alias in ctrl.guidelineData.capabilities[capability.id].tests[test].aliases">{{alias}}</li></ul>
+                        </div>
+                    </span>
                 </li>
                 <!-- End passed test list -->
 
@@ -67,6 +73,12 @@ report page.
                           title="{{ctrl.getFlaggedReason(test, ctrl.guidelineData.capabilities[capability.id])}}">
                     </span>
                     {{test}}
+                    <span ng-if="ctrl.guidelineData.capabilities[capability.id].tests[test].aliases"> &mdash;
+                        <a ng-click="showAliases = !showAliases">[Aliases]</a>
+                        <div class="test-detail-report" ng-if="ctrl.guidelineData.capabilities[capability.id].tests[test].aliases && showAliases">
+                           <ul><li ng-repeat="alias in ctrl.guidelineData.capabilities[capability.id].tests[test].aliases">{{alias}}</li></ul>
+                        </div>
+                    </span>
                 </li>
                 <!-- End not passed test list -->
             </ul>

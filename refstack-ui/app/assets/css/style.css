@@ -189,6 +189,10 @@ h1, h2, h3, h4, h5, h6 {
   padding-left: 20px;
 }
 
+.test-detail-report {
+  font-size: .9em;
+}
+
 a.glyphicon {
   text-decoration: none;
 }
