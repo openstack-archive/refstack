@@ -18,7 +18,7 @@
          </div>
     </div>
     <div class="modal-footer">
-        <button class="btn btn-primary" type="button" ng-click="modal.downloadTestList()">Download</button>
+        <button class="btn btn-primary" ng-if="modal.tests.length>0" type="button" ng-click="modal.downloadTestList()">Download</button>
         <button class="btn btn-primary" type="button" ng-click="modal.close()">Close</button>
     </div>
 </div>
