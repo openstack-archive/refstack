@@ -311,3 +311,10 @@ def check_user_is_foundation_admin():
     user = get_user_id()
     org_users = db.get_foundation_users()
     return user in org_users
+
+
+def check_user_is_vendor_admin(vendor_id):
+    """Check is user in vendor group or not."""
+    user = get_user_id()
+    org_users = db.get_organization_users(vendor_id)
+    return user in org_users

@@ -19,6 +19,7 @@ from refstack.api.controllers import auth
 from refstack.api.controllers import guidelines
 from refstack.api.controllers import results
 from refstack.api.controllers import user
+from refstack.api.controllers import vendors
 
 
 class V1Controller(object):
@@ -28,3 +29,4 @@ class V1Controller(object):
     guidelines = guidelines.GuidelinesController()
     auth = auth.AuthController()
     profile = user.ProfileController()
+    vendors = vendors.VendorsController()

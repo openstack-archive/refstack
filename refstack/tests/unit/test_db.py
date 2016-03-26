@@ -766,3 +766,50 @@ class DBBackendTestCase(base.BaseTestCase):
             mock.call(id='product_id'),
             mock.call().delete(synchronize_session=False)))
         session.begin.assert_called_once_with()
+
+    @mock.patch.object(api, 'get_session',
+                       return_value=mock.Mock(name='session'),)
+    @mock.patch('refstack.db.sqlalchemy.api.models')
+    def test_get_organization_users(self, mock_models, mock_get_session):
+        organization_id = 12345
+        session = mock_get_session.return_value
+        query = session.query.return_value
+        filtered = query.filter_by.return_value
+        filtered.first.return_value.group_id = 'foo'
+
+        join = query.join.return_value
+
+        fake_user = models.User()
+        fake_user.openid = 'foobar'
+        fake_user.fullname = 'Foo Bar'
+        fake_user.email = 'foo@bar.com'
+        join.filter.return_value = [(mock.Mock(), fake_user)]
+
+        result = api.get_organization_users(organization_id)
+        expected = {'foobar': {'openid': 'foobar',
+                               'fullname': 'Foo Bar',
+                               'email': 'foo@bar.com'}}
+        self.assertEqual(expected, result)
+
+        session.query.assert_any_call(mock_models.Organization.group_id)
+        query.filter_by.assert_called_once_with(id=organization_id)
+        session.query.assert_any_call(mock_models.UserToGroup,
+                                      mock_models.User)
+
+    @mock.patch.object(api, 'get_session',
+                       return_value=mock.Mock(name='session'),)
+    @mock.patch('refstack.db.sqlalchemy.models.Organization')
+    @mock.patch.object(api, '_to_dict', side_effect=lambda x: x)
+    def test_organizations_get(self, mock_to_dict, mock_model,
+                               mock_get_session):
+        session = mock_get_session.return_value
+        query = session.query.return_value
+        ordered = query.order_by.return_value
+        organizations = ordered.all.return_value
+
+        result = api.get_organizations()
+        self.assertEqual(organizations, result)
+
+        session.query.assert_called_once_with(mock_model)
+        query.order_by.assert_called_once_with(mock_model.created_at.desc())
+        ordered.all.assert_called_once_with()

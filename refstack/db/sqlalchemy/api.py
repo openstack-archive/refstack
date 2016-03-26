@@ -498,3 +498,30 @@ def get_foundation_users():
     users = (session.query(models.UserToGroup.user_openid).
              filter_by(group_id=group_id))
     return [user.user_openid for user in users]
+
+
+def get_organization_users(organization_id):
+    """Get users that belong to group of organization."""
+    session = get_session()
+    organization = (session.query(models.Organization.group_id)
+                    .filter_by(id=organization_id).first())
+    if organization is None:
+        raise NotFound('Organization with id %s is not found'
+                       % organization_id)
+    group_id = organization.group_id
+    users = (session.query(models.UserToGroup, models.User)
+             .join(models.User,
+                   models.User.openid == models.UserToGroup.user_openid)
+             .filter(models.UserToGroup.group_id == group_id))
+    keys = ['openid', 'fullname', 'email']
+    return {item[1].openid: _to_dict(item[1], allowed_keys=keys)
+            for item in users}
+
+
+def get_organizations():
+    """Get all organizations."""
+    session = get_session()
+    items = (
+        session.query(models.Organization)
+        .order_by(models.Organization.created_at.desc()).all())
+    return _to_dict(items)
