@@ -51,3 +51,51 @@ class TestGuidelinesEndpoint(api.FunctionalTest):
 
         expected_response = {'foo': 'bar'}
         self.assertEqual(expected_response, actual_response)
+
+    def test_get_guideline_test_list(self):
+        @httmock.all_requests
+        def github_mock(url, request):
+            content = {
+                'schema': '1.4',
+                'platform': {'required': ['compute', 'object']},
+                'components': {
+                    'compute': {
+                        'required': ['cap-1'],
+                        'advisory': [],
+                        'deprecated': [],
+                        'removed': []
+                    },
+                    'object': {
+                        'required': ['cap-2'],
+                        'advisory': ['cap-3'],
+                        'deprecated': [],
+                        'removed': []
+                    }
+                },
+                'capabilities': {
+                    'cap-1': {
+                        'tests': {
+                            'test_1': {'idempotent_id': 'id-1234'},
+                            'test_2': {'idempotent_id': 'id-5678',
+                                       'aliases': ['test_2_1']},
+                            'test_3': {'idempotent_id': 'id-1111',
+                                       'flagged': {'reason': 'foo'}}
+                        }
+                    },
+                    'cap-2': {
+                        'tests': {
+                            'test_4': {'idempotent_id': 'id-1233'}
+                        }
+                    }
+                }
+            }
+            return httmock.response(200, content, None, None, 5, request)
+        url = self.URL + "2016.03/tests"
+        with httmock.HTTMock(github_mock):
+            actual_response = self.get_json(url, expect_errors=True)
+
+        expected_list = ['test_1[id-1234]', 'test_2[id-5678]',
+                         'test_2_1[id-5678]', 'test_3[id-1111]',
+                         'test_4[id-1233]']
+        expected_response = '\n'.join(expected_list)
+        self.assertEqual(expected_response, actual_response.text)

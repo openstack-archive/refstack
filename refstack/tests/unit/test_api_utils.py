@@ -183,6 +183,13 @@ class APIUtilsTestCase(base.BaseTestCase):
 
         mock_get_input.assert_called_once_with(expected_params)
 
+    def test_str_to_bool(self):
+        self.assertTrue(api_utils.str_to_bool('True'))
+        self.assertTrue(api_utils.str_to_bool('1'))
+        self.assertTrue(api_utils.str_to_bool('YES'))
+        self.assertFalse(api_utils.str_to_bool('False'))
+        self.assertFalse(api_utils.str_to_bool('no'))
+
     def test_calculate_pages_number_full_pages(self):
         # expected pages number: 20/10 = 2
         page_number = api_utils._calculate_pages_number(10, 20)

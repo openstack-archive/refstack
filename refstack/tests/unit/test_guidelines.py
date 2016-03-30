@@ -88,3 +88,83 @@ class GuidelinesTestCase(base.BaseTestCase):
         mock_requests_get.side_effect = requests.exceptions.RequestException()
         result = self.guidelines.get_guideline_contents('2010.03.json')
         self.assertIsNone(result)
+
+    def test_get_target_capabilities(self):
+        """Test getting relevant capabilities."""
+        json = {
+            'platform': {'required': ['compute', 'object']},
+            'schema': '1.4',
+            'components': {
+                'compute': {
+                    'required': ['cap_id_1'],
+                    'advisory': [],
+                    'deprecated': [],
+                    'removed': []
+                },
+                'object': {
+                    'required': ['cap_id_2'],
+                    'advisory': ['cap_id_3'],
+                    'deprecated': [],
+                    'removed': []
+                }
+            }
+        }
+
+        # Test platform capabilities
+        caps = self.guidelines.get_target_capabilities(json)
+        expected = sorted(['cap_id_1', 'cap_id_2', 'cap_id_3'])
+        self.assertEqual(expected, sorted(caps))
+
+        caps = self.guidelines.get_target_capabilities(json,
+                                                       types=['required'],
+                                                       target='object')
+        expected = ['cap_id_2']
+        self.assertEqual(expected, caps)
+
+    def test_get_test_list(self):
+        """Test when getting the guideline test list."""
+
+        # Schema version 1.4
+        json = {
+            'schema': '1.4',
+            'capabilities': {
+                'cap-1': {
+                    'tests': {
+                        'test_1': {'idempotent_id': 'id-1234'},
+                        'test_2': {'idempotent_id': 'id-5678',
+                                   'aliases': ['test_2_1']},
+                        'test_3': {'idempotent_id': 'id-1111',
+                                   'flagged': {'reason': 'foo'}}
+                    }
+                },
+                'cap-2': {
+                    'tests': {
+                        'test_4': {'idempotent_id': 'id-1233'}
+                    }
+                }
+            }
+        }
+        tests = self.guidelines.get_test_list(json, ['cap-1'])
+        expected = ['test_1[id-1234]', 'test_2[id-5678]',
+                    'test_2_1[id-5678]', 'test_3[id-1111]']
+        self.assertEqual(expected, tests)
+
+        tests = self.guidelines.get_test_list(json, ['cap-1'],
+                                              alias=False, show_flagged=False)
+        expected = ['test_1[id-1234]', 'test_2[id-5678]']
+        self.assertEqual(expected, tests)
+
+        # Schema version 1.2
+        json = {
+            'schema': '1.2',
+            'capabilities': {
+                'cap-1': {
+                    'tests': ['test_1', 'test_2']
+                },
+                'cap-2': {
+                    'tests': ['test_3']
+                }
+            }
+        }
+        tests = self.guidelines.get_test_list(json, ['cap-2'])
+        self.assertEqual(['test_3'], tests)

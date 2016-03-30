@@ -90,6 +90,11 @@ def parse_input_params(expected_input_params):
     return filters
 
 
+def str_to_bool(param):
+    """Check if a string value should be evaluated as True or False."""
+    return param.lower() in ("true", "yes", "1")
+
+
 def _calculate_pages_number(per_page, records_count):
     """Return pages number.
 
