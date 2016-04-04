@@ -111,6 +111,35 @@ class FunctionalTest(base.BaseTestCase):
             conn.close()
             raise
 
+    def delete(self, url, headers=None, extra_environ=None,
+               status=None, expect_errors=False, **params):
+        """Send HTTP DELETE request.
+
+        :param url: url path to target service
+        :param headers: a dictionary of extra headers to send
+        :param extra_environ: a dictionary of environmental variables that
+                              should be added to the request
+        :param status: integer or string of the HTTP status code you expect
+                       in response (if not 200 or 3xx). You can also use a
+                       wildcard, like '3*' or '*'
+        :param expect_errors: boolean value, if this is False, then if
+                              anything is written to environ wsgi.errors it
+                              will be an error. If it is True, then
+                              non-200/3xx responses are also okay
+        :param params: a query string, or a dictionary that will be encoded
+                       into a query string. You may also include a URL query
+                       string on the url
+
+        """
+        response = self.app.delete(url,
+                                   headers=headers,
+                                   extra_environ=extra_environ,
+                                   status=status,
+                                   expect_errors=expect_errors,
+                                   params=params)
+
+        return response
+
     def get_json(self, url, headers=None, extra_environ=None,
                  status=None, expect_errors=False, **params):
         """Send HTTP GET request.

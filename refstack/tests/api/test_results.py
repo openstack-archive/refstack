@@ -1,4 +1,3 @@
-# Copyright (c) 2015 Mirantis, Inc.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -13,12 +12,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""Functional tests for refstack's API."""
-
 import json
 import uuid
 
-import httmock
 from oslo_config import fixture as config_fixture
 import six
 import webtest.app
@@ -44,13 +40,13 @@ FAKE_JSON_WITH_EMPTY_RESULTS = {
 }
 
 
-class TestResultsController(api.FunctionalTest):
-    """Test case for ResultsController."""
+class TestResultsEndpoint(api.FunctionalTest):
+    """Test case for the 'results' API endpoint."""
 
     URL = '/v1/results/'
 
     def setUp(self):
-        super(TestResultsController, self).setUp()
+        super(TestResultsEndpoint, self).setUp()
         self.config_fixture = config_fixture.Config()
         self.CONF = self.useFixture(self.config_fixture).conf
 
@@ -146,115 +142,84 @@ class TestResultsController(api.FunctionalTest):
         self.assertEqual(page_two['pagination']['current_page'], 2)
         self.assertEqual(page_two['pagination']['total_pages'], 2)
 
-        def test_get_with_not_existing_page(self):
-            self.assertRaises(webtest.app.AppError,
-                              self.get_json,
-                              '/v1/results?page=2')
+    def test_get_with_not_existing_page(self):
+        self.assertRaises(webtest.app.AppError,
+                          self.get_json,
+                          '/v1/results?page=2')
 
-        def test_get_with_empty_database(self):
-            results = self.get_json(self.URL)
-            self.assertEqual(results, [])
+    def test_get_with_empty_database(self):
+        results = self.get_json(self.URL)
+        self.assertEqual([], results['results'])
 
-        def test_get_with_cpid_filter(self):
-            self.CONF.set_override('results_per_page',
-                                   2,
-                                   'api')
+    def test_get_with_cpid_filter(self):
+        self.CONF.set_override('results_per_page',
+                               2,
+                               'api')
 
-            responses = []
-            for i in range(2):
-                fake_results = {
-                    'cpid': '12345',
-                    'duration_seconds': i,
-                    'results': [
-                        {'name': 'tempest.foo'},
-                        {'name': 'tempest.bar'}
-                    ]
-                }
-                json_result = json.dumps(fake_results)
-                actual_response = self.post_json(self.URL,
-                                                 params=json_result)
-                responses.append(actual_response)
+        responses = []
+        for i in range(2):
+            fake_results = {
+                'cpid': '12345',
+                'duration_seconds': i,
+                'results': [
+                    {'name': 'tempest.foo'},
+                    {'name': 'tempest.bar'}
+                ]
+            }
+            json_result = json.dumps(fake_results)
+            actual_response = self.post_json(self.URL,
+                                             params=json_result)
+            responses.append(actual_response)
 
-            for i in range(3):
-                fake_results = {
-                    'cpid': '54321',
-                    'duration_seconds': i,
-                    'results': [
-                        {'name': 'tempest.foo'},
-                        {'name': 'tempest.bar'}
-                    ]
-                }
-
-            results = self.get_json('/v1/results?page=1&cpid=12345')
-            self.asserEqual(len(results), 2)
-
-            for r in results:
-                self.assertIn(r['test_id'], responses)
-
-        def test_get_with_date_filters(self):
-            self.CONF.set_override('results_per_page',
-                                   10,
-                                   'api')
-
-            responses = []
-            for i in range(5):
-                fake_results = {
-                    'cpid': '12345',
-                    'duration_seconds': i,
-                    'results': [
-                        {'name': 'tempest.foo'},
-                        {'name': 'tempest.bar'}
-                    ]
-                }
-                json_result = json.dumps(fake_results)
-                actual_response = self.post_json(self.URL,
-                                                 params=json_result)
-                responses.append(actual_response)
-
-            all_results = self.get_json(self.URL)
-
-            slice_results = all_results[1:3]
-
-            url = 'v1/results?start_date=%(start)s&end_date=%(end)s' % {
-                'start': slice_results[2]['created_at'],
-                'end': slice_results[0]['created_at']
+        for i in range(3):
+            fake_results = {
+                'cpid': '54321',
+                'duration_seconds': i,
+                'results': [
+                    {'name': 'tempest.foo'},
+                    {'name': 'tempest.bar'}
+                ]
             }
 
-            filtering_results = self.get_json(url)
-            self.assertEqual(len(filtering_results), 3)
-            for r in slice_results:
-                self.assertEqual(r, filtering_results)
+        results = self.get_json('/v1/results?page=1&cpid=12345')
+        self.assertEqual(len(results), 2)
+        response_test_ids = [test['test_id'] for test in responses[0:2]]
+        for r in results['results']:
+            self.assertIn(r['id'], response_test_ids)
 
+    def test_get_with_date_filters(self):
+        self.CONF.set_override('results_per_page',
+                               10,
+                               'api')
 
-class TestGuidelinesController(api.FunctionalTest):
-    """Test case for GuidelinesController."""
+        responses = []
+        for i in range(5):
+            fake_results = {
+                'cpid': '12345',
+                'duration_seconds': i,
+                'results': [
+                    {'name': 'tempest.foo'},
+                    {'name': 'tempest.bar'}
+                ]
+            }
+            json_result = json.dumps(fake_results)
+            actual_response = self.post_json(self.URL,
+                                             params=json_result)
+            responses.append(actual_response)
 
-    URL = '/v1/guidelines/'
+        all_results = self.get_json(self.URL)
 
-    def test_get_guideline_list(self):
-        @httmock.all_requests
-        def github_api_mock(url, request):
-            headers = {'content-type': 'application/json'}
-            content = [{'name': '2015.03.json', 'type': 'file'},
-                       {'name': '2015.next.json', 'type': 'file'},
-                       {'name': '2015.03', 'type': 'dir'}]
-            content = json.dumps(content)
-            return httmock.response(200, content, headers, None, 5, request)
+        slice_results = all_results['results'][1:4]
 
-        with httmock.HTTMock(github_api_mock):
-            actual_response = self.get_json(self.URL)
+        url = '/v1/results?start_date=%(start)s&end_date=%(end)s' % {
+            'start': slice_results[2]['created_at'],
+            'end': slice_results[0]['created_at']
+        }
 
-        expected_response = ['2015.03.json']
-        self.assertEqual(expected_response, actual_response)
+        filtering_results = self.get_json(url)
+        for r in slice_results:
+            self.assertIn(r, filtering_results['results'])
 
-    def test_get_guideline_file(self):
-        @httmock.all_requests
-        def github_mock(url, request):
-            content = {'foo': 'bar'}
-            return httmock.response(200, content, None, None, 5, request)
-        url = self.URL + "2015.03"
-        with httmock.HTTMock(github_mock):
-            actual_response = self.get_json(url)
-
-        expected_response = {'foo': 'bar'}
-        self.assertEqual(expected_response, actual_response)
+        url = '/v1/results?end_date=1000-01-01 12:00:00'
+        filtering_results = self.get_json(url)
+        self.assertEqual([], filtering_results['results'])
