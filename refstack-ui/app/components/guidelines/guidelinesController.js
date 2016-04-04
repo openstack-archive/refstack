@@ -189,6 +189,9 @@
          * the selected status(es).
          */
         function getTestList() {
+            if (!ctrl.guidelines) {
+                return;
+            }
             var caps = ctrl.guidelines.capabilities;
             var tests = [];
             angular.forEach(ctrl.targetCapabilities,
@@ -226,6 +229,9 @@
                         return ctrl.getTestList();
                     },
                     version: function () {
+                        if (!ctrl.version) {
+                            return;
+                        }
                         return ctrl.version.slice(0, -5);
                     },
                     status: function () {
@@ -276,6 +282,9 @@
          * tests list separated by newlines.
          */
         function getTestListString() {
+            if (!ctrl.tests) {
+                return;
+            }
             return ctrl.tests.sort().join('\n');
         }
 
