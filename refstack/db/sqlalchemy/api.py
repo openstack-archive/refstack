@@ -77,7 +77,8 @@ def get_backend():
 
 def _to_dict(sqlalchemy_object, allowed_keys=None):
     if isinstance(sqlalchemy_object, list):
-        return [_to_dict(obj) for obj in sqlalchemy_object]
+        return [_to_dict(obj, allowed_keys=allowed_keys)
+                for obj in sqlalchemy_object]
     if (hasattr(sqlalchemy_object, 'keys')
             and hasattr(sqlalchemy_object, 'index')):
         return {key: getattr(sqlalchemy_object, key)
@@ -409,14 +410,14 @@ def update_organization(organization_info):
         organization.save(session=session)
 
 
-def get_organization(organization_id):
+def get_organization(organization_id, allowed_keys=None):
     """Get organization by id."""
     session = get_session()
     organization = (session.query(models.Organization).
                     filter_by(id=organization_id).first())
     if organization is None:
         raise NotFound('Organization with id %s not found' % organization_id)
-    return _to_dict(organization)
+    return _to_dict(organization, allowed_keys=allowed_keys)
 
 
 def delete_organization(organization_id):
@@ -518,10 +519,35 @@ def get_organization_users(organization_id):
             for item in users}
 
 
-def get_organizations():
+def get_organizations(allowed_keys=None):
     """Get all organizations."""
     session = get_session()
     items = (
         session.query(models.Organization)
         .order_by(models.Organization.created_at.desc()).all())
-    return _to_dict(items)
+    return _to_dict(items, allowed_keys=allowed_keys)
+
+
+def get_organizations_by_types(types, allowed_keys=None):
+    """Get organization by list of types."""
+    session = get_session()
+    items = (
+        session.query(models.Organization)
+        .filter(models.Organization.type.in_(types))
+        .order_by(models.Organization.created_at.desc()).all())
+    return _to_dict(items, allowed_keys=allowed_keys)
+
+
+def get_organizations_by_user(user_openid, allowed_keys=None):
+    """Get organizations for specified user."""
+    session = get_session()
+    items = (
+        session.query(models.Organization, models.Group, models.UserToGroup)
+        .join(models.Group,
+              models.Group.id == models.Organization.group_id)
+        .join(models.UserToGroup,
+              models.Group.id == models.UserToGroup.group_id)
+        .filter(models.UserToGroup.user_openid == user_openid)
+        .order_by(models.Organization.created_at.desc()).all())
+    items = [item[0] for item in items]
+    return _to_dict(items, allowed_keys=allowed_keys)

@@ -182,9 +182,9 @@ def update_organization(organization_info):
     return IMPL.update_organization(organization_info)
 
 
-def get_organization(organization_id):
+def get_organization(organization_id, allowed_keys=None):
     """Get organization by id."""
-    return IMPL.get_organization(organization_id)
+    return IMPL.get_organization(organization_id, allowed_keys=allowed_keys)
 
 
 def delete_organization(organization_id):
@@ -222,6 +222,17 @@ def get_organization_users(organization_id):
     return IMPL.get_organization_users(organization_id)
 
 
-def get_organizations():
+def get_organizations(allowed_keys=None):
     """Get all organizations."""
-    return IMPL.get_organizations()
+    return IMPL.get_organizations(allowed_keys=allowed_keys)
+
+
+def get_organizations_by_types(types, allowed_keys=None):
+    """Get organization by list of types."""
+    return IMPL.get_organizations_by_types(types, allowed_keys=allowed_keys)
+
+
+def get_organizations_by_user(user_openid, allowed_keys=None):
+    """Get organizations for specified user."""
+    return IMPL.get_organizations_by_user(user_openid,
+                                          allowed_keys=allowed_keys)

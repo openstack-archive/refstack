@@ -149,6 +149,13 @@ class DBBackendTestCase(base.BaseTestCase):
                           'childs': [{'child_id': 42}]},
                          api._to_dict(fake_model))
 
+        fake_model = mock.Mock(spec=models.RefStackBase)
+        fake_model.default_allowed_keys = ('meta', 'beta')
+        fake_model.metadata_keys = {}
+        fake_model.iteritems.return_value = {'meta': 1, 'beta': 2}.items()
+        self.assertEqual([{'meta': 1}],
+                         api._to_dict([fake_model], allowed_keys=('meta')))
+
     @mock.patch.object(api, 'get_session')
     @mock.patch('refstack.db.sqlalchemy.models.TestResults')
     @mock.patch('refstack.db.sqlalchemy.models.Test')
@@ -721,7 +728,7 @@ class DBBackendTestCase(base.BaseTestCase):
     @mock.patch.object(api, 'get_session',
                        return_value=mock.Mock(name='session'),)
     @mock.patch('refstack.db.sqlalchemy.models.Organization')
-    @mock.patch.object(api, '_to_dict', side_effect=lambda x: x)
+    @mock.patch.object(api, '_to_dict', side_effect=lambda x, allowed_keys: x)
     def test_organization_get(self, mock_to_dict, mock_model,
                               mock_get_session):
         organization_id = 12345
@@ -799,7 +806,7 @@ class DBBackendTestCase(base.BaseTestCase):
     @mock.patch.object(api, 'get_session',
                        return_value=mock.Mock(name='session'),)
     @mock.patch('refstack.db.sqlalchemy.models.Organization')
-    @mock.patch.object(api, '_to_dict', side_effect=lambda x: x)
+    @mock.patch.object(api, '_to_dict', side_effect=lambda x, allowed_keys: x)
     def test_organizations_get(self, mock_to_dict, mock_model,
                                mock_get_session):
         session = mock_get_session.return_value

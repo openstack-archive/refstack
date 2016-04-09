@@ -215,7 +215,7 @@ class Organization(BASE, RefStackBase):  # pragma: no cover
     def default_allowed_keys(self):
         """Default keys."""
         return ('id', 'type', 'name', 'description', 'group_id',
-                'created_by_user', 'properties')
+                'created_by_user', 'properties', 'created_at', 'updated_at')
 
 
 class Product(BASE, RefStackBase):  # pragma: no cover

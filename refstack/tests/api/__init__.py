@@ -203,3 +203,19 @@ class FunctionalTest(base.BaseTestCase):
         if not expect_errors:
             response = response.json
         return response
+
+    def put_json(self, url, headers=None, extra_environ=None,
+                 status=None, expect_errors=False,
+                 content_type='application/json', **params):
+        """Send HTTP PUT request. Similar to :meth:`post_json`."""
+        response = self.app.put(url,
+                                headers=headers,
+                                extra_environ=extra_environ,
+                                status=status,
+                                expect_errors=expect_errors,
+                                content_type=content_type,
+                                **params)
+
+        if not expect_errors:
+            response = response.json
+        return response

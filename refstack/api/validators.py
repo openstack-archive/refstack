@@ -175,3 +175,26 @@ class PubkeyValidator(BaseValidator):
         data_hash.update('signature'.encode('utf-8'))
         if not signer.verify(data_hash, sign):
             raise api_exc.ValidationError('Signature verification failed')
+
+
+class VendorValidator(BaseValidator):
+    """Validator for adding new vendor."""
+
+    schema = {
+        'type': 'object',
+        'properties': {
+            'name': {'type': 'string'},
+            'description': {'type': 'string'},
+        },
+        'required': ['name'],
+        'additionalProperties': False
+    }
+
+    def validate(self, request):
+        """Validate uploaded vendor data."""
+        super(VendorValidator, self).validate(request)
+        body = json.loads(request.body)
+
+        name = body['name'].strip()
+        if not name:
+            raise api_exc.ValidationError('Name should not be empty.')
