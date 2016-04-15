@@ -315,6 +315,78 @@ class GuidelinesControllerTestCase(BaseControllerTestCase):
         self.mock_abort.assert_called_with(500, mock.ANY)
 
 
+class GuidelinesTestsControllerTestCase(BaseControllerTestCase):
+
+    FAKE_GUIDELINES = {
+        'schema': '1.4',
+        'platform': {'required': ['compute', 'object']},
+        'components': {
+            'compute': {
+                'required': ['cap-1'],
+                'advisory': [],
+                'deprecated': [],
+                'removed': []
+            },
+            'object': {
+                'required': ['cap-2'],
+                'advisory': [],
+                'deprecated': [],
+                'removed': []
+            }
+        },
+        'capabilities': {
+            'cap-1': {
+                'tests': {
+                    'test_1': {'idempotent_id': 'id-1234'},
+                    'test_2': {'idempotent_id': 'id-5678',
+                               'aliases': ['test_2_1']},
+                    'test_3': {'idempotent_id': 'id-1111',
+                               'flagged': {'reason': 'foo'}}
+                }
+            },
+            'cap-2': {
+                'tests': {
+                    'test_4': {'idempotent_id': 'id-1233'}
+                }
+            }
+        }
+    }
+
+    def setUp(self):
+        super(GuidelinesTestsControllerTestCase, self).setUp()
+        self.controller = guidelines.TestsController()
+
+    @mock.patch('refstack.api.guidelines.Guidelines.get_guideline_contents')
+    @mock.patch('pecan.request')
+    def test_get_guideline_tests(self, mock_request, mock_get_contents):
+        """Test getting the test list string of a guideline."""
+        mock_get_contents.return_value = self.FAKE_GUIDELINES
+        mock_request.GET = {}
+        test_list_str = self.controller.get('2016,01')
+        expected_list = ['test_1[id-1234]', 'test_2[id-5678]',
+                         'test_2_1[id-5678]', 'test_3[id-1111]',
+                         'test_4[id-1233]']
+        expected_result = '\n'.join(expected_list)
+        self.assertEqual(expected_result, test_list_str)
+
+    @mock.patch('refstack.api.guidelines.Guidelines.get_guideline_contents')
+    def test_get_guideline_tests_fail(self, mock_get_contents):
+        """Test when the JSON content of a guideline can't be retrieved."""
+        mock_get_contents.return_value = None
+        result_str = self.controller.get('2016.02')
+        self.assertIn('Error getting JSON', result_str)
+
+    @mock.patch('refstack.api.guidelines.Guidelines.get_guideline_contents')
+    @mock.patch('pecan.request')
+    def test_get_guideline_tests_invalid_target(self, mock_request,
+                                                mock_get_contents):
+        """Test when the target is invalid."""
+        mock_get_contents.return_value = self.FAKE_GUIDELINES
+        mock_request.GET = {'target': 'foo'}
+        result_str = self.controller.get('2016.02')
+        self.assertIn('Invalid target', result_str)
+
+
 class BaseRestControllerWithValidationTestCase(BaseControllerTestCase):
 
     def setUp(self):

@@ -101,3 +101,76 @@ class Guidelines:
             LOG.warning('An error occurred trying to get raw capability file '
                         'contents from %s: %s' % (self.raw_url, e))
             return None
+
+    def get_target_capabilities(self, guideline_json, types=None,
+                                target='platform'):
+        """Get list of capabilities that match the given statuses and target.
+
+        If no list of types in given, then capabilities of all types
+        are given. If not target is specified, then all capabilities are given.
+        """
+        components = guideline_json['components']
+        targets = set()
+        if target != 'platform':
+            targets.add(target)
+        else:
+            targets.update(guideline_json['platform']['required'])
+
+        target_caps = set()
+        for component in targets:
+            for status, capabilities in components[component].items():
+                if types is None or status in types:
+                    target_caps.update(capabilities)
+
+        return list(target_caps)
+
+    def get_test_list(self, guideline_json, capabilities=[],
+                      alias=True, show_flagged=True):
+        """Generate a test list based on input.
+
+        A test list is formed from the given guideline JSON data and
+        list of capabilities. If 'alias' is True, test aliases are
+        included in the list. If 'show_flagged' is True, flagged tests are
+        included in the list.
+        """
+        caps = guideline_json['capabilities']
+        schema = guideline_json['schema']
+        test_list = []
+        for cap, cap_details in caps.items():
+            if cap in capabilities:
+                if schema == '1.2':
+                    for test in cap_details['tests']:
+                        if show_flagged:
+                            test_list.append(test)
+                        elif not show_flagged and \
+                            test not in cap_details['flagged']:
+                            test_list.append(test)
+                else:
+                    for test, test_details in cap_details['tests'].items():
+                        added = False
+                        if test_details.get('flagged'):
+                            if show_flagged:
+                                test_str = '{}[{}]'.format(
+                                    test,
+                                    test_details.get('idempotent_id', '')
+                                )
+                                test_list.append(test_str)
+                                added = True
+                        else:
+                            # Make sure the test UUID is in the test string.
+                            test_str = '{}[{}]'.format(
+                                test,
+                                test_details.get('idempotent_id', '')
+                            )
+                            test_list.append(test_str)
+                            added = True
+
+                        if alias and test_details.get('aliases') and added:
+                            for alias in test_details['aliases']:
+                                test_str = '{}[{}]'.format(
+                                    alias,
+                                    test_details.get('idempotent_id', '')
+                                )
+                                test_list.append(test_str)
+        test_list.sort()
+        return test_list

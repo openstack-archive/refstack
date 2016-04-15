@@ -23,6 +23,12 @@ SIGNED = 'signed'
 OPENID = 'openid'
 USER_PUBKEYS = 'pubkeys'
 
+# Guidelines tests requests parameters
+ALIAS = 'alias'
+FLAG = 'flag'
+TYPE = 'type'
+TARGET = 'target'
+
 # OpenID parameters
 OPENID_MODE = 'openid.mode'
 OPENID_NS = 'openid.ns'

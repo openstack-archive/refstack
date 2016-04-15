@@ -19,9 +19,54 @@ from oslo_log import log
 import pecan
 from pecan import rest
 
+from refstack.api import constants as const
 from refstack.api import guidelines
+from refstack.api import utils as api_utils
 
 LOG = log.getLogger(__name__)
+
+
+class TestsController(rest.RestController):
+    """v1/guidelines/<version>/tests handler.
+
+    This will allow users to retrieve specific test lists from specific
+    guidelines for use with refstack-client.
+    """
+
+    @pecan.expose(content_type='text/plain')
+    def get(self, version):
+        """Get the plain-text test list of the specified guideline version."""
+        # Remove the .json from version if it is there.
+        version.replace('.json', '')
+        g = guidelines.Guidelines()
+        json = g.get_guideline_contents(version)
+
+        if not json:
+            return 'Error getting JSON content for version: ' + version
+
+        if pecan.request.GET.get(const.TYPE):
+            types = pecan.request.GET.get(const.TYPE).split(',')
+        else:
+            types = None
+
+        if pecan.request.GET.get('alias'):
+            alias = api_utils.str_to_bool(pecan.request.GET.get('alias'))
+        else:
+            alias = True
+
+        if pecan.request.GET.get('flag'):
+            flag = api_utils.str_to_bool(pecan.request.GET.get('flag'))
+        else:
+            flag = True
+
+        target = pecan.request.GET.get('target', 'platform')
+        try:
+            target_caps = g.get_target_capabilities(json, types, target)
+            test_list = g.get_test_list(json, target_caps, alias, flag)
+        except KeyError:
+            return 'Invalid target: ' + target
+
+        return '\n'.join(test_list)
 
 
 class GuidelinesController(rest.RestController):
@@ -30,6 +75,8 @@ class GuidelinesController(rest.RestController):
     This acts as a proxy for retrieving guideline files
     from the openstack/defcore Github repository.
     """
+
+    tests = TestsController()
 
     @pecan.expose('json')
     def get(self):
