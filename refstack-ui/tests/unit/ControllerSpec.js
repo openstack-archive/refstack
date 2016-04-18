@@ -153,42 +153,6 @@ describe('Refstack controllers', function () {
                 expect(ctrl.getObjectLength(testObject)).toBe(2);
             });
 
-        it('should have a function to get a list of tests belonging to ' +
-           'capabilities with the selected statuses',
-            function () {
-                ctrl.targetCapabilities = {'cap-1': 'required',
-                                           'cap-2': 'advisory'};
-                ctrl.guidelines = {
-                    'schema': '1.4',
-                    'capabilities' : {
-                        'cap-1': {
-                            'tests': {
-                                'test_1': {'idempotent_id': 'id-1234'},
-                                'test_2': {'idempotent_id': 'id-5678'}
-                            }
-                        },
-                        'cap-2': {
-                            'tests': {
-                                'test_3': {'idempotent_id': 'id-1233'}
-                            }
-                        }
-                    }
-                };
-                expect(ctrl.getTestList()).toEqual(['test_1', 'test_2']);
-                ctrl.guidelines = {
-                    'schema': '1.2',
-                    'capabilities' : {
-                        'cap-1': {
-                            'tests': ['test_1', 'test_2']
-                        },
-                        'cap-2': {
-                            'tests': ['test_3']
-                        }
-                    }
-                };
-                expect(ctrl.getTestList()).toEqual(['test_1', 'test_2']);
-            });
-
         it('should have a method to open a modal for the relevant test list',
             function () {
                 var modal;
@@ -211,17 +175,11 @@ describe('Refstack controllers', function () {
             $window = _$window_;
             ctrl = $controller('TestListModalController',
                 {$uibModalInstance: modalInstance,
-                 tests: ['t1', 't2'],
+                 target: 'platform',
                  version: '2016.01',
                  status: {required: true, advisory: false}}
             );
         }));
-
-        it('should assign inputs to variables', function () {
-            expect(ctrl.tests).toEqual(['t1', 't2']);
-            expect(ctrl.version).toEqual('2016.01');
-            expect(ctrl.status).toEqual({required: true, advisory: false});
-        });
 
         it('should have a method to close the modal',
             function () {
@@ -229,33 +187,15 @@ describe('Refstack controllers', function () {
                 expect(modalInstance.dismiss).toHaveBeenCalledWith('exit');
             });
 
-        it('should have a method to convert the tests to a string',
+        it('should have a method to download the test list string',
             function () {
-                ctrl.tests = ['t2', 't1', 't3'];
-                var expectedString = 't1\nt2\nt3';
-                expect(ctrl.getTestListString()).toEqual(expectedString);
-            });
-
-        it('should have a method to download a test list',
-            function () {
-                var fakeElement = $window.document.createElement('a');
-                spyOn($window.document, 'createElement').and.callFake(
-                    function() {
-                        return fakeElement;
-                    });
-                spyOn($window.document.body, 'appendChild').and.callFake(
-                    function() {
-                        return true;
-                    });
-                spyOn($window.document.body, 'removeChild').and.callFake(
-                    function() {
-                        return true;
-                    });
-                ctrl.downloadTestList();
-                var doc = $window.document;
-                expect(doc.createElement).toHaveBeenCalledWith('a');
-                expect(doc.body.appendChild).toHaveBeenCalled();
-                expect(doc.body.removeChild).toHaveBeenCalled();
+                var fakeResp = 'test1\ntest2\ntest3';
+                $httpBackend.expectGET(fakeApiUrl +
+                '/guidelines/2016.01/tests?target=platform&' +
+                'type=required&alias=true&flag=false').respond(fakeResp);
+                $httpBackend.flush();
+                ctrl.updateTestListString();
+                expect(ctrl.testListCount).toBe(3);
             });
     });
 

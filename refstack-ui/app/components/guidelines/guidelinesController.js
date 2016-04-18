@@ -34,7 +34,6 @@
         ctrl.updateTargetCapabilities = updateTargetCapabilities;
         ctrl.filterStatus = filterStatus;
         ctrl.getObjectLength = getObjectLength;
-        ctrl.getTestList = getTestList;
         ctrl.openTestListModal = openTestListModal;
 
         /** The target OpenStack marketing program to show capabilities for. */
@@ -185,33 +184,6 @@
         }
 
         /**
-         * This will give a list of tests belonging to capabilities with
-         * the selected status(es).
-         */
-        function getTestList() {
-            if (!ctrl.guidelines) {
-                return;
-            }
-            var caps = ctrl.guidelines.capabilities;
-            var tests = [];
-            angular.forEach(ctrl.targetCapabilities,
-                function (status, cap) {
-                    if (ctrl.status[status]) {
-                        if (ctrl.guidelines.schema === '1.2') {
-                            tests.push.apply(tests, caps[cap].tests);
-                        }
-                        else {
-                            angular.forEach(caps[cap].tests,
-                                function(info, test) {
-                                    tests.push(test);
-                                });
-                        }
-                    }
-                });
-            return tests;
-        }
-
-        /**
          * This will open the modal that will show a list of all tests
          * belonging to capabilities with the selected status(es).
          */
@@ -225,14 +197,11 @@
                 controller: 'TestListModalController as modal',
                 size: 'lg',
                 resolve: {
-                    tests: function () {
-                        return ctrl.getTestList();
-                    },
                     version: function () {
-                        if (!ctrl.version) {
-                            return;
-                        }
                         return ctrl.version.slice(0, -5);
+                    },
+                    target: function () {
+                        return ctrl.target;
                     },
                     status: function () {
                         return ctrl.status;
@@ -249,7 +218,8 @@
         .controller('TestListModalController', TestListModalController);
 
     TestListModalController.$inject = [
-        '$uibModalInstance', '$window', 'tests', 'version', 'status'
+        '$uibModalInstance', '$window', '$http', 'version',
+        'target', 'status', 'refstackApiUrl'
     ];
 
     /**
@@ -258,17 +228,20 @@
      * test list corresponding to DefCore capabilities with the selected
      * statuses.
      */
-    function TestListModalController($uibModalInstance, $window, tests,
-        version, status) {
+    function TestListModalController($uibModalInstance, $window, $http, version,
+        target, status, refstackApiUrl) {
 
         var ctrl = this;
 
-        ctrl.tests = tests;
         ctrl.version = version;
+        ctrl.target = target;
         ctrl.status = status;
+        ctrl.url = refstackApiUrl;
         ctrl.close = close;
-        ctrl.getTestListString = getTestListString;
-        ctrl.downloadTestList = downloadTestList;
+        ctrl.updateTestListString = updateTestListString;
+
+        ctrl.aliases = true;
+        ctrl.flagged = false;
 
         /**
          * This function will close/dismiss the modal.
@@ -278,33 +251,62 @@
         }
 
         /**
-         * This function will return a string representing the sorted
-         * tests list separated by newlines.
+         * This function will return a list of statuses based on which ones
+         * are selected.
          */
-        function getTestListString() {
-            if (!ctrl.tests) {
-                return;
-            }
-            return ctrl.tests.sort().join('\n');
+        function getStatusList() {
+            var statusList = [];
+            angular.forEach(ctrl.status, function(value, key) {
+                if (value) {
+                    statusList.push(key);
+                }
+            });
+            return statusList;
         }
 
         /**
-         * Serve the test list as a downloadable file.
+         * This will get the list of tests from the API and update the
+         * controller's test list string variable.
          */
-        function downloadTestList() {
-            var blob = new Blob([ctrl.getTestListString()], {type: 'text/csv'});
-            var filename = ctrl.version + '-test-list.txt';
-            if ($window.navigator.msSaveOrOpenBlob) {
-                $window.navigator.msSaveBlob(blob, filename);
+        function updateTestListString() {
+            var statuses = getStatusList();
+            if (!statuses.length) {
+                ctrl.error = 'No tests matching selected criteria.';
+                return;
             }
-            else {
-                var a = $window.document.createElement('a');
-                a.href = $window.URL.createObjectURL(blob);
-                a.download = filename;
-                $window.document.body.appendChild(a);
-                a.click();
-                $window.document.body.removeChild(a);
-            }
+            ctrl.testListUrl = [
+                ctrl.url, '/guidelines/', ctrl.version, '/tests?',
+                'target=', ctrl.target, '&',
+                'type=', statuses.join(','), '&',
+                'alias=', ctrl.aliases.toString(), '&',
+                'flag=', ctrl.flagged.toString()
+            ].join('');
+            ctrl.testListRequest =
+                $http.get(ctrl.testListUrl).
+                    then(function successCallback(response) {
+                        ctrl.error = null;
+                        ctrl.testListString = response.data;
+                        if (!ctrl.testListString) {
+                            ctrl.testListCount = 0;
+                        }
+                        else {
+                            ctrl.testListCount =
+                                ctrl.testListString.split('\n').length;
+                        }
+                    }, function errorCallback(response) {
+                        ctrl.testListString = null;
+                        ctrl.testListCount = null;
+                        if (angular.isObject(response.data) &&
+                            response.data.message) {
+                            ctrl.error = 'Error retrieving test list: ' +
+                                response.data.message;
+                        }
+                        else {
+                            ctrl.error = 'Unknown error retrieving test list.';
+                        }
+                    });
         }
+
+        updateTestListString();
     }
 })();

@@ -1,24 +1,46 @@
 <div class="modal-content">
     <div class="modal-header">
         <button type="button" class="close" aria-hidden="true" ng-click="modal.close()">&times;</button>
-        <h4>Test List ({{modal.tests.length}})</h4>
+        <h4>Test List ({{modal.testListCount}})</h4>
         <p>Use this test list with <a title="refstack-client" target="_blank"href="https://github.com/openstack/refstack-client">refstack-client</a>
            to run only tests in the {{modal.version}} DefCore guideline from capabilities with the following statuses:
         </p>
-            <ul class="list-inline">
-                <li class="required" ng-if="modal.status.required"> Required</li>
-                <li class="advisory" ng-if="modal.status.advisory"> Advisory</li>
-                <li class="deprecated" ng-if="modal.status.deprecated"> Deprecated</li>
-                <li class="removed" ng-if="modal.status.removed"> Removed</li>
-            </ul>
+        <ul class="list-inline">
+            <li class="required" ng-if="modal.status.required"> Required</li>
+            <li class="advisory" ng-if="modal.status.advisory"> Advisory</li>
+            <li class="deprecated" ng-if="modal.status.deprecated"> Deprecated</li>
+            <li class="removed" ng-if="modal.status.removed"> Removed</li>
+        </ul>
+        <div class="checkbox checkbox-test-list">
+            <label><input type="checkbox" ng-model="modal.aliases" ng-change="modal.updateTestListString()">Aliases</label>
+            <span class="glyphicon glyphicon-info-sign info-hover" aria-hidden="true"
+                  title="Include test aliases as tests may have been renamed over time. It does not hurt to include these."></span>
+            &nbsp;
+            <label><input type="checkbox" ng-model="modal.flagged" ng-change="modal.updateTestListString()">Flagged</label>
+            <span class="glyphicon glyphicon-info-sign info-hover" aria-hidden="true"
+                  title="Include flagged tests.">
+            </span>
+        </div>
+        <p ng-hide="modal.error"> Alternatively, get the test list directly from the API on your CLI:</p>
+        <code ng-hide="modal.error">wget "{{modal.testListUrl}}" -O {{modal.version}}-test-list.txt</code>
     </div>
     <div class="modal-body tests-modal-content">
-         <div class="form-group">
-             <textarea class="form-control" rows="20" id="tests" wrap="off">{{modal.getTestListString()}}</textarea>
-         </div>
+        <div cg-busy="{promise:modal.testListRequest,message:'Loading'}"></div>
+        <div ng-show="modal.error" class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            {{modal.error}}
+        </div>
+        <div class="form-group">
+            <textarea class="form-control" rows="16" id="tests" wrap="off">{{modal.testListString}}</textarea>
+        </div>
     </div>
     <div class="modal-footer">
-        <button class="btn btn-primary" ng-if="modal.tests.length>0" type="button" ng-click="modal.downloadTestList()">Download</button>
+        <a target="_blank" href="{{modal.testListUrl}}" download="{{modal.version + '-test-list.txt'}}">
+            <button class="btn btn-primary" ng-if="modal.testListCount > 0" type="button">
+                Download
+            </button>
+        </a>
         <button class="btn btn-primary" type="button" ng-click="modal.close()">Close</button>
     </div>
 </div>

@@ -69,6 +69,17 @@ h1, h2, h3, h4, h5, h6 {
   padding: 10px;
 }
 
+.checkbox-test-list {
+  word-spacing: normal;
+  background: none;
+}
+
+.checkbox-test-list .info-hover {
+  font-size: 12px;
+  color: #878787;
+  cursor: help;
+}
+
 .capabilities {
   color: #4B4B4B;
 }
@@ -179,6 +190,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .tests-modal-content textarea {
   font-size: .9em;
+  resize: none;
 }
 
 .test-detail {
