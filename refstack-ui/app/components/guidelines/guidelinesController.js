@@ -218,7 +218,7 @@
         .controller('TestListModalController', TestListModalController);
 
     TestListModalController.$inject = [
-        '$uibModalInstance', '$window', '$http', 'version',
+        '$uibModalInstance', '$http', 'version',
         'target', 'status', 'refstackApiUrl'
     ];
 
@@ -228,7 +228,7 @@
      * test list corresponding to DefCore capabilities with the selected
      * statuses.
      */
-    function TestListModalController($uibModalInstance, $window, $http, version,
+    function TestListModalController($uibModalInstance, $http, version,
         target, status, refstackApiUrl) {
 
         var ctrl = this;
@@ -236,12 +236,20 @@
         ctrl.version = version;
         ctrl.target = target;
         ctrl.status = status;
-        ctrl.url = refstackApiUrl;
         ctrl.close = close;
         ctrl.updateTestListString = updateTestListString;
 
         ctrl.aliases = true;
         ctrl.flagged = false;
+
+        // Check if the API URL is absolute or relative.
+        if (refstackApiUrl.indexOf('http') > -1) {
+            ctrl.url = refstackApiUrl;
+        }
+        else {
+            ctrl.url = location.protocol + '//' + location.host +
+                refstackApiUrl;
+        }
 
         /**
          * This function will close/dismiss the modal.
