@@ -707,15 +707,15 @@ class DBBackendTestCase(base.BaseTestCase):
         query = session.query.return_value
         filtered = query.filter_by.return_value
         product = models.Product()
-        product.product_id = '123'
+        product.id = '123'
         filtered.first.return_value = product
 
         product_info = {'product_id': '098', 'name': 'a', 'description': 'b',
                         'creator_openid': 'abc', 'organization_id': '1',
-                        'type': 0, 'product_type': 0}
+                        'type': 0, 'product_type': 0, 'id': '123'}
         api.update_product(product_info)
 
-        self.assertEqual('123', product.product_id)
+        self.assertEqual('098', product.product_id)
         self.assertIsNone(product.created_by_user)
         self.assertIsNone(product.organization_id)
         self.assertIsNone(product.type)

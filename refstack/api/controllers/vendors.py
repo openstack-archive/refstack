@@ -128,7 +128,7 @@ class VendorsController(validation.BaseRestControllerWithValidation):
             vendor_info['properties'] = json.dumps(kw['properties'])
         db.update_organization(vendor_info)
 
-        pecan.response.status = 201
+        pecan.response.status = 200
         vendor = db.get_organization(vendor_id)
         vendor['can_manage'] = True
         return vendor

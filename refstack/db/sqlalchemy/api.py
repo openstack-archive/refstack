@@ -437,7 +437,7 @@ def add_product(product_info, creator):
     product = models.Product()
     product.type = product_info['type']
     product.product_type = product_info['product_type']
-    product.product_id = product_info['product_id']
+    product.product_id = product_info.get('product_id')
     product.name = product_info['name']
     product.description = product_info.get('description')
     product.organization_id = product_info['organization_id']
@@ -452,17 +452,17 @@ def add_product(product_info, creator):
 
 
 def update_product(product_info):
-    """Update product by product_id."""
+    """Update product by id."""
     session = get_session()
-    _id = product_info.get('product_id')
-    product = session.query(models.Product).filter_by(product_id=_id).first()
+    _id = product_info.get('id')
+    product = session.query(models.Product).filter_by(id=_id).first()
     if product is None:
-        raise NotFound('Product with product_id %s not found' % _id)
+        raise NotFound('Product with id %s not found' % _id)
 
-    product.name = product_info.get('name', product.name)
-    product.description = product_info.get('description', product.description)
-    product.public = product_info.get('public', product.public)
-    product.properties = product_info.get('properties', product.properties)
+    keys = ['name', 'description', 'product_id', 'public', 'properties']
+    for key in keys:
+        if key in product_info:
+            setattr(product, key, product_info[key])
 
     with session.begin():
         product.save(session=session)
@@ -543,6 +543,43 @@ def get_organizations_by_user(user_openid, allowed_keys=None):
     session = get_session()
     items = (
         session.query(models.Organization, models.Group, models.UserToGroup)
+        .join(models.Group,
+              models.Group.id == models.Organization.group_id)
+        .join(models.UserToGroup,
+              models.Group.id == models.UserToGroup.group_id)
+        .filter(models.UserToGroup.user_openid == user_openid)
+        .order_by(models.Organization.created_at.desc()).all())
+    items = [item[0] for item in items]
+    return _to_dict(items, allowed_keys=allowed_keys)
+
+
+def get_public_products(allowed_keys=None):
+    """Get public products."""
+    session = get_session()
+    items = (
+        session.query(models.Product)
+        .filter_by(public=True)
+        .order_by(models.Product.created_at.desc()).all())
+    return _to_dict(items, allowed_keys=allowed_keys)
+
+
+def get_products(allowed_keys=None):
+    """Get all products."""
+    session = get_session()
+    items = (
+        session.query(models.Product)
+        .order_by(models.Product.created_at.desc()).all())
+    return _to_dict(items, allowed_keys=allowed_keys)
+
+
+def get_products_by_user(user_openid, allowed_keys=None):
+    """Get all products that user can manage."""
+    session = get_session()
+    items = (
+        session.query(models.Product, models.Organization, models.Group,
+                      models.UserToGroup)
+        .join(models.Organization,
+              models.Organization.id == models.Product.organization_id)
         .join(models.Group,
               models.Group.id == models.Organization.group_id)
         .join(models.UserToGroup,

@@ -92,6 +92,8 @@ def parse_input_params(expected_input_params):
 
 def str_to_bool(param):
     """Check if a string value should be evaluated as True or False."""
+    if isinstance(param, bool):
+        return param
     return param.lower() in ("true", "yes", "1")
 
 

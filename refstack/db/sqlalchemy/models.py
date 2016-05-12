@@ -225,7 +225,7 @@ class Product(BASE, RefStackBase):  # pragma: no cover
 
     id = sa.Column(sa.String(36), primary_key=True,
                    default=lambda: six.text_type(uuid.uuid4()))
-    product_id = sa.Column(sa.String(36), nullable=False)
+    product_id = sa.Column(sa.String(36), nullable=True)
     name = sa.Column(sa.String(80), nullable=False)
     description = sa.Column(sa.Text())
     organization_id = sa.Column(sa.String(36),
@@ -241,5 +241,6 @@ class Product(BASE, RefStackBase):  # pragma: no cover
     @property
     def default_allowed_keys(self):
         """Default keys."""
-        return ('id', 'product_id', 'name', 'description', 'organization_id',
-                'created_by_user', 'properties', 'type', 'product_type')
+        return ('id', 'name', 'description', 'product_id', 'product_type',
+                'public', 'properties', 'created_at', 'updated_at',
+                'organization_id', 'created_by_user', 'type')

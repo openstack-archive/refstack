@@ -16,6 +16,7 @@
 """Validators module."""
 
 import binascii
+import six
 import uuid
 
 import json
@@ -71,6 +72,17 @@ class BaseValidator(object):
         except jsonschema.ValidationError as e:
             raise api_exc.ValidationError(
                 'Request doesn''t correspond to schema', e)
+
+    def check_emptyness(self, body, keys):
+        """Check that all values are not empty."""
+        for key in keys:
+            value = body[key]
+            if isinstance(value, six.string_types):
+                value = value.strip()
+                if not value:
+                    raise api_exc.ValidationError(key + ' should not be empty')
+            elif value is None:
+                raise api_exc.ValidationError(key + ' must be present')
 
 
 class TestResultValidator(BaseValidator):
@@ -195,6 +207,27 @@ class VendorValidator(BaseValidator):
         super(VendorValidator, self).validate(request)
         body = json.loads(request.body)
 
-        name = body['name'].strip()
-        if not name:
-            raise api_exc.ValidationError('Name should not be empty.')
+        self.check_emptyness(body, ['name'])
+
+
+class ProductValidator(BaseValidator):
+    """Validate uploaded product data."""
+
+    schema = {
+        'type': 'object',
+        'properties': {
+            'name': {'type': 'string'},
+            'description': {'type': 'string'},
+            'product_type': {'type': 'integer'},
+            'organization_id': {'type': 'string', 'format': 'uuid_hex'},
+        },
+        'required': ['name', 'product_type'],
+        'additionalProperties': False
+    }
+
+    def validate(self, request):
+        """Validate uploaded test results."""
+        super(ProductValidator, self).validate(request)
+        body = json.loads(request.body)
+
+        self.check_emptyness(body, ['name', 'product_type'])

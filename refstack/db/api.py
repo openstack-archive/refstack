@@ -236,3 +236,18 @@ def get_organizations_by_user(user_openid, allowed_keys=None):
     """Get organizations for specified user."""
     return IMPL.get_organizations_by_user(user_openid,
                                           allowed_keys=allowed_keys)
+
+
+def get_public_products(allowed_keys=None):
+    """Get all public products."""
+    return IMPL.get_public_products(allowed_keys=allowed_keys)
+
+
+def get_products(allowed_keys=None):
+    """Get all products."""
+    return IMPL.get_products(allowed_keys=allowed_keys)
+
+
+def get_products_by_user(user_openid, allowed_keys=None):
+    """Get all products that user can manage."""
+    return IMPL.get_products_by_user(user_openid, allowed_keys=allowed_keys)
