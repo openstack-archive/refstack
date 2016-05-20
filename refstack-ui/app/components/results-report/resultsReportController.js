@@ -309,7 +309,7 @@
 
         /**
          * This will build the a capability object for schema version 1.3 and
-         * 1.4. This object will contain the information needed to form a
+         * above. This object will contain the information needed to form a
          * report in the HTML template.
          * @param {String} capId capability ID
          */
@@ -386,6 +386,7 @@
                     break;
                 case '1.3':
                 case '1.4':
+                case '1.5':
                     capMethod = 'buildCapabilityV1_3';
                     break;
                 default:
