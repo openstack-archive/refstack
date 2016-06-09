@@ -78,6 +78,21 @@
                 url: '/logout',
                 templateUrl: '/components/logout/logout.html',
                 controller: 'LogoutController as ctrl'
+            }).
+            state('userVendors', {
+                url: '/user_vendors',
+                templateUrl: '/components/vendors/vendors.html',
+                controller: 'VendorsController as ctrl'
+            }).
+            state('publicVendors', {
+                url: '/public_vendors',
+                templateUrl: '/components/vendors/vendors.html',
+                controller: 'VendorsController as ctrl'
+            }).
+            state('vendor', {
+                url: '/vendor/:vendorID',
+                templateUrl: '/components/vendors/vendor.html',
+                controller: 'VendorController as ctrl'
             });
     }
 

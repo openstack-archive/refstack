@@ -1,0 +1,85 @@
+<div ng-show="ctrl.vendor" class="container-fluid">
+    <div class="row">
+        <div class="pull-left">
+            <div class="test-report">
+                <strong>Vendor ID:</strong> {{ctrl.vendorId}}<br />
+                <strong>Type:</strong>
+                    <span ng-show="ctrl.vendor.type == 0">OpenStack</span>
+                    <span ng-show="ctrl.vendor.type == 1" class="text-info">Private</span>
+                    <span ng-show="ctrl.vendor.type == 2" class="text-warning">Pending Approval</span>
+                    <span ng-show="ctrl.vendor.type == 3" class="text-success">Official</span>
+                <br />
+                <strong>Name:</strong> {{ctrl.vendor.name}}<br />
+                <strong>Description:</strong> {{ctrl.vendor.description}}<br />
+            </div>
+        </div>
+
+        <div class="pull-right">
+            <a ng-if="ctrl.vendor.canDelete" href="javascript:void(0)" ng-click="ctrl.deleteVendor()" confirm="Are you sure you want to delete this vendor?">Delete</a><br />
+            <a ng-if="ctrl.vendor.canRegister" href="javascript:void(0)" ng-click="ctrl.registerVendor()">Register with Foundation</a><br />
+            <a ng-if="ctrl.vendor.canApprove && ctrl.vendor.type == 2" href="javascript:void(0)" ng-click="ctrl.approveVendor()"
+               confirm="Are you sure you want to approve this vendor?">Approve registration</a><br />
+            <a ng-if="ctrl.vendor.canApprove && ctrl.vendor.type == 2" href="javascript:void(0)" ng-click="ctrl.declineVendor()">Decline registration</a><br />
+        </div>
+    </div>
+
+    <div class="row">
+        <div ng-if="ctrl.vendorProperties.reason">
+            <hr />
+            <strong>Decline reason:</strong> {{ctrl.vendorProperties.reason}}<br />
+        </div>
+    </div>
+
+    <div ng-show="ctrl.vendorUsers" class="row">
+        <hr />
+        <h3>Vendor Users</h3>
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Open ID</th>
+                    <th>Full Name</th>
+                    <th>E-Mail</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr ng-repeat="user in ctrl.vendorUsers">
+                    <td>{{user.openid}}</td>
+                    <td>{{user.fullname}}</td>
+                    <td>{{user.email}}</td>
+                    <td>
+                        <a ng-if="user.openid != ctrl.currentUser"
+                           href="javascript:void(0)"
+                           ng-click="ctrl.removeUserFromVendor(user.openid)"
+                           confirm="Are you sure you want to remove this user from vendor?">Remove</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="row form-group">
+            <div class="col-md-6">
+                <label for="new_user">Add user to vendor:</label> 
+                <input type="text"
+                       class="form-control"
+                       id="new_user"
+                       placeholder="Input Open ID"
+                       ng-model="ctrl.userToAdd">
+            </div>
+            <div class="col-md-1" style="margin-top:25px;">
+                <button type="submit" class="btn btn-primary" ng-click="ctrl.addUserToVendor(ctrl.userToAdd)">Add User</button>
+            </div>
+        </div>
+        <hr />
+    </div>
+</div>
+
+<!-- Loading animation divs -->
+<div cg-busy="{promise:ctrl.vendorRequest,message:'Loading'}"></div>
+<div cg-busy="{promise:ctrl.usersRequest,message:'Loading'}"></div>
+
+<div ng-show="ctrl.showError" class="alert alert-danger" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    <span class="sr-only">Error:</span>
+    {{ctrl.error}}
+</div>

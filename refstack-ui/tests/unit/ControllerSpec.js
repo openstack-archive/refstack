@@ -724,6 +724,40 @@ describe('Refstack controllers', function () {
             });
     });
 
+    describe('TestCustomConfirmModalController', function() {
+        var data, someFunc, modalInstance, ctrl;
+
+        beforeEach(inject(function ($controller) {
+            modalInstance = {
+                dismiss: jasmine.createSpy('modalInstance.dismiss'),
+                close: jasmine.createSpy('modalInstance.close')
+            };
+
+            someFunc = jasmine.createSpy('someFunc');
+            data = {
+                text: 'Some input',
+                successHandler: someFunc
+            };
+
+            ctrl = $controller('CustomConfirmModalController',
+                {$uibModalInstance: modalInstance, data: data}
+            );
+        }));
+
+        it('should have a function to confirm',
+            function () {
+                ctrl.inputText = 'foo';
+                ctrl.confirm();
+                expect(someFunc).toHaveBeenCalledWith('foo');
+            });
+
+        it('should have a function to dismiss the modal',
+            function () {
+                ctrl.cancel();
+                expect(modalInstance.dismiss).toHaveBeenCalledWith('cancel');
+            });
+    });
+
     describe('AuthFailureController', function() {
         var $location, ctrl;
 
@@ -738,6 +772,179 @@ describe('Refstack controllers', function () {
                 expect($location.url()).toBe('/auth_failure?message=' +
                 'some_error_message');
                 expect(ctrl.message).toBe('some_error_message');
+            });
+    });
+
+    describe('VendorController', function() {
+        var rootScope, scope, stateParams, ctrl;
+        var confirmModal = jasmine.createSpy('confirmModal');
+        var fakeResp = {'id': 'fake-id', 'type': 1,
+                         'can_manage': true, 'properties' : {}};
+        var fakeUsersResp = [{'openid': 'foo'}];
+        var fakeWindow = {
+            location: {
+                href: ''
+            }
+        };
+
+        beforeEach(inject(function ($controller, $rootScope) {
+            scope = $rootScope.$new();
+            rootScope = $rootScope.$new();
+            rootScope.auth = {'currentUser' : {'is_admin': false,
+                                               'openid': 'foo'}
+                             };
+            stateParams = {vendorID: 1234};
+            ctrl = $controller('VendorController',
+                {$rootScope: rootScope, $scope: scope,
+                 $stateParams: stateParams, $window: fakeWindow,
+                 confirmModal: confirmModal}
+            );
+
+            $httpBackend.when('GET', fakeApiUrl +
+            '/vendors/1234').respond(fakeResp);
+            $httpBackend.when('GET', fakeApiUrl +
+            '/vendors/1234/users').respond(fakeUsersResp);
+        }));
+
+        it('should have a function to get vendor info from API',
+            function () {
+                ctrl.getVendor();
+                $httpBackend.flush();
+                expect(ctrl.vendor.id).toEqual('fake-id');
+                expect(ctrl.vendor.can_manage).toEqual(true);
+                expect(ctrl.vendor.canDelete).toEqual(true);
+                expect(ctrl.vendor.canRegister).toEqual(true);
+                expect(ctrl.vendor.canApprove).toEqual(false);
+            });
+
+        it('should have a function to get vendor users',
+            function () {
+                ctrl.getVendorUsers();
+                $httpBackend.flush();
+                expect(ctrl.vendorUsers).toEqual(fakeUsersResp);
+                expect(ctrl.currentUser).toEqual('foo');
+            });
+
+        it('should have a function to register a vendor',
+            function () {
+                $httpBackend.expectPOST(
+                    fakeApiUrl + '/vendors/1234/action',
+                    {'register': null})
+                    .respond(201, '');
+                ctrl.registerVendor();
+                $httpBackend.flush();
+            });
+
+        it('should have a function to approve a vendor',
+            function () {
+                $httpBackend.expectPOST(
+                    fakeApiUrl + '/vendors/1234/action',
+                    {'approve': null})
+                    .respond(201, '');
+                ctrl.approveVendor();
+                $httpBackend.flush();
+            });
+
+        it('a confirmation modal should come up when declining a vendor',
+            function () {
+                ctrl.declineVendor();
+                expect(confirmModal).toHaveBeenCalled();
+            });
+
+        it('should have a function to delete a vendor',
+            function () {
+                $httpBackend.expectDELETE(
+                    fakeApiUrl + '/vendors/1234').respond(202, '');
+                ctrl.deleteVendor();
+                $httpBackend.flush();
+                expect(fakeWindow.location.href).toEqual('/');
+            });
+
+        it('should have to a function to remove a user from a vendor',
+            function () {
+                var fakeId = 'fake-id';
+                $httpBackend.expectDELETE(
+                    fakeApiUrl + '/vendors/1234/users/' + btoa(fakeId))
+                    .respond(202, '');
+                ctrl.removeUserFromVendor(fakeId);
+                $httpBackend.flush();
+            });
+
+        it('should have to a function to add a user to a vendor',
+            function () {
+                var fakeId = 'fake-id';
+                $httpBackend.expectPUT(
+                    fakeApiUrl + '/vendors/1234/users/' + btoa(fakeId))
+                    .respond(204, '');
+                ctrl.addUserToVendor(fakeId);
+                $httpBackend.flush();
+            });
+    });
+
+    describe('VendorsController', function() {
+        var rootScope, scope, ctrl;
+        var fakeResp = {'vendors': [{'can_manage': true,
+                                     'type': 3,
+                                     'name': 'Foo'},
+                                    {'can_manage': true,
+                                     'type': 3,
+                                     'name': 'Bar'}]};
+        beforeEach(inject(function ($controller, $rootScope) {
+            scope = $rootScope.$new();
+            rootScope = $rootScope.$new();
+            rootScope.auth = {'currentUser' : {'is_admin': false,
+                                               'openid': 'foo'}
+                             };
+            ctrl = $controller('VendorsController',
+                {$rootScope: rootScope, $scope: scope}
+            );
+            $httpBackend.when('GET', fakeApiUrl +
+                '/vendors').respond(fakeResp);
+        }));
+
+        it('should have a function to get a listing of all vendors',
+            function () {
+                $httpBackend.expectGET(fakeApiUrl + '/vendors')
+                    .respond(fakeResp);
+                ctrl.update();
+                $httpBackend.flush();
+                expect(ctrl.rawData).toEqual(fakeResp);
+            });
+
+        it('should have a function to update/sort data based on settings',
+            function () {
+                ctrl.rawData = fakeResp;
+                ctrl.updateData();
+                var expectedResponse = {'vendors': [{'can_manage': true,
+                                                     'type': 3,
+                                                     'name' : 'Bar'},
+                                                    {'can_manage': true,
+                                                     'type': 3,
+                                                     'name': 'Foo'}]};
+                expect(ctrl.data).toEqual(expectedResponse);
+            });
+
+        it('should have a function to determine if a vendor should be shown',
+            function () {
+                var fakeVendor = {'type': 0, 'can_manage': false};
+                expect(ctrl._filterVendor(fakeVendor)).toEqual(true);
+                ctrl.isUserVendors = true;
+                expect(ctrl._filterVendor(fakeVendor)).toEqual(false);
+                ctrl.isUserVendors = false;
+                rootScope.auth.currentUser.is_admin = true;
+                expect(ctrl._filterVendor(fakeVendor)).toEqual(true);
+            });
+
+        it('should have a function to add a new vendor',
+            function () {
+                ctrl.name = 'New Vendor';
+                ctrl.description = 'A description';
+                $httpBackend.expectPOST(
+                    fakeApiUrl + '/vendors',
+                    {name: ctrl.name, description: ctrl.description})
+                    .respond(200, fakeResp);
+                ctrl.addVendor();
+                $httpBackend.flush();
             });
     });
 });

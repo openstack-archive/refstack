@@ -30,6 +30,7 @@
         var ctrl = this;
 
         ctrl.isActive = isActive;
+        ctrl.isCatalogActive = isCatalogActive;
 
         /** Whether the Navbar is collapsed for small displays. */
         ctrl.navbarCollapsed = true;
@@ -48,6 +49,14 @@
                 }
             }
             return false;
+        }
+
+        /** This determines the active state for the catalog dropdown. Type
+         * parameter should be passed in to specify if the catalog is the
+         * public or user one.
+         */
+        function isCatalogActive(type) {
+            return ctrl.isActive('/' + type + '_vendors');
         }
     }
 })();

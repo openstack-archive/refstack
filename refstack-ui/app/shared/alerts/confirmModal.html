@@ -1,0 +1,13 @@
+<div class="modal-header"><h3 class="modal-title">Confirm</h3></div>
+<div class="modal-body">
+    <div class="form-group">
+        <label for="confirmText">{{confirmModal.data.text}}:</label>
+        <textarea type="text" class="form-control"
+                  rows="5" ng-model="confirmModal.inputText" id="confirmText">
+        </textarea>
+    </div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary" ng-click="confirmModal.confirm()">Ok</button>
+    <button class="btn btn-default" ng-click="confirmModal.cancel()">Cancel</button>
+</div>

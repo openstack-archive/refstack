@@ -1,0 +1,69 @@
+<h3>{{ctrl.pageHeader}}</h3>
+<p>{{ctrl.pageParagraph}}</p>
+
+<div cg-busy="{promise:ctrl.authRequest,message:'Loading'}"></div>
+<div cg-busy="{promise:ctrl.vendorsRequest,message:'Loading'}"></div>
+
+<div ng-show="ctrl.data" class="vendors-table">
+    <label ng-if="ctrl.isAdminView && ctrl.isUserVendors">
+        <input type="checkbox" ng-model="ctrl.withPrivate" ng-change="ctrl.updateData();">&nbsp;Show private vendors
+    </label>
+    <br />
+    <table ng-show="ctrl.data" class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="vendor in ctrl.data.vendors">
+                <td ng-if="ctrl.isUserVendors"><a ui-sref="vendor({vendorID: vendor.id})">{{vendor.name}}</a></td>
+                <td ng-if="!ctrl.isUserVendors">{{vendor.name}}</td>
+                <td>{{vendor.description || '-'}}</td>
+                <td>
+                    <span ng-show="vendor.type == 0" class="glyphicon glyphicon-exclamation-sign">&nbsp;OpenStack</span>
+                    <span ng-show="vendor.type == 1" class="glyphicon glyphicon-eye-close">&nbsp;Private</span>
+                    <span ng-show="vendor.type == 2" class="glyphicon glyphicon-transfer">&nbsp;Pending Approval</span>
+                    <span ng-show="vendor.type == 3" class="glyphicon glyphicon-check">&nbsp;Official</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div ng-if="ctrl.isUserVendors">
+    <hr />
+    <h4>Add new vendor</h4>
+    <p>Creating a vendor allows you to associate test results to specific vendors/products.
+       Created vendors are private, but vendors can be registered with the Foundation to become public and official.
+       This will require approval by a Foundation administrator.</p>
+    <div class="row">
+        <div class="col-md-3">
+            <label>Name</label>
+            <p class="input-group">
+                <input type="text" class="form-control"
+                    ng-model="ctrl.name" close-text="Close" />
+            </p>
+        </div>
+        <div class="col-md-6">
+            <label>Description</label>
+            <p class="input-group">
+                <input type="text" class="form-control" size="80"
+                    ng-model="ctrl.description" close-text="Close" />
+            </p>
+        </div>
+        <div class="col-md-3" style="margin-top:24px;">
+            <button type="submit" class="btn btn-primary" ng-click="ctrl.addVendor()">Add Vendor</button>
+        </div>
+    </div>
+</div>
+
+<div cg-busy="{promise:ctrl.vendorsRequest,message:'Loading'}"></div>
+
+<div ng-show="ctrl.showError" class="alert alert-danger" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    <span class="sr-only">Error:</span>
+    {{ctrl.error}}
+</div>
