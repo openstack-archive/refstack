@@ -56,7 +56,8 @@
          * public or user one.
          */
         function isCatalogActive(type) {
-            return ctrl.isActive('/' + type + '_vendors');
+            return ctrl.isActive('/' + type + '_vendors')
+                   || ctrl.isActive('/' + type + '_products');
         }
     }
 })();

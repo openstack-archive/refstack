@@ -25,6 +25,7 @@ RefStack
                 </a>
                 <ul class="dropdown-menu">
                     <li><a ui-sref="publicVendors">Vendors</a></li>
+                    <li><a ui-sref="publicProducts">Products</a></li>
                 </ul>
             </li>
           </ul>
@@ -36,6 +37,7 @@ RefStack
                 </a>
                 <ul class="dropdown-menu">
                     <li><a ui-sref="userVendors">My Vendors</a></li>
+                    <li><a ui-sref="userProducts">My Products</a></li>
                 </ul>
             </li>
             <li ng-class="{ active: header.isActive('/profile')}" ng-if="auth.isAuthenticated"><a ui-sref="profile">Profile</a></li>

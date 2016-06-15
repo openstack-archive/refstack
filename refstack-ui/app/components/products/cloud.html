@@ -1,0 +1,16 @@
+<h3>Cloud Product</h3>
+<div ng-show="ctrl.product" class="container-fluid">
+    <div class="row">
+        <div class="pull-left">
+            <div class="test-report">
+                <strong>Name:</strong> {{ctrl.product.name}}<br />
+                <strong>Product ID:</strong> {{ctrl.id}}<br />
+                <strong>Description:</strong> {{ctrl.product.description}}<br />
+                <strong>Publicity:</strong> {{ctrl.product.public ? 'Public' : 'Private'}}<br />
+                <strong>Vendor Name:</strong> {{ctrl.vendor.name}}<br />
+                <strong>Vendor Description:</strong> {{ctrl.vendor.description || '-'}}<br />
+            </div>
+        </div>
+        <div ng-include src="'components/products/partials/management.html'"></div>
+    </div>
+</div>

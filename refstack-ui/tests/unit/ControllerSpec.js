@@ -947,4 +947,166 @@ describe('Refstack controllers', function () {
                 $httpBackend.flush();
             });
     });
+
+    describe('ProductsController', function() {
+        var rootScope, scope, ctrl;
+        var vendResp = {'vendors': [{'can_manage': true,
+                                     'type': 3,
+                                     'name': 'Foo',
+                                     'id': '123'}]};
+        var prodResp = {'products': [{'id': 'abc',
+                                      'product_type': 1,
+                                      'public': 1,
+                                      'name': 'Foo Product',
+                                      'organization_id': '123'}]};
+
+        beforeEach(inject(function ($controller, $rootScope) {
+            scope = $rootScope.$new();
+            rootScope = $rootScope.$new();
+            rootScope.auth = {'currentUser' : {'is_admin': false,
+                                               'openid': 'foo'}
+                             };
+            ctrl = $controller('ProductsController',
+                {$rootScope: rootScope, $scope: scope}
+            );
+            $httpBackend.when('GET', fakeApiUrl +
+                '/vendors').respond(vendResp);
+            $httpBackend.when('GET', fakeApiUrl +
+                '/products').respond(prodResp);
+        }));
+
+        it('should have a function to get/update vendors',
+            function () {
+                $httpBackend.flush();
+                var newVendResp = {'vendors': [{'name': 'Foo',
+                                                'id': '123',
+                                                'can_manage': true},
+                                               {'name': 'Bar',
+                                                'id': '345',
+                                                'can_manage': false}]};
+                $httpBackend.expectGET(fakeApiUrl + '/vendors')
+                    .respond(200, newVendResp);
+                ctrl.updateVendors();
+                $httpBackend.flush();
+                expect(ctrl.allVendors).toEqual({'123': {'name': 'Foo',
+                                                         'id': '123',
+                                                         'can_manage': true},
+                                                 '345': {'name': 'Bar',
+                                                         'id': '345',
+                                                         'can_manage': false}});
+                expect(ctrl.vendors).toEqual([{'name': 'Foo',
+                                               'id': '123',
+                                               'can_manage': true}]);
+            });
+
+        it('should have a function to get products',
+            function () {
+                $httpBackend.expectGET(fakeApiUrl + '/products')
+                    .respond(200, prodResp);
+                ctrl.update();
+                $httpBackend.flush();
+                expect(ctrl.rawData).toEqual(prodResp);
+            });
+
+        it('should have a function to update the view',
+            function () {
+                $httpBackend.flush();
+                ctrl.allVendors = {'123': {'name': 'Foo',
+                                           'id': '123',
+                                           'can_manage': true}};
+                ctrl.updateData();
+                var expectedData = {'products': [{'id': 'abc',
+                                                  'product_type': 1,
+                                                  'public': 1,
+                                                  'name': 'Foo Product',
+                                                  'organization_id': '123'}]};
+                expect(ctrl.data).toEqual(expectedData);
+            });
+
+        it('should have a function to map product types with descriptions',
+            function () {
+                expect(ctrl.getProductTypeDescription(0)).toEqual('Distro');
+                expect(ctrl.getProductTypeDescription(1))
+                    .toEqual('Public Cloud');
+                expect(ctrl.getProductTypeDescription(2))
+                    .toEqual('Hosted Private Cloud');
+                expect(ctrl.getProductTypeDescription(5)).toEqual('Unknown');
+            });
+    });
+
+    describe('ProductController', function() {
+        var rootScope, scope, stateParams, ctrl;
+        var fakeProdResp = {'product_type': 1,
+                            'product_id': null,
+                            'name': 'Good Stuff',
+                            'created_at': '2016-01-01 01:02:03',
+                            'updated_at': '2016-06-15 01:02:04',
+                            'properties': null,
+                            'organization_id': 'fake-org-id',
+                            'public': true,
+                            'can_manage': true,
+                            'created_by_user': 'fake-open-id',
+                            'type': 0,
+                            'id': '1234',
+                            'description': 'some description'};
+        var fakeVendorResp = {'id': 'fake-org-id',
+                              'type': 3,
+                              'can_manage': true,
+                              'properties' : {},
+                              'name': 'Foo Vendor',
+                              'description': 'foo bar'};
+        var fakeWindow = {
+            location: {
+                href: ''
+            }
+        };
+
+        beforeEach(inject(function ($controller, $rootScope) {
+            scope = $rootScope.$new();
+            rootScope = $rootScope.$new();
+            stateParams = {id: 1234};
+            rootScope.auth = {'currentUser' : {'is_admin': false,
+                                               'openid': 'foo'}
+                             };
+            ctrl = $controller('ProductController',
+                {$rootScope: rootScope, $scope: scope,
+                 $stateParams: stateParams, $window: fakeWindow}
+            );
+            $httpBackend.when('GET', fakeApiUrl +
+                '/products/1234').respond(fakeProdResp);
+            $httpBackend.when('GET', fakeApiUrl +
+                '/vendors/fake-org-id').respond(fakeVendorResp);
+        }));
+
+        it('should have a function to get product information',
+            function () {
+                $httpBackend.expectGET(fakeApiUrl + '/products/1234')
+                    .respond(200, fakeProdResp);
+                $httpBackend.expectGET(fakeApiUrl + '/vendors/fake-org-id')
+                    .respond(200, fakeVendorResp);
+                ctrl.getProduct();
+                $httpBackend.flush();
+                expect(ctrl.product).toEqual(fakeProdResp);
+                expect(ctrl.vendor).toEqual(fakeVendorResp);
+            });
+
+        it('should have a function to delete a product',
+            function () {
+                $httpBackend.expectDELETE(fakeApiUrl + '/products/1234')
+                    .respond(202, '');
+                ctrl.deleteProduct();
+                $httpBackend.flush();
+                expect(fakeWindow.location.href).toEqual('/');
+            });
+
+        it('should have a function to switch the publicity of a project',
+            function () {
+                ctrl.product = {'public': true};
+                $httpBackend.expectPUT(fakeApiUrl + '/products/1234',
+                    {'public': false})
+                    .respond(200, fakeProdResp);
+                ctrl.switchProductPublicity();
+                $httpBackend.flush();
+            });
+    });
 });
