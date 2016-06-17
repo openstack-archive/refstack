@@ -204,65 +204,99 @@ class VendorsController(validation.BaseRestControllerWithValidation):
     def action(self, vendor_id, **kw):
         """Handler for action on Vendor object."""
         params = list()
-        for param in ('register', 'approve', 'deny'):
+        for param in ('register', 'approve', 'deny', 'cancel'):
             if param in kw:
                 params.append(param)
         if len(params) != 1:
-            raise api_exc.ValidationError('Invalid actions in the body: ')
+            raise api_exc.ValidationError(
+                'Invalid actions in the body: ' + str(params))
 
+        vendor = db.get_organization(vendor_id)
         if 'register' in params:
-            self.register(vendor_id)
+            self.register(vendor)
         elif 'approve' in params:
-            self.approve(vendor_id)
+            self.approve(vendor)
+        elif 'cancel' in params:
+            self.cancel(vendor)
         else:
-            self.deny(vendor_id, kw.get('reason'))
+            self.deny(vendor, kw.get('reason'))
 
-    def register(self, vendor_id):
+    def register(self, vendor):
         """Handler for applying for registration with Foundation."""
-        if not api_utils.check_user_is_vendor_admin(vendor_id):
+        if not api_utils.check_user_is_vendor_admin(vendor['id']):
             pecan.abort(403, 'Forbidden.')
-        _check_is_not_foundation(vendor_id)
+        _check_is_not_foundation(vendor['id'])
+
+        if vendor['type'] != const.PRIVATE_VENDOR:
+            raise api_exc.ValidationError(
+                'Invalid organization state for this action.')
 
         # change vendor type to pending
         org_info = {
-            'id': vendor_id,
+            'id': vendor['id'],
             'type': const.PENDING_VENDOR}
         db.update_organization(org_info)
 
-    def approve(self, vendor_id):
+    def approve(self, vendor):
         """Handler for making vendor official."""
         if not api_utils.check_user_is_foundation_admin():
             pecan.abort(403, 'Forbidden.')
-        _check_is_not_foundation(vendor_id)
+        _check_is_not_foundation(vendor['id'])
+
+        if vendor['type'] != const.PENDING_VENDOR:
+            raise api_exc.ValidationError(
+                'Invalid organization state for this action.')
 
         # change vendor type to public
-        vendor = db.get_organization(vendor_id)
         props = vendor.get('properties')
         props = json.loads(props) if props else {}
         props.pop('reason', None)
         org_info = {
-            'id': vendor_id,
+            'id': vendor['id'],
             'type': const.OFFICIAL_VENDOR,
             'properties': json.dumps(props)}
         db.update_organization(org_info)
 
-    def deny(self, vendor_id, reason):
-        """Handler for denying a vendor."""
-        if not reason:
-            raise api_exc.ValidationError('Param "reason" can not be empty')
+    def cancel(self, vendor):
+        """Handler for canceling registration.
 
+        This action available to user. It allows him to cancel
+        registrationand move state of his vendor from pending
+        to private.
+        """
+        if not api_utils.check_user_is_vendor_admin(vendor['id']):
+            pecan.abort(403, 'Forbidden.')
+        _check_is_not_foundation(vendor['id'])
+
+        if vendor['type'] != const.PENDING_VENDOR:
+            raise api_exc.ValidationError(
+                'Invalid organization state for this action.')
+
+        # change vendor type back to private
+        org_info = {
+            'id': vendor['id'],
+            'type': const.PRIVATE_VENDOR}
+        db.update_organization(org_info)
+
+    def deny(self, vendor, reason):
+        """Handler for denying a vendor."""
         if not api_utils.check_user_is_foundation_admin():
             pecan.abort(403, 'Forbidden.')
-        _check_is_not_foundation(vendor_id)
+        _check_is_not_foundation(vendor['id'])
 
-        vendor = db.get_organization(vendor_id)
+        if not reason:
+            raise api_exc.ValidationError('Param "reason" can not be empty')
+        if vendor['type'] != const.PENDING_VENDOR:
+            raise api_exc.ValidationError(
+                'Invalid organization state for this action.')
+
         props = vendor.get('properties')
         props = json.loads(props) if props else {}
         props['reason'] = reason
 
         # change vendor type back to private
         org_info = {
-            'id': vendor_id,
+            'id': vendor['id'],
             'type': const.PRIVATE_VENDOR,
             'properties': json.dumps(props)}
         db.update_organization(org_info)
