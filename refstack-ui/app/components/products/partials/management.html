@@ -1,0 +1,13 @@
+<div class="pull-right">
+    <a ng-if="ctrl.product.can_manage"
+       href="javascript:void(0)"
+       ng-click="ctrl.deleteProduct()"
+       confirm="Are you sure you want to delete {{ctrl.product.name}}?">
+       Delete
+    </a><br />
+    <a ng-if="ctrl.product.can_manage && (ctrl.vendor.type == 0 || ctrl.vendor.type == 3)"
+       href="javascript:void(0)" ng-click="ctrl.switchProductPublicity()"
+       confirm="Are you sure you want to switch publicity of this product?">
+       Make Product <span ng-if="ctrl.product.public">Private</span><span ng-if="!ctrl.product.public">Public</span>
+    </a><br />
+</div>
