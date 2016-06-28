@@ -10,12 +10,21 @@
                     <span ng-show="ctrl.vendor.type == 3" class="text-success">Official</span>
                 <br />
                 <strong>Name:</strong> {{ctrl.vendor.name}}<br />
-                <strong>Description:</strong> {{ctrl.vendor.description}}<br />
+                <strong>Description:</strong> {{ctrl.vendor.description || '-'}}<br />
+                <div ng-if="ctrl.vendorProperties">
+                    <strong>Properties:</strong>
+                    <ul>
+                        <li ng-repeat="(key, value) in ctrl.vendorProperties">
+                            <em>{{key}}</em>: {{value}}
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
 
         <div class="pull-right">
             <a ng-if="ctrl.vendor.canDelete" href="javascript:void(0)" ng-click="ctrl.deleteVendor()" confirm="Are you sure you want to delete this vendor?">Delete</a><br />
+            <a ng-if="ctrl.vendor.canEdit" href="javascript:void(0)" ng-click="ctrl.openVendorEditModal()">Edit</a><br />
             <a ng-if="ctrl.vendor.canRegister" href="javascript:void(0)" ng-click="ctrl.registerVendor()">Register with Foundation</a><br />
             <a ng-if="ctrl.vendor.canApprove && ctrl.vendor.type == 2" href="javascript:void(0)" ng-click="ctrl.approveVendor()"
                confirm="Are you sure you want to approve this vendor?">Approve registration</a><br />

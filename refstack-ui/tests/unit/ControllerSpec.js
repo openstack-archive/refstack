@@ -881,7 +881,59 @@ describe('Refstack controllers', function () {
             });
     });
 
-    describe('VendorsController', function() {
+    describe('VendorEditModalController', function() {
+        var ctrl, modalInstance, state;
+        var fakeVendor = {'name': 'Foo', 'description': 'Bar', 'id': '1234',
+                          'properties': {'key1': 'value1', 'key2': 'value2'}};
+
+        beforeEach(inject(function ($controller) {
+            modalInstance = {
+                dismiss: jasmine.createSpy('modalInstance.dismiss')
+            };
+            state = {
+                reload: jasmine.createSpy('state.reload')
+            };
+            ctrl = $controller('VendorEditModalController',
+                {$uibModalInstance: modalInstance, $state: state,
+                 vendor: fakeVendor}
+            );
+        }));
+
+        it('should be able to add/remove properties',
+            function () {
+                var expected = [{'key': 'key1', 'value': 'value1'},
+                                {'key': 'key2', 'value': 'value2'}];
+                expect(ctrl.vendorProperties).toEqual(expected);
+                ctrl.removeProperty(0);
+                expected = [{'key': 'key2', 'value': 'value2'}];
+                expect(ctrl.vendorProperties).toEqual(expected);
+                ctrl.addField();
+                expected = [{'key': 'key2', 'value': 'value2'},
+                            {'key': '', 'value': ''}];
+                expect(ctrl.vendorProperties).toEqual(expected);
+            });
+
+        it('should have a function to save changes',
+            function () {
+                var expectedContent = {
+                    'name': 'Foo', 'description': 'Bar',
+                    'properties': {'key1': 'value1', 'key2': 'value2'}
+                };
+                $httpBackend.expectPUT(
+                    fakeApiUrl + '/vendors/1234', expectedContent)
+                    .respond(200, '');
+                ctrl.saveChanges();
+                $httpBackend.flush();
+            });
+
+        it('should have a function to exit the modal',
+            function () {
+                ctrl.close();
+                expect(modalInstance.dismiss).toHaveBeenCalledWith('exit');
+            });
+    });
+
+    describe('VendorsController', function () {
         var rootScope, scope, ctrl;
         var fakeResp = {'vendors': [{'can_manage': true,
                                      'type': 3,
