@@ -19,3 +19,8 @@ def upgrade():
     """Upgrade DB."""
     op.alter_column('product', 'product_id', nullable=True,
                     type_=sa.String(36))
+
+
+def downgrade():
+    """Downgrade DB."""
+    pass

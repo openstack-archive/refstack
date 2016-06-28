@@ -47,7 +47,7 @@ class ProductsController(validation.BaseRestControllerWithValidation):
     @pecan.expose('json')
     def get(self):
         """Get information of all products."""
-        allowed_keys = ['id', 'name', 'description', 'product_id', 'type',
+        allowed_keys = ['id', 'name', 'description', 'product_ref_id', 'type',
                         'product_type', 'public', 'organization_id']
         user = api_utils.get_user_id()
         is_admin = user in db.get_foundation_users()
@@ -91,8 +91,9 @@ class ProductsController(validation.BaseRestControllerWithValidation):
             pecan.abort(403, 'Forbidden.')
 
         if not is_admin:
-            allowed_keys = ['id', 'name', 'description', 'product_id', 'type',
-                            'product_type', 'public', 'organization_id']
+            allowed_keys = ['id', 'name', 'description', 'product_ref_id',
+                            'type', 'product_type', 'public',
+                            'organization_id']
             for key in product.keys():
                 if key not in allowed_keys:
                     product.pop(key)
@@ -114,7 +115,7 @@ class ProductsController(validation.BaseRestControllerWithValidation):
                            if product['product_type'] == const.DISTRO
                            else const.CLOUD)
         if product['type'] == const.SOFTWARE:
-            product['product_id'] = six.text_type(uuid.uuid4())
+            product['product_ref_id'] = six.text_type(uuid.uuid4())
         vendor_id = product.pop('organization_id', None)
         if not vendor_id:
             # find or create default vendor for new product
@@ -151,8 +152,8 @@ class ProductsController(validation.BaseRestControllerWithValidation):
             product_info['name'] = kw['name']
         if 'description' in kw:
             product_info['description'] = kw['description']
-        if 'product_id' in kw:
-            product_info['product_id'] = kw['product_id']
+        if 'product_ref_id' in kw:
+            product_info['product_ref_id'] = kw['product_ref_id']
         if 'public' in kw:
             # user can mark product as public only if
             # his/her vendor is public(official)

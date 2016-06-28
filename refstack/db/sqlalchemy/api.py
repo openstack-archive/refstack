@@ -437,7 +437,7 @@ def add_product(product_info, creator):
     product = models.Product()
     product.type = product_info['type']
     product.product_type = product_info['product_type']
-    product.product_id = product_info.get('product_id')
+    product.product_ref_id = product_info.get('product_ref_id')
     product.name = product_info['name']
     product.description = product_info.get('description')
     product.organization_id = product_info['organization_id']
@@ -459,7 +459,7 @@ def update_product(product_info):
     if product is None:
         raise NotFound('Product with id %s not found' % _id)
 
-    keys = ['name', 'description', 'product_id', 'public', 'properties']
+    keys = ['name', 'description', 'product_ref_id', 'public', 'properties']
     for key in keys:
         if key in product_info:
             setattr(product, key, product_info[key])

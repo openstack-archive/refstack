@@ -1037,7 +1037,7 @@ describe('Refstack controllers', function () {
     describe('ProductController', function() {
         var rootScope, scope, stateParams, ctrl;
         var fakeProdResp = {'product_type': 1,
-                            'product_id': null,
+                            'product_ref_id': null,
                             'name': 'Good Stuff',
                             'created_at': '2016-01-01 01:02:03',
                             'updated_at': '2016-06-15 01:02:04',

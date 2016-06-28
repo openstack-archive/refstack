@@ -682,7 +682,7 @@ class DBBackendTestCase(base.BaseTestCase):
     def test_product_add(self, mock_to_dict, mock_product, mock_get_session):
         session = mock_get_session.return_value
         product = mock_product.return_value
-        product_info = {'product_id': 'hash_or_guid', 'name': 'a',
+        product_info = {'product_ref_id': 'hash_or_guid', 'name': 'a',
                         'organization_id': 'GUID0', 'type': 0,
                         'product_type': 0}
         result = api.add_product(product_info, 'user-123')
@@ -710,12 +710,13 @@ class DBBackendTestCase(base.BaseTestCase):
         product.id = '123'
         filtered.first.return_value = product
 
-        product_info = {'product_id': '098', 'name': 'a', 'description': 'b',
-                        'creator_openid': 'abc', 'organization_id': '1',
-                        'type': 0, 'product_type': 0, 'id': '123'}
+        product_info = {'product_ref_id': '098', 'name': 'a',
+                        'description': 'b', 'creator_openid': 'abc',
+                        'organization_id': '1', 'type': 0, 'product_type': 0,
+                        'id': '123'}
         api.update_product(product_info)
 
-        self.assertEqual('098', product.product_id)
+        self.assertEqual('098', product.product_ref_id)
         self.assertIsNone(product.created_by_user)
         self.assertIsNone(product.organization_id)
         self.assertIsNone(product.type)
@@ -766,11 +767,11 @@ class DBBackendTestCase(base.BaseTestCase):
     @mock.patch('refstack.db.sqlalchemy.api.models')
     def test_product_delete(self, mock_models, mock_get_session):
         session = mock_get_session.return_value
-        db.delete_product('product_id')
+        db.delete_product('product_ref_id')
 
         session.query.assert_called_once_with(mock_models.Product)
         session.query.return_value.filter_by.assert_has_calls((
-            mock.call(id='product_id'),
+            mock.call(id='product_ref_id'),
             mock.call().delete(synchronize_session=False)))
         session.begin.assert_called_once_with()
 
