@@ -91,14 +91,16 @@ describe('Refstack controllers', function () {
                 };
 
                 $httpBackend.expectGET(fakeApiUrl +
-                '/guidelines').respond(['2015.03.json', '2015.04.json']);
+                '/guidelines').respond(['next.json', '2015.03.json',
+                                        '2015.04.json']);
                 // Should call request with latest version.
                 $httpBackend.expectGET(fakeApiUrl +
                 '/guidelines/2015.04.json').respond(fakeCaps);
                 $httpBackend.flush();
                 // The version list should be sorted latest first.
-                expect(ctrl.versionList).toEqual(['2015.04.json',
-                                                   '2015.03.json']);
+                expect(ctrl.versionList).toEqual(['next.json',
+                                                  '2015.04.json',
+                                                  '2015.03.json']);
                 expect(ctrl.guidelines).toEqual(fakeCaps);
                 // The guideline status should be approved.
                 expect(ctrl.guidelines.status).toEqual('approved');

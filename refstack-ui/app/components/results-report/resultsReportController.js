@@ -90,7 +90,9 @@
                 $http.get(content_url).success(function (data) {
                     ctrl.versionList = data.sort().reverse();
                     if (!ctrl.version) {
-                        ctrl.version = ctrl.versionList[0];
+                        // Default to the first approved guideline which is
+                        // expected to be at index 1.
+                        ctrl.version = ctrl.versionList[1];
                     }
                     ctrl.updateGuidelines();
                 }).error(function (error) {

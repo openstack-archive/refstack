@@ -4,9 +4,11 @@
 <div class="row">
     <div class="col-md-3">
         <strong>Version:</strong>
-        <select ng-model="ctrl.version" ng-change="ctrl.update()" class="form-control">
-            <!-- Slicing the version file name here gets rid of the '.json' file extension. -->
-            <option ng-repeat="versionFile in ctrl.versionList" value="{{versionFile}}">{{versionFile.slice(0, -5)}}</option>
+        <!-- Slicing the version file name here gets rid of the '.json' file extension -->
+        <select ng-model="ctrl.version"
+                ng-change="ctrl.update()"
+                class="form-control"
+                ng-options="versionFile.slice(0,-5) for versionFile in ctrl.versionList">
         </select>
     </div>
     <div class="col-md-4">
