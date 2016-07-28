@@ -14,11 +14,13 @@
 #    under the License.
 
 """Test results controller."""
+import functools
 
 from oslo_config import cfg
 from oslo_log import log
 import pecan
 from pecan import rest
+import six
 from six.moves.urllib import parse
 
 from refstack import db
@@ -32,23 +34,44 @@ LOG = log.getLogger(__name__)
 CONF = cfg.CONF
 
 
-@api_utils.check_permissions(level=const.ROLE_USER)
 class MetadataController(rest.RestController):
     """/v1/results/<test_id>/meta handler."""
 
     rw_access_keys = ('shared', 'guideline', 'target',)
 
+    def _check_key(func):
+        """Decorator to check that a specific key has write access."""
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            meta_key = args[2]
+            if meta_key not in args[0].rw_access_keys:
+                pecan.abort(403)
+            return func(*args, **kwargs)
+        return wrapper
+
     @pecan.expose('json')
     def get(self, test_id):
         """Get test run metadata."""
         test_info = db.get_test(test_id)
-        return test_info['meta']
+        role = api_utils.get_user_role(test_id)
+        if role in (const.ROLE_FOUNDATION, const.ROLE_OWNER):
+            return test_info['meta']
+        elif role in (const.ROLE_USER):
+            return {k: v for k, v in six.iteritems(test_info['meta'])
+                    if k in self.rw_access_keys}
+        pecan.abort(403)
 
     @pecan.expose('json')
     def get_one(self, test_id, key):
         """Get value for key from test run metadata."""
-        return db.get_test_meta_key(test_id, key)
+        role = api_utils.get_user_role(test_id)
+        if role in (const.ROLE_FOUNDATION, const.ROLE_OWNER):
+            return db.get_test_meta_key(test_id, key)
+        elif role in (const.ROLE_USER) and key in self.rw_access_keys:
+            return db.get_test_meta_key(test_id, key)
+        pecan.abort(403)
 
+    @_check_key
     @api_utils.check_permissions(level=const.ROLE_OWNER)
     @pecan.expose('json')
     def post(self, test_id, key):
@@ -56,6 +79,7 @@ class MetadataController(rest.RestController):
         db.save_test_meta_item(test_id, key, pecan.request.body)
         pecan.response.status = 201
 
+    @_check_key
     @api_utils.check_permissions(level=const.ROLE_OWNER)
     @pecan.expose('json')
     def delete(self, test_id, key):
@@ -75,7 +99,8 @@ class ResultsController(validation.BaseRestControllerWithValidation):
     @api_utils.check_permissions(level=const.ROLE_USER)
     def get_one(self, test_id):
         """Handler for getting item."""
-        if api_utils.get_user_role(test_id) == const.ROLE_OWNER:
+        user_role = api_utils.get_user_role(test_id)
+        if user_role in (const.ROLE_FOUNDATION, const.ROLE_OWNER):
             test_info = db.get_test(
                 test_id, allowed_keys=['id', 'cpid', 'created_at',
                                        'duration_seconds', 'meta']
@@ -85,7 +110,13 @@ class ResultsController(validation.BaseRestControllerWithValidation):
         test_list = db.get_test_results(test_id)
         test_name_list = [test_dict['name'] for test_dict in test_list]
         test_info.update({'results': test_name_list,
-                          'user_role': api_utils.get_user_role(test_id)})
+                          'user_role': user_role})
+
+        if user_role not in (const.ROLE_FOUNDATION, const.ROLE_OWNER):
+            test_info['meta'] = {
+                k: v for k, v in six.iteritems(test_info['meta'])
+                if k in MetadataController.rw_access_keys
+            }
         return test_info
 
     def store_item(self, test):
@@ -143,6 +174,15 @@ class ResultsController(validation.BaseRestControllerWithValidation):
             results = db.get_test_records(page_number, per_page, filters)
 
             for result in results:
+                # Only show all metadata if the user is the owner or a member
+                # of the Foundation group.
+                if (not api_utils.check_owner(result['id']) and
+                   not api_utils.check_user_is_foundation_admin()):
+
+                    result['meta'] = {
+                        k: v for k, v in six.iteritems(result['meta'])
+                        if k in MetadataController.rw_access_keys
+                    }
                 result.update({'url': parse.urljoin(
                     CONF.ui_url, CONF.api.test_results_url
                 ) % result['id']})
