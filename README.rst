@@ -1,15 +1,17 @@
+=========
 RefStack
-========
+=========
 
-**What is RefStack?**
+What is RefStack?
+#################
 
 - Toolset for testing interoperability between OpenStack clouds.
 - Database backed website supporting collection and publication of
   Community Test results for OpenStack.
 - User interface to display individual test run results.
 
-**Overview**
-
+Overview
+##########
 
 RefStack intends on being THE source of tools for interoperability testing
 of OpenStack clouds.
@@ -40,7 +42,7 @@ after their software has been incorporated into the distro or cloud.
    vendors. It can be used by vendors in house to compare interoperability
    data over time.
 
-   * API and UI install docs: http://github.com/openstack/refstack/blob/master/doc/refstack.md
+   * API and UI install docs: http://github.com/openstack/refstack/blob/master/doc/source/refstack.rst
    * repository: http://git.openstack.org/cgit/openstack/refstack
    * reviews: https://review.openstack.org/#q,status:open+refstack,n,z
 
@@ -50,7 +52,8 @@ after their software has been incorporated into the distro or cloud.
    * repository: http://git.openstack.org/cgit/openstack/refstack-client
    * reviews: https://review.openstack.org/#q,status:open+refstack-client,n,z
 
-**Get involved!**
+Get involved!
+###############
 
 * Mailing List: openstack-dev@lists.openstack.org
 * IRC: #refstack on Freenode
