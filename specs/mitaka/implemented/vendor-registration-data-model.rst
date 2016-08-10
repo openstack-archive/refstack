@@ -1,5 +1,6 @@
+=================================================
 Database Tables for Vendor Registration Support
-===============================================
+=================================================
 
 Launchpad blueprint: https://blueprints.launchpad.net/refstack/+spec/vendor-result-validation
 

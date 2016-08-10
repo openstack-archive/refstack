@@ -1,5 +1,6 @@
+=================================
 User Group Support in RefStack
-==============================
+=================================
 
 Launchpad blueprint: https://blueprints.launchpad.net/refstack/+spec/vendor-result-validation
 

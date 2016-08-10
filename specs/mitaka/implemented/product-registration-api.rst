@@ -1,3 +1,7 @@
+============================
+Product Registration API
+============================
+
 Launchpad blueprint: https://blueprints.launchpad.net/refstack/+spec/vendor-result-validation
 
 Requirement document: https://goo.gl/bvo4FG
