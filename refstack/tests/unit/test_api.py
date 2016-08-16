@@ -83,25 +83,37 @@ class ResultsControllerTestCase(BaseControllerTestCase):
     @mock.patch('refstack.db.get_test')
     @mock.patch('refstack.db.get_test_results')
     def test_get(self, mock_get_test_res, mock_get_test):
-        self.mock_get_user_role.return_value = const.ROLE_USER
+        self.mock_get_user_role.return_value = const.ROLE_FOUNDATION
         test_info = {'created_at': 'bar',
-                     'duration_seconds': 999}
+                     'duration_seconds': 999,
+                     'meta': {'shared': 'true', 'user': 'fake-user'}}
         mock_get_test.return_value = test_info
 
         mock_get_test_res.return_value = [{'name': 'test1'},
                                           {'name': 'test2'}]
 
         actual_result = self.controller.get_one('fake_arg')
+        # All meta should be exposed when user is a Foundation admin.
         expected_result = {
             'created_at': 'bar',
             'duration_seconds': 999,
             'results': ['test1', 'test2'],
-            'user_role': const.ROLE_USER
+            'user_role': const.ROLE_FOUNDATION,
+            'meta': {'shared': 'true', 'user': 'fake-user'}
         }
 
-        self.assertEqual(actual_result, expected_result)
+        self.assertEqual(expected_result, actual_result)
         mock_get_test_res.assert_called_once_with('fake_arg')
-        mock_get_test.assert_called_once_with('fake_arg')
+
+        # If not owner or Foundation admin, don't show all metadata.
+        self.mock_get_user_role.return_value = const.ROLE_USER
+        mock_get_test.return_value = test_info
+        mock_get_test_res.return_value = [{'name': 'test1'},
+                                          {'name': 'test2'}]
+        actual_result = self.controller.get_one('fake_arg')
+        expected_result['meta'] = {'shared': 'true'}
+        expected_result['user_role'] = const.ROLE_USER
+        self.assertEqual(expected_result, actual_result)
 
     @mock.patch('refstack.db.get_test')
     @mock.patch('refstack.db.get_test_results')
@@ -217,6 +229,8 @@ class ResultsControllerTestCase(BaseControllerTestCase):
         self.assertRaises(webob.exc.HTTPError,
                           self.controller.get)
 
+    @mock.patch('refstack.api.utils.check_owner')
+    @mock.patch('refstack.api.utils.check_user_is_foundation_admin')
     @mock.patch('refstack.db.get_test_records')
     @mock.patch('refstack.db.get_test_records_count')
     @mock.patch('refstack.api.utils.get_page_number')
@@ -225,7 +239,9 @@ class ResultsControllerTestCase(BaseControllerTestCase):
                          parse_input,
                          get_page,
                          get_test_count,
-                         db_get_test):
+                         db_get_test,
+                         check_foundation,
+                         check_owner):
 
         expected_input_params = [
             const.START_DATE,
@@ -239,6 +255,8 @@ class ResultsControllerTestCase(BaseControllerTestCase):
         records_count = 50
         get_test_count.return_value = records_count
         get_page.return_value = (page_number, total_pages_number)
+        check_foundation.return_value = False
+        check_owner.return_value = True
         self.CONF.set_override('results_per_page',
                                per_page,
                                'api')
@@ -257,7 +275,7 @@ class ResultsControllerTestCase(BaseControllerTestCase):
         }
 
         actual_result = self.controller.get()
-        self.assertEqual(actual_result, expected_result)
+        self.assertEqual(expected_result, actual_result)
 
         parse_input.assert_called_once_with(expected_input_params)
 
@@ -578,36 +596,73 @@ class MetadataControllerTestCase(BaseControllerTestCase):
     @mock.patch('refstack.db.get_test')
     def test_get(self, mock_db_get_test):
         self.mock_get_user_role.return_value = const.ROLE_USER
-        mock_db_get_test.return_value = {'meta': 'fake_meta'}
-        self.assertEqual('fake_meta', self.controller.get('test_id'))
+        mock_db_get_test.return_value = {'meta': {'shared': 'true',
+                                                  'user': 'fake-user'}}
+        # Only the key 'shared' should be allowed through.
+        self.assertEqual({'shared': 'true'}, self.controller.get('test_id'))
         mock_db_get_test.assert_called_once_with('test_id')
+
+        # Test that the result owner can see all metadata keys.
+        self.mock_get_user_role.return_value = const.ROLE_OWNER
+        self.assertEqual({'shared': 'true', 'user': 'fake-user'},
+                         self.controller.get('test_id'))
+
+        # Test that a Foundation admin can see all metadata keys.
+        self.mock_get_user_role.return_value = const.ROLE_FOUNDATION
+        self.assertEqual({'shared': 'true', 'user': 'fake-user'},
+                         self.controller.get('test_id'))
 
     @mock.patch('refstack.db.get_test_meta_key')
     def test_get_one(self, mock_db_get_test_meta_key):
         self.mock_get_user_role.return_value = const.ROLE_USER
+
+        # Test when key is not an allowed key.
+        self.assertRaises(webob.exc.HTTPError,
+                          self.controller.get_one, 'test_id', 'answer')
+
+        # Test when key is an allowed key.
         mock_db_get_test_meta_key.return_value = 42
-        self.assertEqual(42, self.controller.get_one('test_id', 'answer'))
-        mock_db_get_test_meta_key.assert_called_once_with('test_id', 'answer')
+        self.assertEqual(42, self.controller.get_one('test_id', 'shared'))
+        mock_db_get_test_meta_key.assert_called_once_with('test_id', 'shared')
+
+        # Test when the user owns the test result.
+        self.mock_get_user_role.return_value = const.ROLE_OWNER
+        self.assertEqual(42, self.controller.get_one('test_id', 'user'))
+
+        # Test when the user is a Foundation admin.
+        self.mock_get_user_role.return_value = const.ROLE_FOUNDATION
+        self.assertEqual(42, self.controller.get_one('test_id', 'user'))
 
     @mock.patch('refstack.db.save_test_meta_item')
     def test_post(self, mock_save_test_meta_item):
         self.mock_get_user_role.return_value = const.ROLE_OWNER
-        self.controller.post('test_id', 'answer')
+
+        # Test trying to post a valid key.
+        self.controller.post('test_id', 'shared')
         self.assertEqual(201, self.mock_response.status)
         mock_save_test_meta_item.assert_called_once_with(
-            'test_id', 'answer', self.mock_request.body)
+            'test_id', 'shared', self.mock_request.body)
 
+        # Test trying to post an invalid key.
+        self.assertRaises(webob.exc.HTTPError,
+                          self.controller.post, 'test_id', 'user')
+
+        # Test when not an owner of the result.
         self.mock_get_user_role.return_value = const.ROLE_USER
         self.mock_abort.side_effect = webob.exc.HTTPError()
         self.assertRaises(webob.exc.HTTPError,
-                          self.controller.post, 'test_id', 'answer')
+                          self.controller.post, 'test_id', 'shared')
 
     @mock.patch('refstack.db.delete_test_meta_item')
     def test_delete(self, mock_delete_test_meta_item):
         self.mock_get_user_role.return_value = const.ROLE_OWNER
-        self.controller.delete('test_id', 'answer')
+        self.controller.delete('test_id', 'shared')
         self.assertEqual(204, self.mock_response.status)
-        mock_delete_test_meta_item.assert_called_once_with('test_id', 'answer')
+        mock_delete_test_meta_item.assert_called_once_with('test_id', 'shared')
+
+        # The key 'user' is not a valid key that can be deleted.
+        self.assertRaises(webob.exc.HTTPError,
+                          self.controller.delete, 'test_id', 'user')
 
         self.mock_get_user_role.return_value = const.ROLE_USER
         self.mock_abort.side_effect = webob.exc.HTTPError()

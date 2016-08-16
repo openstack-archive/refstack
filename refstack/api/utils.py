@@ -207,29 +207,34 @@ def enforce_permissions(test_id, level):
     role = get_user_role(test_id)
     if not role:
         pecan.abort(401)
+
     if level == const.ROLE_USER:
-        if role in (const.ROLE_OWNER, const.ROLE_USER):
+        if role in (const.ROLE_OWNER, const.ROLE_USER, const.ROLE_FOUNDATION):
             return
         pecan.abort(403)
-    if level == const.ROLE_OWNER:
-        if get_user_role(test_id) in (const.ROLE_OWNER,):
+    elif level == const.ROLE_OWNER:
+        if role in (const.ROLE_OWNER, const.ROLE_FOUNDATION):
             return
         pecan.abort(403)
+    elif level == const.ROLE_FOUNDATION:
+        if role in (const.ROLE_FOUNDATION):
+            return
     else:
-        raise ValueError('Permission level %s is undefined'
-                         '' % level)
+        raise ValueError('Permission level %s is undefined' % level)
 
 
 def get_user_role(test_id):
     """Return user role for current user and specified test run."""
-    if _check_owner(test_id):
+    if check_user_is_foundation_admin():
+        return const.ROLE_FOUNDATION
+    if check_owner(test_id):
         return const.ROLE_OWNER
-    if _check_user(test_id):
+    if check_user(test_id):
         return const.ROLE_USER
     return
 
 
-def _check_user(test_id):
+def check_user(test_id):
     """Check that user has access to shared test run."""
     test_owner = db.get_test_meta_key(test_id, const.USER)
     if not test_owner:
@@ -237,10 +242,10 @@ def _check_user(test_id):
     elif db.get_test_meta_key(test_id, const.SHARED_TEST_RUN):
         return True
     else:
-        return _check_owner(test_id)
+        return check_owner(test_id)
 
 
-def _check_owner(test_id):
+def check_owner(test_id):
     """Check that user has access to specified test run as owner."""
     if not is_authenticated():
         return False
