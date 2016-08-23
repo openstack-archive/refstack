@@ -18,7 +18,7 @@ Install API dependencies (on ubuntu 14.x)..
 Install RefStack UI dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--  ``curl -sL https://deb.nodesource.com/setup | sudo bash -``
+-  ``curl -sL https://deb.nodesource.com/setup_4.x | sudo bash -``
 
 -  ``sudo apt-get install nodejs``
 
