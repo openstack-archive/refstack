@@ -54,7 +54,7 @@ Available script options:
    reuses this container if such one exists. If you want to drop the DB
    data, just execute
    ``sudo docker rm refstack_data_{DATA-BASE-REVISON}``.
--  ``-b`` Force delete RefStack image and build it again. This rebuids
+-  ``-b`` Force delete RefStack image and build it again. This rebuilds
    the Python and JS environment for RefStack.
 -  ``-d`` Turn on debug information.
 -  ``-h`` Print usage message.

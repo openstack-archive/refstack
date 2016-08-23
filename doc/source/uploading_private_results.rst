@@ -92,7 +92,7 @@ Upload the test result with refstack-client
 
 -  ``./refstack-client upload /path_to_testresult_json_file  --url https://refstack.openstack.org/api -i  ~/.ssh/id_rsa``
 
-\*\* NOTE \*\* Users may need to add the '--insecure' optional agrument
+\*\* NOTE \*\* Users may need to add the '--insecure' optional argument
 to the command string if certificate validation issues occur when
 uploading test result. To use with insecure:
 
