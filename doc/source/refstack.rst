@@ -2,12 +2,13 @@ RefStack Quickstart
 ===================
 
 You can use docker for `one-click setup <run_in_docker.rst>`__ or follow
-step-by-step instructions below.
+step-by-step instructions below. These instructions have been tested on
+Ubuntu 14 and 16 LTS.
 
-Install API dependencies (on ubuntu 14.x)..
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Install API dependencies
+^^^^^^^^^^^^^^^^^^^^^^^^
 
--  ``sudo apt-get install git python-dev libssl-dev python-setuptools``
+-  ``sudo apt-get install git python-dev libssl-dev python-setuptools build-essential libffi-dev``
 
 -  ``sudo apt-get install mysql-server python-mysqldb``
 
@@ -61,8 +62,8 @@ Git you clonin'
 
 -  Source to virtual environment: ``source .venv/bin/activate``
 
-Install RefStack application (on ubuntu 14.x)..
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Install RefStack application
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  ``pip install .``
 
@@ -247,3 +248,17 @@ account is created.
 -  Create the actual "Foundation" organization using this group:
 
 ``INSERT INTO refstack.organization (id, type, name, group_id, created_by_user, created_at)    VALUES (UUID(), 0, 'Foundation', '<Group ID>', '<Your OpenID>', NOW());``
+
+(Optional) Build documentation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The RefStack documentation can be build using following commands:
+
+-  ``cd ~/refstack; source .venv/bin/activate``
+
+-  ``sudo apt-get install -y python3-dev python-tox``
+
+-  ``tox -e docs``
+
+The documentation files will be build under ``~/refstack/build/sphinx``.
+
