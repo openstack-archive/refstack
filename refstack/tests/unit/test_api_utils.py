@@ -333,6 +333,7 @@ class APIUtilsTestCase(base.BaseTestCase):
         mock_get_user.side_effect = mock_db.NotFound('User')
         self.assertFalse(api_utils.is_authenticated())
 
+    @mock.patch('refstack.api.utils.check_user_is_foundation_admin')
     @mock.patch('pecan.abort', side_effect=exc.HTTPError)
     @mock.patch('refstack.db.get_test_meta_key')
     @mock.patch.object(api_utils, 'is_authenticated')
@@ -340,8 +341,10 @@ class APIUtilsTestCase(base.BaseTestCase):
     def test_check_get_user_role(self, mock_get_user_id,
                                  mock_is_authenticated,
                                  mock_get_test_meta_key,
-                                 mock_pecan_abort):
+                                 mock_pecan_abort,
+                                 mock_check_foundation):
         # Check user level
+        mock_check_foundation.return_value = False
         mock_get_test_meta_key.return_value = None
         self.assertEqual(const.ROLE_USER, api_utils.get_user_role('fake_test'))
         api_utils.enforce_permissions('fake_test', const.ROLE_USER)
@@ -403,6 +406,7 @@ class APIUtilsTestCase(base.BaseTestCase):
         self.assertRaises(exc.HTTPError, api_utils.enforce_permissions,
                           'fake_test', const.ROLE_OWNER)
 
+    @mock.patch('refstack.api.utils.check_user_is_foundation_admin')
     @mock.patch('pecan.abort', side_effect=exc.HTTPError)
     @mock.patch('refstack.db.get_test_meta_key')
     @mock.patch.object(api_utils, 'is_authenticated')
@@ -410,7 +414,8 @@ class APIUtilsTestCase(base.BaseTestCase):
     def test_check_permissions(self, mock_get_user_id,
                                mock_is_authenticated,
                                mock_get_test_meta_key,
-                               mock_pecan_abort):
+                               mock_pecan_abort,
+                               mock_foundation_check):
 
         @api_utils.check_permissions(level=const.ROLE_USER)
         class ControllerWithPermissions(rest.RestController):
@@ -439,6 +444,7 @@ class APIUtilsTestCase(base.BaseTestCase):
         }.get(args)
 
         mock_is_authenticated.return_value = True
+        mock_foundation_check.return_value = False
         self.assertEqual(public_test, fake_controller.get(public_test))
         self.assertRaises(exc.HTTPError, fake_controller.delete, public_test)
         self.assertEqual(private_test, fake_controller.get(private_test))

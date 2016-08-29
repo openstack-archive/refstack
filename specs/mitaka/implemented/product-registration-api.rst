@@ -1,3 +1,7 @@
+============================
+Product Registration API
+============================
+
 Launchpad blueprint: https://blueprints.launchpad.net/refstack/+spec/vendor-result-validation
 
 Requirement document: https://goo.gl/bvo4FG
@@ -104,28 +108,31 @@ The following REST APIs will be added to RefStack.
              "description" : "My description",
              "product_id" : "7e0072fb-a3e9-4901-82cd-9a3a911507d8",
              "product_type" : 1,
-             "public" : 1,
+             "public" : true,
              "type" : 0,
+             "can_manage" : false,
              "organization_id" : "69346866-307f-4052-ba31-ff6270635e19"
           },
           {
              "id" : "78346866-307f-4052-ba31-ff6270635e19",
              "name" : "Product EFG",
-             "description" : "My description"
+             "description" : "My description",
              "product_id" : "8c9u72fb-a3e9-4901-82cd-9a3a911507d8",
              "product_type" : 0,
-             "public" : 1,
+             "public" : true,
              "type" : 1,
+             "can_manage" : false,
              "organization_id" : "87346866-307f-4052-ba31-ff6270635e19"
           },
           {
              "id" : "12346866-307f-4052-ba31-ff6270635e19",
              "name" : "Product HIJ",
-             "description" : "My description"
+             "description" : "My description",
              "product_id" : "987672fb-a3e9-4901-82cd-9a3a911507d8",
              "product_type" : 2,
-             "public" : 1,
+             "public" : true,
              "type" : 0,
+             "can_manage" : false,
              "organization_id" : "77346866-307f-4052-ba31-ff6270635e19"
           },
           ......
@@ -172,11 +179,12 @@ The following REST APIs will be added to RefStack.
          {
              "id" : "12346866-307f-4052-ba31-ff6270635e19",
              "name" : "Product HIG",
-             "description" : "My description"
+             "description" : "My description",
              "product_id" : "987672fb-a3e9-4901-82cd-9a3a911507d8",
              "product_type" : 2,
-             "public" : 1,
+             "public" : true,
              "type" : 0,
+             "can_manage" : false,
              "organization_id" : "77346866-307f-4052-ba31-ff6270635e19"
          }
       }
@@ -191,12 +199,13 @@ The following REST APIs will be added to RefStack.
             "description" : "My description"
             "product_id" : "987672fb-a3e9-4901-82cd-9a3a911507d8",
             "product_type" : 2,
-            "public" : 1,
+            "public" : true,
             "properties" : "some text"
             "created_at": "2016-02-01 08:42:25",
             "created_by_user": "john@abc.com",
             "updated_at": "2016-02-02 08:42:25",
             "type" : 0,
+            "can_manage" : true,
             "organization_id" : "77346866-307f-4052-ba31-ff6270635e19"
          }
       }
@@ -233,9 +242,9 @@ The following REST APIs will be added to RefStack.
   .. parsed-literal::
     {
        "name" : "ABC",
-       "description" : "My description"
+       "description" : "My description",
        "product_type" : 2,
-       "organization_id" : "95346866-307f-4052-ba31-ff6270635e14"
+       "organization_id" : "95346866-307f-4052-ba31-ff6270635e14",
        "required": ["name", "product_type"]
     }
 
@@ -282,10 +291,10 @@ The following REST APIs will be added to RefStack.
     {
        {
           "name" : "Product EFG",
-          "description" : "My description"
+          "description" : "My description",
           "product_id" : "987672fb-a3e9-4901-82cd-9a3a911507d8",
-          "public" : 1,
-          "properties" : "some text"
+          "public" : true,
+          "properties" : "some text",
           "required": []
        }
     }
@@ -300,9 +309,14 @@ The following REST APIs will be added to RefStack.
           "description" : "My description",
           "product_id" : "987672fb-a3e9-4901-82cd-9a3a911507d8",
           "product_type" : 2,
-          "public" : 1,
-          "properties" : "some text"
-          "type" : 1,
+          "public" : true,
+          "properties" : "some text",
+          "created_at": "2016-02-01 08:42:25",
+          "created_by_user": "john@abc.com",
+          "updated_at": "2016-02-02 08:42:25",
+          "type" : 0,
+          "can_manage" : true,
+          "organization_id" : "77346866-307f-4052-ba31-ff6270635e19"
        }
     }
 

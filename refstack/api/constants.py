@@ -53,6 +53,7 @@ SHARED_TEST_RUN = 'shared'
 # Roles
 ROLE_USER = 'user'
 ROLE_OWNER = 'owner'
+ROLE_FOUNDATION = 'foundation'
 
 # Organization types.
 # OpenStack Foundation

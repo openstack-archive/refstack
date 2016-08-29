@@ -1,3 +1,7 @@
+========================
+Vendor Registration API
+========================
+
 Launchpad blueprint: https://blueprints.launchpad.net/refstack/+spec/vendor-result-validation
 
 Requirement document: https://goo.gl/bvo4FG
@@ -323,6 +327,51 @@ The following REST APIs will be added to RefStack.
   .. parsed-literal::
     {
        "register" : null
+    }
+
+* JSON schema definition for the response data: N/A
+
+
+**Cancel submitted register request**
+
+* Description:
+
+  This API will be used by the vendor admins to cancel previously submitted register
+  requests.
+
+* Method type: POST
+
+* URI: v1/vendors/{vendor_id}/action
+
+* Normal Response Codes:
+
+  * OK (202)
+
+* Error Response Codes:
+
+  * Bad Request (400)
+  * Unauthorized (401)
+  * Not found (404)
+
+* Request parameters:
+
+  +---------------+-------+--------------+-----------------------------------+
+  | Parameter     | Style | Type         | Description                       |
+  +===============+=======+==============+===================================+
+  | vendor_id     | URI   | csapi:UUID   | Vendor ID for update.             |
+  +---------------+-------+--------------+-----------------------------------+
+  | cancel        | plain | xsd:string   | Action to request canceling  a    |
+  |               |       |              | previously submitted register     |
+  |               |       |              | request.                          |
+  |               |       |              | Vendor "type" will change from    |
+  |               |       |              | "pending" to "private".           |
+  +---------------+-------+--------------+-----------------------------------+
+
+* JSON schema definition for the body data:
+
+  .. parsed-literal::
+    {
+       "cancel" : null
     }
 
 * JSON schema definition for the response data: N/A

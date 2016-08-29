@@ -65,7 +65,7 @@ class Guidelines:
                       (response.status_code,
                        getattr(response, 'from_cache', False)))
             if response.status_code == 200:
-                regex = re.compile('^[0-9]{4}\.[0-9]{2}\.json$')
+                regex = re.compile('^([0-9]{4}\.[0-9]{2}|next)\.json$')
                 capability_files = []
                 for rfile in response.json():
                     if rfile["type"] == "file" and regex.search(rfile["name"]):
