@@ -35,6 +35,88 @@ LOG = log.getLogger(__name__)
 CONF = cfg.CONF
 
 
+class VersionsController(validation.BaseRestControllerWithValidation):
+    """/v1/products/<product_id>/versions handler."""
+
+    __validator__ = validators.ProductVersionValidator
+
+    @pecan.expose('json')
+    def get(self, id):
+        """Get all versions for a product."""
+        product = db.get_product(id)
+        vendor_id = product['organization_id']
+        is_admin = (api_utils.check_user_is_foundation_admin() or
+                    api_utils.check_user_is_vendor_admin(vendor_id))
+        if not product['public'] and not is_admin:
+            pecan.abort(403, 'Forbidden.')
+
+        return db.get_product_versions(id)
+
+    @pecan.expose('json')
+    def get_one(self, id, version_id):
+        """Get specific version information."""
+        product = db.get_product(id)
+        vendor_id = product['organization_id']
+        is_admin = (api_utils.check_user_is_foundation_admin() or
+                    api_utils.check_user_is_vendor_admin(vendor_id))
+        if not product['public'] and not is_admin:
+            pecan.abort(403, 'Forbidden.')
+
+        return db.get_product_version(version_id)
+
+    @secure(api_utils.is_authenticated)
+    @pecan.expose('json')
+    def post(self, id):
+        """'secure' decorator doesn't work at store_item. it must be here."""
+        self.product_id = id
+        return super(VersionsController, self).post()
+
+    @pecan.expose('json')
+    def store_item(self, version_info):
+        """Add a new version for the product."""
+        if (not api_utils.check_user_is_product_admin(self.product_id) and
+                not api_utils.check_user_is_foundation_admin()):
+            pecan.abort(403, 'Forbidden.')
+
+        creator = api_utils.get_user_id()
+        pecan.response.status = 201
+        return db.add_product_version(self.product_id, version_info['version'],
+                                      creator, version_info.get('cpid'))
+
+    @secure(api_utils.is_authenticated)
+    @pecan.expose('json', method='PUT')
+    def put(self, id, version_id, **kw):
+        """Update details for a specific version.
+
+        Endpoint: /v1/products/<product_id>/versions/<version_id>
+        """
+        if (not api_utils.check_user_is_product_admin(id) and
+                not api_utils.check_user_is_foundation_admin()):
+            pecan.abort(403, 'Forbidden.')
+
+        version_info = {'id': version_id}
+        if 'cpid' in kw:
+            version_info['cpid'] = kw['cpid']
+        version = db.update_product_version(version_info)
+        pecan.response.status = 200
+        return version
+
+    @secure(api_utils.is_authenticated)
+    @pecan.expose('json')
+    def delete(self, id, version_id):
+        """Delete a product version.
+
+        Endpoint: /v1/products/<product_id>/versions/<version_id>
+        """
+        if (not api_utils.check_user_is_product_admin(id) and
+                not api_utils.check_user_is_foundation_admin()):
+
+            pecan.abort(403, 'Forbidden.')
+
+        db.delete_product_version(version_id)
+        pecan.response.status = 204
+
+
 class ProductsController(validation.BaseRestControllerWithValidation):
     """/v1/products handler."""
 
@@ -43,6 +125,8 @@ class ProductsController(validation.BaseRestControllerWithValidation):
     _custom_actions = {
         "action": ["POST"],
     }
+
+    versions = VersionsController()
 
     @pecan.expose('json')
     def get(self):
@@ -175,10 +259,8 @@ class ProductsController(validation.BaseRestControllerWithValidation):
     @pecan.expose('json')
     def delete(self, id):
         """Delete product."""
-        product = db.get_product(id)
-        vendor_id = product['organization_id']
         if (not api_utils.check_user_is_foundation_admin() and
-                not api_utils.check_user_is_vendor_admin(vendor_id)):
+                not api_utils.check_user_is_product_admin(id)):
             pecan.abort(403, 'Forbidden.')
 
         db.delete_product(id)

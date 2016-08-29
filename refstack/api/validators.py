@@ -220,6 +220,7 @@ class ProductValidator(BaseValidator):
             'description': {'type': 'string'},
             'product_type': {'type': 'integer'},
             'organization_id': {'type': 'string', 'format': 'uuid_hex'},
+            'version': {'type': 'string'}
         },
         'required': ['name', 'product_type'],
         'additionalProperties': False
@@ -231,3 +232,21 @@ class ProductValidator(BaseValidator):
         body = json.loads(request.body)
 
         self.check_emptyness(body, ['name', 'product_type'])
+
+
+class ProductVersionValidator(BaseValidator):
+    """Validate adding product versions."""
+
+    schema = {
+        'type': 'object',
+        'properties': {
+            'version': {'type': 'string'},
+            'cpid': {'type': 'string'}
+        },
+        'required': ['version'],
+        'additionalProperties': False
+    }
+
+    def validate(self, request):
+        """Validate product version data."""
+        super(ProductVersionValidator, self).validate(request)

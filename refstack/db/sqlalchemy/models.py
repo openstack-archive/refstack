@@ -225,7 +225,6 @@ class Product(BASE, RefStackBase):  # pragma: no cover
 
     id = sa.Column(sa.String(36), primary_key=True,
                    default=lambda: six.text_type(uuid.uuid4()))
-    product_ref_id = sa.Column(sa.String(36), nullable=True)
     name = sa.Column(sa.String(80), nullable=False)
     description = sa.Column(sa.Text())
     organization_id = sa.Column(sa.String(36),
@@ -244,3 +243,26 @@ class Product(BASE, RefStackBase):  # pragma: no cover
         return ('id', 'name', 'description', 'product_ref_id', 'product_type',
                 'public', 'properties', 'created_at', 'updated_at',
                 'organization_id', 'created_by_user', 'type')
+
+
+class ProductVersion(BASE, RefStackBase):
+    """Product Version definition."""
+
+    __tablename__ = 'product_version'
+    __table_args__ = (
+        sa.UniqueConstraint('product_id', 'version'),
+    )
+
+    id = sa.Column(sa.String(36), primary_key=True,
+                   default=lambda: six.text_type(uuid.uuid4()))
+    product_id = sa.Column(sa.String(36), sa.ForeignKey('product.id'),
+                           index=True, nullable=False, unique=False)
+    version = sa.Column(sa.String(length=36), nullable=True)
+    cpid = sa.Column(sa.String(36), nullable=True)
+    created_by_user = sa.Column(sa.String(128), sa.ForeignKey('user.openid'),
+                                nullable=False)
+
+    @property
+    def default_allowed_keys(self):
+        """Default keys."""
+        return ('id', 'product_id', 'version', 'cpid')

@@ -678,9 +678,12 @@ class DBBackendTestCase(base.BaseTestCase):
 
     @mock.patch.object(api, 'get_session')
     @mock.patch('refstack.db.sqlalchemy.models.Product')
+    @mock.patch('refstack.db.sqlalchemy.models.ProductVersion')
     @mock.patch.object(api, '_to_dict', side_effect=lambda x: x)
-    def test_product_add(self, mock_to_dict, mock_product, mock_get_session):
+    def test_product_add(self, mock_to_dict, mock_version,
+                         mock_product, mock_get_session):
         session = mock_get_session.return_value
+        version = mock_version.return_value
         product = mock_product.return_value
         product_info = {'product_ref_id': 'hash_or_guid', 'name': 'a',
                         'organization_id': 'GUID0', 'type': 0,
@@ -689,6 +692,9 @@ class DBBackendTestCase(base.BaseTestCase):
         self.assertEqual(result, product)
 
         self.assertIsNotNone(product.id)
+        self.assertIsNotNone(version.id)
+        self.assertIsNotNone(version.product_id)
+        self.assertIsNone(version.version)
 
         mock_get_session.assert_called_once_with()
         product.save.assert_called_once_with(session=session)
@@ -767,11 +773,13 @@ class DBBackendTestCase(base.BaseTestCase):
     @mock.patch('refstack.db.sqlalchemy.api.models')
     def test_product_delete(self, mock_models, mock_get_session):
         session = mock_get_session.return_value
-        db.delete_product('product_ref_id')
+        db.delete_product('product_id')
 
-        session.query.assert_called_once_with(mock_models.Product)
         session.query.return_value.filter_by.assert_has_calls((
-            mock.call(id='product_ref_id'),
+            mock.call(product_id='product_id'),
+            mock.call().delete(synchronize_session=False)))
+        session.query.return_value.filter_by.assert_has_calls((
+            mock.call(id='product_id'),
             mock.call().delete(synchronize_session=False)))
         session.begin.assert_called_once_with()
 

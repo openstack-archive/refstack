@@ -435,6 +435,7 @@ def delete_organization(organization_id):
 def add_product(product_info, creator):
     """Add product."""
     product = models.Product()
+    product.id = str(uuid.uuid4())
     product.type = product_info['type']
     product.product_type = product_info['product_type']
     product.product_ref_id = product_info.get('product_ref_id')
@@ -448,6 +449,12 @@ def add_product(product_info, creator):
     session = get_session()
     with session.begin():
         product.save(session=session)
+        product_version = models.ProductVersion()
+        product_version.created_by_user = creator
+        product_version.version = product_info.get('version')
+        product_version.product_id = product.id
+        product_version.save(session=session)
+
         return _to_dict(product)
 
 
@@ -482,6 +489,9 @@ def delete_product(id):
     """delete product by id."""
     session = get_session()
     with session.begin():
+        (session.query(models.ProductVersion)
+         .filter_by(product_id=id)
+         .delete(synchronize_session=False))
         (session.query(models.Product).filter_by(id=id).
          delete(synchronize_session=False))
 
@@ -588,3 +598,72 @@ def get_products_by_user(user_openid, allowed_keys=None):
         .order_by(models.Organization.created_at.desc()).all())
     items = [item[0] for item in items]
     return _to_dict(items, allowed_keys=allowed_keys)
+
+
+def get_product_by_version(product_version_id, allowed_keys=None):
+    """Get product info from a product version ID."""
+    session = get_session()
+    product = (session.query(models.Product).join(models.ProductVersion)
+               .filter(models.ProductVersion.id == product_version_id).first())
+    return _to_dict(product, allowed_keys=allowed_keys)
+
+
+def get_product_version(product_version_id, allowed_keys=None):
+    """Get details of a specific version given the id."""
+    session = get_session()
+    version = (
+        session.query(models.ProductVersion)
+        .filter_by(id=product_version_id).first()
+    )
+    if version is None:
+        raise NotFound('Version with id "%s" not found' % id)
+    return _to_dict(version)
+
+
+def get_product_versions(product_id, allowed_keys=None):
+    """Get all versions for a product."""
+    session = get_session()
+    version_info = (
+        session.query(models.ProductVersion).filter_by(product_id=product_id)
+    )
+    return _to_dict(version_info, allowed_keys=allowed_keys)
+
+
+def add_product_version(product_id, version, creator, cpid, allowed_keys=None):
+    """Add a new product version."""
+    product_version = models.ProductVersion()
+    product_version.created_by_user = creator
+    product_version.version = version
+    product_version.product_id = product_id
+    product_version.cpid = cpid
+    session = get_session()
+    with session.begin():
+        product_version.save(session=session)
+        return _to_dict(product_version, allowed_keys=allowed_keys)
+
+
+def update_product_version(product_version_info):
+    """Update product version from product_info_version dictionary."""
+    session = get_session()
+    _id = product_version_info.get('id')
+    version = session.query(models.ProductVersion).filter_by(id=_id).first()
+    if version is None:
+        raise NotFound('Product version with id %s not found' % _id)
+
+    # Only allow updating cpid.
+    keys = ['cpid']
+    for key in keys:
+        if key in product_version_info:
+            setattr(version, key, product_version_info[key])
+
+    with session.begin():
+        version.save(session=session)
+        return _to_dict(version)
+
+
+def delete_product_version(product_version_id):
+    """Delete a product version."""
+    session = get_session()
+    with session.begin():
+        (session.query(models.ProductVersion).filter_by(id=product_version_id).
+         delete(synchronize_session=False))

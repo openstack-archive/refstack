@@ -330,3 +330,10 @@ def check_user_is_vendor_admin(vendor_id):
     user = get_user_id()
     org_users = db.get_organization_users(vendor_id)
     return user in org_users
+
+
+def check_user_is_product_admin(product_id):
+    """Check if the current user is in the vendor group for a product."""
+    product = db.get_product(product_id)
+    vendor_id = product['organization_id']
+    return check_user_is_vendor_admin(vendor_id)
