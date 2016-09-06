@@ -25,6 +25,7 @@ mysqld --no-defaults --datadir=${MYSQL_DATA} --pid-file=${MYSQL_DATA}/mysql.pid 
 # Wait for MySQL to start listening to connections
 wait_for_line "mysqld: ready for connections." ${MYSQL_DATA}/out
 export REFSTACK_TEST_MYSQL_URL="mysql+pymysql://root@localhost/test?unix_socket=${MYSQL_DATA}/mysql.socket&charset=utf8"
+mysql --no-defaults -S ${MYSQL_DATA}/mysql.socket -e 'set @@global.show_compatibility_56=ON;' > /dev/null 2>&1
 mysql --no-defaults -S ${MYSQL_DATA}/mysql.socket -e 'CREATE DATABASE test;'
 
 # Yield execution to venv command
