@@ -1,0 +1,51 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <h4>Manage Version</h4>
+    </div>
+    <div class="modal-body">
+        <div class="pull-left">
+            <strong>Version:</strong> {{modal.version.version}}<br />
+        </div>
+        <div class="pull-right">
+            <a class="glyphicon glyphicon-trash"
+               ng-click="modal.deleteProductVersion()"
+               confirm="Are you sure you want to delete product version {{modal.version.version}}?">
+            </a>
+        </div>
+        <div class="clearfix"></div>
+        <br />
+        (Optional) Associate cloud provider ID (CPID) with product version for easier
+        test run associating.
+        <br />
+        <br />
+        <div class="row">
+            <div class="col-md-8">
+                <strong>CPID:</strong><br />
+                <div class="input-group">
+                    <input type="text" class="form-control" ng-model="modal.version.cpid" />
+                    <span class="input-group-btn">
+                        <button 
+                            class="btn btn-default"
+                            type="button"
+                            ng-click="modal.saveChanges()">
+                            Save
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div ng-show="modal.showError" class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            {{modal.error}}
+        </div>
+        <div ng-show="modal.showSuccess" class="alert alert-success" role="success">
+            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+            <span class="sr-only">Success:</span>
+            Updated Successfully.
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" type="button" ng-click="modal.close()">Close</button>
+    </div>
+</div>

@@ -1,0 +1,29 @@
+<strong>Version(s) Available:</strong>
+<span ng-repeat="item in ctrl.productVersions | orderBy:'version'">
+    <a ng-show="item.version && ctrl.product.can_manage" class="label label-info" ng-click="ctrl.openVersionModal(item)">
+        {{item.version}}
+    </a>
+    <span ng-hide="ctrl.product.can_manage" class="label label-info">{{item.version}}</span>
+</span>
+&nbsp;
+<a ng-if="ctrl.product.can_manage"
+   title="Add a new product version."
+   ng-click="ctrl.showNewVersionInput = true">
+    <small><span class="glyphicon glyphicon-plus"></span></small>
+</a>
+<div ng-if="ctrl.showNewVersionInput" class="row" style="margin-top: 5px;">
+    <div class="col-md-2">
+        <div class="input-group">
+            <input ng-model="ctrl.newProductVersion" 
+                   type="text" class="form-control" placeholder="New Version">
+            <span class="input-group-btn">
+                <button 
+                    class="btn btn-default"
+                    type="button"
+                    ng-click="ctrl.addProductVersion()">
+                    Add
+                </button>
+            </span>
+        </div>
+    </div>
+</div>

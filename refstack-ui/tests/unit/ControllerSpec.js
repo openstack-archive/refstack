@@ -1103,6 +1103,10 @@ describe('Refstack controllers', function () {
                             'type': 0,
                             'id': '1234',
                             'description': 'some description'};
+        var fakeVersionResp = [{'id': 'asdf',
+                               'cpid': null,
+                               'version': '1.0',
+                               'product_id': '1234'}];
         var fakeVendorResp = {'id': 'fake-org-id',
                               'type': 3,
                               'can_manage': true,
@@ -1129,6 +1133,8 @@ describe('Refstack controllers', function () {
             $httpBackend.when('GET', fakeApiUrl +
                 '/products/1234').respond(fakeProdResp);
             $httpBackend.when('GET', fakeApiUrl +
+                '/products/1234/versions').respond(fakeVersionResp);
+            $httpBackend.when('GET', fakeApiUrl +
                 '/vendors/fake-org-id').respond(fakeVendorResp);
         }));
 
@@ -1144,6 +1150,16 @@ describe('Refstack controllers', function () {
                 expect(ctrl.vendor).toEqual(fakeVendorResp);
             });
 
+        it('should have a function to get a list of product versions',
+            function () {
+                $httpBackend
+                    .expectGET(fakeApiUrl + '/products/1234/versions')
+                    .respond(200, fakeVersionResp);
+                ctrl.getProductVersions();
+                $httpBackend.flush();
+                expect(ctrl.productVersions).toEqual(fakeVersionResp);
+            });
+
         it('should have a function to delete a product',
             function () {
                 $httpBackend.expectDELETE(fakeApiUrl + '/products/1234')
@@ -1153,6 +1169,26 @@ describe('Refstack controllers', function () {
                 expect(fakeWindow.location.href).toEqual('/');
             });
 
+        it('should have a function to delete a product version',
+            function () {
+                $httpBackend
+                    .expectDELETE(fakeApiUrl + '/products/1234/versions/abc')
+                    .respond(204, '');
+                ctrl.deleteProductVersion('abc');
+                $httpBackend.flush();
+            });
+
+        it('should have a function to add a product version',
+            function () {
+                ctrl.newProductVersion = 'abc';
+                $httpBackend.expectPOST(
+                    fakeApiUrl + '/products/1234/versions',
+                    {version: 'abc'})
+                    .respond(200, {'id': 'foo'});
+                ctrl.addProductVersion();
+                $httpBackend.flush();
+            });
+
         it('should have a function to switch the publicity of a project',
             function () {
                 ctrl.product = {'public': true};
@@ -1160,6 +1196,56 @@ describe('Refstack controllers', function () {
                     {'public': false})
                     .respond(200, fakeProdResp);
                 ctrl.switchProductPublicity();
+                $httpBackend.flush();
+            });
+
+        it('should have a method to open a modal for version management',
+            function () {
+                var modal;
+                inject(function ($uibModal) {
+                    modal = $uibModal;
+                });
+                spyOn(modal, 'open');
+                ctrl.openVersionModal();
+                expect(modal.open).toHaveBeenCalled();
+            });
+    });
+
+    describe('ProductVersionModalController', function() {
+
+        var ctrl, modalInstance, state, parent;
+        var fakeVersion = {'id': 'asdf', 'cpid': null,
+                           'version': '1.0','product_id': '1234'};
+
+        beforeEach(inject(function ($controller) {
+            modalInstance = {
+                dismiss: jasmine.createSpy('modalInstance.dismiss')
+            };
+            parent = {
+                deleteProductVersion: jasmine.createSpy('deleteProductVersion')
+            };
+            ctrl = $controller('ProductVersionModalController',
+                {$uibModalInstance: modalInstance, $state: state,
+                 version: fakeVersion, parent: parent}
+            );
+        }));
+
+        it('should have a function to prompt a version deletion',
+            function () {
+                ctrl.deleteProductVersion();
+                expect(parent.deleteProductVersion)
+                    .toHaveBeenCalledWith('asdf');
+                expect(modalInstance.dismiss).toHaveBeenCalledWith('exit');
+            });
+
+        it('should have a function to save changes',
+            function () {
+                ctrl.version.cpid = 'some-cpid';
+                var expectedContent = { 'cpid': 'some-cpid'};
+                $httpBackend.expectPUT(
+                    fakeApiUrl + '/products/1234/versions/asdf',
+                    expectedContent).respond(200, '');
+                ctrl.saveChanges();
                 $httpBackend.flush();
             });
     });
