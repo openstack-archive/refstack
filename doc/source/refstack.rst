@@ -8,31 +8,32 @@ Ubuntu 14 and 16 LTS.
 Install API dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
--  ``sudo apt-get install git python-dev libssl-dev python-setuptools build-essential libffi-dev``
+``sudo apt-get install git python-dev libssl-dev python-setuptools build-essential libffi-dev``
 
--  ``sudo apt-get install mysql-server python-mysqldb``
+``sudo apt-get install mysql-server python-mysqldb``
 
--  ``sudo easy_install -U pip``
+``sudo easy_install -U pip``
 
--  ``sudo easy_install -U virtualenv``
+``sudo easy_install -U virtualenv``
 
 Install RefStack UI dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``curl -sL https://deb.nodesource.com/setup_4.x | sudo bash -``
 
--  ``curl -sL https://deb.nodesource.com/setup_4.x | sudo bash -``
-
--  ``sudo apt-get install nodejs``
+``sudo apt-get install nodejs``
 
 Setup the RefStack database
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--  Log into MySQL: ``mysql -u root -p``
+**Log into MySQL:**
 
--  After authentication, create the database:
+``mysql -u root -p``
+
+**After authentication, create the database:**
 
 ``CREATE DATABASE refstack;``
 
--  Create a refstack user:
+**Create a refstack user:**
 
 ``CREATE USER 'refstack'@'localhost' IDENTIFIED BY '<your password>';``
 
@@ -40,68 +41,75 @@ or using hash value for your password
 
 ``CREATE USER 'refstack'@'localhost'    IDENTIFIED BY PASSWORD '<hash value of your password';``
 
--  Grant privileges:
+**Grant privileges:**
 
 ``GRANT ALL PRIVILEGES ON refstack . * TO 'refstack'@'localhost';``
 
--  Reload privileges:
+**Reload privileges:**
 
 ``FLUSH PRIVILEGES;``
 
--  Exit MySQL: ``quit``
+**Exit MySQL:**
 
-Git you clonin'
-^^^^^^^^^^^^^^^
+``quit``
 
--  ``git clone http://github.com/openstack/refstack``
+Clone the repository
+^^^^^^^^^^^^^^^^^^^^
 
--  ``cd refstack``
+``git clone http://github.com/openstack/refstack``
 
--  Create virtual environment:
-   ``virtualenv .venv --system-site-package``
+``cd refstack``
 
--  Source to virtual environment: ``source .venv/bin/activate``
+**Create virtual environment:**
+
+``virtualenv .venv --system-site-package``
+
+**Source to virtual environment:**
+
+``source .venv/bin/activate``
 
 Install RefStack application
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--  ``pip install .``
+``pip install .``
 
 Install needed RefStack UI library dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--  ``npm install``
+``npm install``
 
 API configuration file preparation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--  Make a copy of the sample config file (etc/refstack.conf.sample) and
-   update it with the correct information of your environment. Examples
-   of the config parameters with default values are included in the
-   sample config file.
+Make a copy of the sample config file (etc/refstack.conf.sample) and
+update it with the correct information of your environment. Examples
+of the config parameters with default values are included in the
+sample config file.
 
--  You should ensure that the following values in the config file are
-   noted and properly set:
+You should ensure that the following values in the config file are
+noted and properly set:
 
--  ``connection`` field in the ``[database]``\ section.
+``connection`` field in the ``[database]``\ section.
 
-   For example, if the backend database is MySQL then update:
-   ``#connection = <None>`` to
-   ``connection = mysql+pymysql://refstack:<your password>@x.x.x.x/refstack``
+For example, if the backend database is MySQL then update:
 
--  ``ui_url`` field in the ``[DEFAULT]`` section.
+``#connection = <None>`` to
+``connection = mysql+pymysql://refstack:<your password>@x.x.x.x/refstack``
+
+``ui_url`` field in the ``[DEFAULT]`` section.
 
    This should be the URL that the UI can be accessed from. This will
    likely be in the form ``http://<your server IP>:8000`` (8000 being
    the default port RefStack is hosted on). For example:
+
    ``http://192.168.56.101:8000``
 
--  ``api_url`` field in the ``[api]`` section.
+``api_url`` field in the ``[api]`` section.
 
    This should be the URL that the API can be accessed from. This, in
    most cases, will be the same as the value for ``ui_url`` above.
 
--  ``app_dev_mode`` field in the ``[api]`` section.
+``app_dev_mode`` field in the ``[api]`` section.
 
    Set this field to true if you aren't creating a production-level
    RefStack deployment and are just trying things out or developing.
@@ -116,7 +124,7 @@ From the RefStack project root directory, create a config.json file and
 specify your API endpoint inside this file. This will be something like
 {"refstackApiUrl": "http://192.168.56.101:8000/v1"}:
 
--  ``cp refstack-ui/app/config.json.sample refstack-ui/app/config.json``
+``cp refstack-ui/app/config.json.sample refstack-ui/app/config.json``
 
 Openstack OpenID endpoint configuration (optional)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -169,7 +177,7 @@ section in refstack.conf to match the local endpoint.
 Database sync
 ^^^^^^^^^^^^^
 
--  Check current revision:
+**Check current revision:**
 
 ``refstack-manage --config-file /path/to/refstack.conf version``
 
@@ -177,11 +185,11 @@ The response will show the current database revision. If the revision is
 ``None`` (indicating a clear database), the following command should be
 performed to upgrade the database to the latest revision:
 
--  Upgrade database to latest revision:
+**Upgrade database to latest revision:**
 
 ``refstack-manage --config-file /path/to/refstack.conf upgrade --revision head``
 
--  Check current revision:
+**Check current revision:**
 
 ``refstack-manage --config-file /path/to/refstack.conf version``
 
@@ -195,7 +203,7 @@ Start RefStack
 A simple way to start refstack is to just kick off gunicorn using the
 ``refstack-api`` executable:
 
--  ``refstack-api --env REFSTACK_OSLO_CONFIG=/path/to/refstack.conf``
+``refstack-api --env REFSTACK_OSLO_CONFIG=/path/to/refstack.conf``
 
 If ``app_dev_mode`` is set to true, this will launch both the UI and
 API.
@@ -225,27 +233,30 @@ Overall RefStack admin access is given to users belonging to a
 logged into RefStack at least once so that a user record for your
 account is created.
 
--  Log into MySQL: ``mysql -u root -p``
+**Log into MySQL:**
 
--  Create a group for the "Foundation" organization:
+``mysql -u root -p``
+
+**Create a group for the "Foundation" organization:**
 
 ``INSERT INTO refstack.group (id, name, created_at) VALUES (UUID(), 'Foundation Group', NOW());``
 
--  Get the group ID for the group you just created:
+**Get the group ID for the group you just created:**
 
 ``SELECT id from refstack.group WHERE name = 'Foundation Group';``
 
--  Get your OpenID:
+**Get your OpenID:**
 
 ``SELECT openid from refstack.user WHERE email = '<your email>';``
 
--  Add your user account to the previously created "Foundation" group.
-   Replace ``<Group ID>`` and ``<Your OpenID>`` with the values
-   retrieved in the two previous steps:
+**Add your user account to the previously created "Foundation" group.**
+
+Replace ``<Group ID>`` and ``<Your OpenID>`` with the values
+retrieved in the two previous steps:
 
 ``INSERT INTO refstack.user_to_group (created_by_user, user_openid, group_id, created_at)    VALUES ('<Your OpenID>', '<Your OpenID>', '<Group ID>', NOW());``
 
--  Create the actual "Foundation" organization using this group:
+**Create the actual "Foundation" organization using this group:**
 
 ``INSERT INTO refstack.organization (id, type, name, group_id, created_by_user, created_at)    VALUES (UUID(), 0, 'Foundation', '<Group ID>', '<Your OpenID>', NOW());``
 
@@ -254,11 +265,10 @@ account is created.
 
 The RefStack documentation can be build using following commands:
 
--  ``cd ~/refstack; source .venv/bin/activate``
+``cd ~/refstack; source .venv/bin/activate``
 
--  ``sudo apt-get install -y python3-dev python-tox``
+``sudo apt-get install -y python3-dev python-tox``
 
--  ``tox -e docs``
+``tox -e docs``
 
 The documentation files will be build under ``~/refstack/build/sphinx``.
-
