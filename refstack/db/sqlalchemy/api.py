@@ -158,6 +158,24 @@ def delete_test(test_id):
             raise NotFound('Test result %s not found' % test_id)
 
 
+def update_test(test_info):
+    """Update test from the given test_info dictionary."""
+    session = get_session()
+    _id = test_info.get('id')
+    test = session.query(models.Test).filter_by(id=_id).first()
+    if test is None:
+        raise NotFound('Test result with id %s not found' % _id)
+
+    keys = ['product_version_id']
+    for key in keys:
+        if key in test_info:
+            setattr(test, key, test_info[key])
+
+    with session.begin():
+        test.save(session=session)
+        return _to_dict(test)
+
+
 def get_test_meta_key(test_id, key, default=None):
     """Get metadata value related to specified test run."""
     session = get_session()
@@ -616,8 +634,8 @@ def get_product_version(product_version_id, allowed_keys=None):
         .filter_by(id=product_version_id).first()
     )
     if version is None:
-        raise NotFound('Version with id "%s" not found' % id)
-    return _to_dict(version)
+        raise NotFound('Version with id "%s" not found' % product_version_id)
+    return _to_dict(version, allowed_keys=allowed_keys)
 
 
 def get_product_versions(product_id, allowed_keys=None):

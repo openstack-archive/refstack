@@ -254,6 +254,21 @@ class DBBackendTestCase(base.BaseTestCase):
             .first.return_value = None
         self.assertRaises(api.NotFound, db.delete_test, 'fake_id')
 
+    @mock.patch.object(api, 'get_session')
+    @mock.patch.object(api, '_to_dict', side_effect=lambda x: x)
+    def test_update_test(self, mock_to_dict, mock_get_session):
+        session = mock_get_session.return_value
+        mock_test = mock.Mock()
+        session.query.return_value.filter_by.return_value\
+            .first.return_value = mock_test
+
+        test_info = {'product_version_id': '123'}
+        api.update_test(test_info)
+
+        mock_get_session.assert_called_once_with()
+        mock_test.save.assert_called_once_with(session=session)
+        session.begin.assert_called_once_with()
+
     @mock.patch('refstack.db.sqlalchemy.api.models')
     @mock.patch.object(api, 'get_session')
     def test_get_test_meta_key(self, mock_get_session, mock_models):

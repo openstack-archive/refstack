@@ -249,8 +249,16 @@ def check_owner(test_id):
     """Check that user has access to specified test run as owner."""
     if not is_authenticated():
         return False
-    user = db.get_test_meta_key(test_id, const.USER)
-    return user and user == get_user_id()
+
+    test = db.get_test(test_id)
+    # If the test is owned by a product.
+    if test.get('product_version_id'):
+        version = db.get_product_version(test['product_version_id'])
+        return check_user_is_product_admin(version['product_id'])
+    # Otherwise, check the user ownership.
+    else:
+        user = db.get_test_meta_key(test_id, const.USER)
+        return user and user == get_user_id()
 
 
 def check_permissions(level):

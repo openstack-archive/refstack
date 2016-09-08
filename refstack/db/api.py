@@ -64,6 +64,14 @@ def delete_test(test_id):
     return IMPL.delete_test(test_id)
 
 
+def update_test(test_info):
+    """Update test from the given test_info dictionary.
+
+    :param test_info: The test
+    """
+    return IMPL.update_test(test_info)
+
+
 def get_test_results(test_id):
     """Get all passed tempest tests for a specified test run.
 

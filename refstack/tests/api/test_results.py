@@ -15,11 +15,14 @@
 import json
 import uuid
 
+import mock
 from oslo_config import fixture as config_fixture
 import six
 import webtest.app
 
+from refstack.api import constants as api_const
 from refstack.api import validators
+from refstack import db
 from refstack.tests import api
 
 FAKE_TESTS_RESULT = {
@@ -78,6 +81,67 @@ class TestResultsEndpoint(api.FunctionalTest):
                           self.post_json,
                           self.URL,
                           params=results)
+
+    @mock.patch('refstack.api.utils.check_owner')
+    @mock.patch('refstack.api.utils.check_user_is_foundation_admin')
+    @mock.patch('refstack.api.utils.get_user_id', return_value='test-open-id')
+    def test_put(self, mock_user, mock_check_foundation, mock_check_owner):
+        """Test results endpoint with put request."""
+        results = json.dumps(FAKE_TESTS_RESULT)
+        test_response = self.post_json(self.URL, params=results)
+        url = self.URL + test_response.get('test_id')
+
+        user_info = {
+            'openid': 'test-open-id',
+            'email': 'foo@bar.com',
+            'fullname': 'Foo Bar'
+        }
+        db.user_save(user_info)
+
+        fake_product = {
+            'name': 'product name',
+            'description': 'product description',
+            'product_type': api_const.CLOUD,
+        }
+
+        # Create a product
+        product_response = self.post_json('/v1/products/',
+                                          params=json.dumps(fake_product))
+        # Create a product version
+        version_url = '/v1/products/' + product_response['id'] + '/versions/'
+        version_response = self.post_json(version_url,
+                                          params=json.dumps({'version': '1'}))
+
+        # Test Foundation admin can put.
+        mock_check_foundation.return_value = True
+        body = {'product_version_id': version_response['id']}
+        self.put_json(url, params=json.dumps(body))
+        get_response = self.get_json(url)
+        self.assertEqual(version_response['id'],
+                         get_response['product_version_id'])
+
+        # Test when product_version_id is None.
+        body = {'product_version_id': None}
+        self.put_json(url, params=json.dumps(body))
+        get_response = self.get_json(url)
+        self.assertIsNone(get_response['product_version_id'])
+
+        # Check test owner can put.
+        mock_check_foundation.return_value = False
+        mock_check_owner.return_value = True
+        body = {'product_version_id': version_response['id']}
+        self.put_json(url, params=json.dumps(body))
+        get_response = self.get_json(url)
+        self.assertEqual(version_response['id'],
+                         get_response['product_version_id'])
+
+        # Test unauthorized put.
+        mock_check_foundation.return_value = False
+        mock_check_owner.return_value = False
+        self.assertRaises(webtest.app.AppError,
+                          self.put_json,
+                          url,
+                          params=json.dumps(body))
 
     def test_get_one(self):
         """Test get request."""

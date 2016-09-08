@@ -140,7 +140,8 @@ class ResultsControllerTestCase(BaseControllerTestCase):
         mock_get_test_res.assert_called_once_with('fake_arg')
         mock_get_test.assert_called_once_with(
             'fake_arg', allowed_keys=['id', 'cpid', 'created_at',
-                                      'duration_seconds', 'meta']
+                                      'duration_seconds', 'meta',
+                                      'product_version_id']
         )
 
     @mock.patch('refstack.db.store_results')

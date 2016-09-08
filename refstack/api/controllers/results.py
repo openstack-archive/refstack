@@ -103,7 +103,8 @@ class ResultsController(validation.BaseRestControllerWithValidation):
         if user_role in (const.ROLE_FOUNDATION, const.ROLE_OWNER):
             test_info = db.get_test(
                 test_id, allowed_keys=['id', 'cpid', 'created_at',
-                                       'duration_seconds', 'meta']
+                                       'duration_seconds', 'meta',
+                                       'product_version_id']
             )
         else:
             test_info = db.get_test(test_id)
@@ -198,3 +199,32 @@ class ResultsController(validation.BaseRestControllerWithValidation):
             pecan.abort(400)
 
         return page
+
+    @api_utils.check_permissions(level=const.ROLE_OWNER)
+    @pecan.expose('json')
+    def put(self, test_id, **kw):
+        """Update a test result."""
+        test_info = {'id': test_id}
+        if 'product_version_id' in kw:
+            if kw['product_version_id']:
+                # Verify that the user is a member of the product's vendor.
+                version = db.get_product_version(kw['product_version_id'])
+                is_vendor_admin = (
+                    api_utils
+                    .check_user_is_product_admin(version['product_id'])
+                )
+            else:
+                # No product vendor to check membership for, so just set
+                # is_vendor_admin to True.
+                is_vendor_admin = True
+                kw['product_version_id'] = None
+            is_foundation_admin = api_utils.check_user_is_foundation_admin()
+
+            if not is_vendor_admin and not is_foundation_admin:
+                pecan.abort(403, 'Forbidden.')
+
+            test_info['product_version_id'] = kw['product_version_id']
+
+        test = db.update_test(test_info)
+        pecan.response.status = 201
+        return test

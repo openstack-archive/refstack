@@ -336,16 +336,19 @@ class APIUtilsTestCase(base.BaseTestCase):
     @mock.patch('refstack.api.utils.check_user_is_foundation_admin')
     @mock.patch('pecan.abort', side_effect=exc.HTTPError)
     @mock.patch('refstack.db.get_test_meta_key')
+    @mock.patch('refstack.db.get_test')
     @mock.patch.object(api_utils, 'is_authenticated')
     @mock.patch.object(api_utils, 'get_user_id')
     def test_check_get_user_role(self, mock_get_user_id,
                                  mock_is_authenticated,
+                                 mock_get_test,
                                  mock_get_test_meta_key,
                                  mock_pecan_abort,
                                  mock_check_foundation):
         # Check user level
         mock_check_foundation.return_value = False
         mock_get_test_meta_key.return_value = None
+        mock_get_test.return_value = {}
         self.assertEqual(const.ROLE_USER, api_utils.get_user_role('fake_test'))
         api_utils.enforce_permissions('fake_test', const.ROLE_USER)
         self.assertRaises(exc.HTTPError, api_utils.enforce_permissions,
@@ -409,10 +412,12 @@ class APIUtilsTestCase(base.BaseTestCase):
     @mock.patch('refstack.api.utils.check_user_is_foundation_admin')
     @mock.patch('pecan.abort', side_effect=exc.HTTPError)
     @mock.patch('refstack.db.get_test_meta_key')
+    @mock.patch('refstack.db.get_test')
     @mock.patch.object(api_utils, 'is_authenticated')
     @mock.patch.object(api_utils, 'get_user_id')
     def test_check_permissions(self, mock_get_user_id,
                                mock_is_authenticated,
+                               mock_get_test,
                                mock_get_test_meta_key,
                                mock_pecan_abort,
                                mock_foundation_check):
@@ -437,6 +442,7 @@ class APIUtilsTestCase(base.BaseTestCase):
         private_test = 'fake_test'
 
         mock_get_user_id.return_value = 'fake_openid'
+        mock_get_test.return_value = {}
         mock_get_test_meta_key.side_effect = lambda *args: {
             (public_test, const.USER): None,
             (private_test, const.USER): 'fake_openid',
