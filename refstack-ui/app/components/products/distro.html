@@ -12,5 +12,12 @@
             </div>
         </div>
         <div ng-include src="'components/products/partials/management.html'"></div>
+        <div class="clearfix"></div>
+        <div ng-include src="'components/products/partials/versions.html'"></div>
     </div>
+</div>
+<div ng-show="ctrl.showError" class="alert alert-danger" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    <span class="sr-only">Error:</span>
+    {{ctrl.error}}
 </div>
