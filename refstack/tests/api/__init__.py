@@ -167,7 +167,7 @@ class FunctionalTest(base.BaseTestCase):
                                 expect_errors=expect_errors,
                                 params=params)
 
-        if not expect_errors:
+        if not expect_errors and response.content_type == 'application/json':
             response = response.json
         return response
 
@@ -200,7 +200,7 @@ class FunctionalTest(base.BaseTestCase):
                                  content_type=content_type,
                                  **params)
 
-        if not expect_errors:
+        if not expect_errors and response.content_type == 'application/json':
             response = response.json
         return response
 
@@ -216,6 +216,6 @@ class FunctionalTest(base.BaseTestCase):
                                 content_type=content_type,
                                 **params)
 
-        if not expect_errors:
+        if not expect_errors and response.content_type == 'application/json':
             response = response.json
         return response
