@@ -19,6 +19,7 @@ import json
 import uuid
 
 from oslo_config import cfg
+from oslo_db.exception import DBReferenceError
 from oslo_log import log
 import pecan
 from pecan.secure import secure
@@ -112,8 +113,11 @@ class VersionsController(validation.BaseRestControllerWithValidation):
                 not api_utils.check_user_is_foundation_admin()):
 
             pecan.abort(403, 'Forbidden.')
-
-        db.delete_product_version(version_id)
+        try:
+            db.delete_product_version(version_id)
+        except DBReferenceError:
+            pecan.abort(400, 'Unable to delete. There are still tests '
+                             'associated to this product version.')
         pecan.response.status = 204
 
 
@@ -262,6 +266,9 @@ class ProductsController(validation.BaseRestControllerWithValidation):
         if (not api_utils.check_user_is_foundation_admin() and
                 not api_utils.check_user_is_product_admin(id)):
             pecan.abort(403, 'Forbidden.')
-
-        db.delete_product(id)
+        try:
+            db.delete_product(id)
+        except DBReferenceError:
+            pecan.abort(400, 'Unable to delete. There are still tests '
+                             'associated to versions of this product.')
         pecan.response.status = 204

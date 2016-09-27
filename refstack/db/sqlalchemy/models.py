@@ -62,6 +62,7 @@ class Test(BASE, RefStackBase):  # pragma: no cover
     product_version_id = sa.Column(sa.String(36),
                                    sa.ForeignKey('product_version.id'),
                                    nullable=True, unique=False)
+    verification_status = sa.Column(sa.Integer, nullable=False, default=0)
 
     @property
     def _extra_keys(self):
@@ -78,7 +79,7 @@ class Test(BASE, RefStackBase):  # pragma: no cover
     def default_allowed_keys(self):
         """Default keys."""
         return ('id', 'created_at', 'duration_seconds', 'meta',
-                'product_version_id')
+                'product_version_id', 'verification_status')
 
 
 class TestResults(BASE, RefStackBase):  # pragma: no cover

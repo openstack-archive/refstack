@@ -19,6 +19,7 @@ import json
 import six
 
 from oslo_config import cfg
+from oslo_db.exception import DBReferenceError
 from oslo_log import log
 import pecan
 from pecan import rest
@@ -196,7 +197,11 @@ class VendorsController(validation.BaseRestControllerWithValidation):
             pecan.abort(403, 'Forbidden.')
         _check_is_not_foundation(vendor_id)
 
-        db.delete_organization(vendor_id)
+        try:
+            db.delete_organization(vendor_id)
+        except DBReferenceError:
+            pecan.abort(400, 'Unable to delete. There are still tests '
+                             'associated to products for this vendor.')
         pecan.response.status = 204
 
     @secure(api_utils.is_authenticated)

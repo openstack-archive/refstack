@@ -166,7 +166,7 @@ def update_test(test_info):
     if test is None:
         raise NotFound('Test result with id %s not found' % _id)
 
-    keys = ['product_version_id']
+    keys = ['product_version_id', 'verification_status']
     for key in keys:
         if key in test_info:
             setattr(test, key, test_info[key])
@@ -237,6 +237,11 @@ def _apply_filters_for_query(query, filters):
     cpid = filters.get(api_const.CPID)
     if cpid:
         query = query.filter(models.Test.cpid == cpid)
+
+    verification_status = filters.get(api_const.VERIFICATION_STATUS)
+    if verification_status:
+        query = query.filter(models.Test.verification_status ==
+                             verification_status)
 
     signed = api_const.SIGNED in filters
     # If we only want to get the user's test results.
@@ -442,6 +447,12 @@ def delete_organization(organization_id):
     """delete organization by id."""
     session = get_session()
     with session.begin():
+        product_ids = (session
+                       .query(models.Product.id)
+                       .filter_by(organization_id=organization_id))
+        (session.query(models.ProductVersion).
+         filter(models.ProductVersion.product_id.in_(product_ids)).
+         delete(synchronize_session=False))
         (session.query(models.Product).
          filter_by(organization_id=organization_id).
          delete(synchronize_session=False))

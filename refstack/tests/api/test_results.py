@@ -89,7 +89,8 @@ class TestResultsEndpoint(api.FunctionalTest):
         """Test results endpoint with put request."""
         results = json.dumps(FAKE_TESTS_RESULT)
         test_response = self.post_json(self.URL, params=results)
-        url = self.URL + test_response.get('test_id')
+        test_id = test_response.get('test_id')
+        url = self.URL + test_id
 
         user_info = {
             'openid': 'test-open-id',
@@ -126,6 +127,39 @@ class TestResultsEndpoint(api.FunctionalTest):
         get_response = self.get_json(url)
         self.assertIsNone(get_response['product_version_id'])
 
+        # Test when test verification preconditions are not met.
+        body = {'verification_status': api_const.TEST_VERIFIED}
+        put_response = self.put_json(url, expect_errors=True,
+                                     params=json.dumps(body))
+        self.assertEqual(403, put_response.status_code)
+
+        # Share the test run.
+        db.save_test_meta_item(test_id, api_const.SHARED_TEST_RUN, True)
+        put_response = self.put_json(url, expect_errors=True,
+                                     params=json.dumps(body))
+        self.assertEqual(403, put_response.status_code)
+
+        # Now associate guideline and target program. Now we should be
+        # able to mark a test verified.
+        db.save_test_meta_item(test_id, 'target', 'platform')
+        db.save_test_meta_item(test_id, 'guideline', '2016.01.json')
+        put_response = self.put_json(url, params=json.dumps(body))
+        self.assertEqual(api_const.TEST_VERIFIED,
+                         put_response['verification_status'])
+
+        # Unshare the test, and check that we can mark it not verified.
+        db.delete_test_meta_item(test_id, api_const.SHARED_TEST_RUN)
+        body = {'verification_status': api_const.TEST_NOT_VERIFIED}
+        put_response = self.put_json(url, params=json.dumps(body))
+        self.assertEqual(api_const.TEST_NOT_VERIFIED,
+                         put_response['verification_status'])
+
+        # Test when verification_status value is invalid.
+        body = {'verification_status': 111}
+        put_response = self.put_json(url, expect_errors=True,
+                                     params=json.dumps(body))
+        self.assertEqual(400, put_response.status_code)
+
         # Check test owner can put.
         mock_check_foundation.return_value = False
         mock_check_owner.return_value = True
@@ -134,6 +168,12 @@ class TestResultsEndpoint(api.FunctionalTest):
         get_response = self.get_json(url)
         self.assertEqual(version_response['id'],
                          get_response['product_version_id'])
+
+        # Test non-Foundation user can't change verification_status.
+        body = {'verification_status': 1}
+        put_response = self.put_json(url, expect_errors=True,
+                                     params=json.dumps(body))
+        self.assertEqual(403, put_response.status_code)
 
         # Test unauthorized put.
         mock_check_foundation.return_value = False
@@ -287,3 +327,22 @@ class TestResultsEndpoint(api.FunctionalTest):
         url = '/v1/results?end_date=1000-01-01 12:00:00'
         filtering_results = self.get_json(url)
         self.assertEqual([], filtering_results['results'])
+
+    @mock.patch('refstack.api.utils.check_owner')
+    def test_delete(self, mock_check_owner):
+        results = json.dumps(FAKE_TESTS_RESULT)
+        test_response = self.post_json(self.URL, params=results)
+        test_id = test_response.get('test_id')
+        url = self.URL + test_id
+
+        mock_check_owner.return_value = True
+
+        # Test can't delete verified test run.
+        db.update_test({'id': test_id, 'verification_status': 1})
+        resp = self.delete(url, expect_errors=True)
+        self.assertEqual(403, resp.status_code)
+
+        # Test can delete verified test run.
+        db.update_test({'id': test_id, 'verification_status': 0})
+        resp = self.delete(url, expect_errors=True)
+        self.assertEqual(204, resp.status_code)
