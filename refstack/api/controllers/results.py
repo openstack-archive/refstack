@@ -112,7 +112,7 @@ class ResultsController(validation.BaseRestControllerWithValidation):
             test_info = db.get_test(
                 test_id, allowed_keys=['id', 'cpid', 'created_at',
                                        'duration_seconds', 'meta',
-                                       'product_version_id',
+                                       'product_version',
                                        'verification_status']
             )
         else:
@@ -123,6 +123,12 @@ class ResultsController(validation.BaseRestControllerWithValidation):
                           'user_role': user_role})
 
         if user_role not in (const.ROLE_FOUNDATION, const.ROLE_OWNER):
+            # Don't expose product information if product is not public.
+            if (test_info.get('product_version') and
+               not test_info['product_version']['product_info']['public']):
+
+                test_info['product_version'] = None
+
             test_info['meta'] = {
                 k: v for k, v in six.iteritems(test_info['meta'])
                 if k in MetadataController.rw_access_keys
@@ -176,10 +182,22 @@ class ResultsController(validation.BaseRestControllerWithValidation):
             const.END_DATE,
             const.CPID,
             const.SIGNED,
-            const.VERIFICATION_STATUS
+            const.VERIFICATION_STATUS,
+            const.PRODUCT_ID
         ]
 
         filters = api_utils.parse_input_params(expected_input_params)
+
+        if const.PRODUCT_ID in filters:
+            product = db.get_product(filters[const.PRODUCT_ID])
+            vendor_id = product['organization_id']
+            is_admin = (api_utils.check_user_is_foundation_admin() or
+                        api_utils.check_user_is_vendor_admin(vendor_id))
+            if is_admin:
+                filters[const.ALL_PRODUCT_TESTS] = True
+            elif not product['public']:
+                pecan.abort(403, 'Forbidden.')
+
         records_count = db.get_test_records_count(filters)
         page_number, total_pages_number = \
             api_utils.get_page_number(records_count)
@@ -187,13 +205,18 @@ class ResultsController(validation.BaseRestControllerWithValidation):
         try:
             per_page = CONF.api.results_per_page
             results = db.get_test_records(page_number, per_page, filters)
-
+            is_foundation = api_utils.check_user_is_foundation_admin()
             for result in results:
-                # Only show all metadata if the user is the owner or a member
-                # of the Foundation group.
-                if (not api_utils.check_owner(result['id']) and
-                   not api_utils.check_user_is_foundation_admin()):
 
+                if not (api_utils.check_owner(result['id']) or is_foundation):
+
+                    # Don't expose product info if the product is not public.
+                    if (result.get('product_version') and not
+                       result['product_version']['product_info']['public']):
+
+                        result['product_version'] = None
+                    # Only show all metadata if the user is the owner or a
+                    # member of the Foundation group.
                     result['meta'] = {
                         k: v for k, v in six.iteritems(result['meta'])
                         if k in MetadataController.rw_access_keys
@@ -209,8 +232,8 @@ class ResultsController(validation.BaseRestControllerWithValidation):
                     }}
         except Exception as ex:
             LOG.debug('An error occurred during '
-                      'operation with database: %s' % ex)
-            pecan.abort(400)
+                      'operation with database: %s' % str(ex))
+            pecan.abort(500)
 
         return page
 
@@ -229,7 +252,8 @@ class ResultsController(validation.BaseRestControllerWithValidation):
 
             if kw['product_version_id']:
                 # Verify that the user is a member of the product's vendor.
-                version = db.get_product_version(kw['product_version_id'])
+                version = db.get_product_version(kw['product_version_id'],
+                                                 allowed_keys=['product_id'])
                 is_vendor_admin = (
                     api_utils
                     .check_user_is_product_admin(version['product_id'])

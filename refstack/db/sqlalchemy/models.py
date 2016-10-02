@@ -63,11 +63,12 @@ class Test(BASE, RefStackBase):  # pragma: no cover
                                    sa.ForeignKey('product_version.id'),
                                    nullable=True, unique=False)
     verification_status = sa.Column(sa.Integer, nullable=False, default=0)
+    product_version = orm.relationship('ProductVersion', backref='test')
 
     @property
     def _extra_keys(self):
         """Relation should be pointed directly."""
-        return ['results', 'meta']
+        return ['results', 'meta', 'product_version']
 
     @property
     def metadata_keys(self):
@@ -79,7 +80,7 @@ class Test(BASE, RefStackBase):  # pragma: no cover
     def default_allowed_keys(self):
         """Default keys."""
         return ('id', 'created_at', 'duration_seconds', 'meta',
-                'product_version_id', 'verification_status')
+                'verification_status', 'product_version')
 
 
 class TestResults(BASE, RefStackBase):  # pragma: no cover
@@ -245,9 +246,7 @@ class Product(BASE, RefStackBase):  # pragma: no cover
     @property
     def default_allowed_keys(self):
         """Default keys."""
-        return ('id', 'name', 'description', 'product_ref_id', 'product_type',
-                'public', 'properties', 'created_at', 'updated_at',
-                'organization_id', 'created_by_user', 'type')
+        return ('id', 'name', 'organization_id', 'public')
 
 
 class ProductVersion(BASE, RefStackBase):
@@ -266,8 +265,14 @@ class ProductVersion(BASE, RefStackBase):
     cpid = sa.Column(sa.String(36), nullable=True)
     created_by_user = sa.Column(sa.String(128), sa.ForeignKey('user.openid'),
                                 nullable=False)
+    product_info = orm.relationship('Product', backref='product_version')
+
+    @property
+    def _extra_keys(self):
+        """Relation should be pointed directly."""
+        return ['product_info']
 
     @property
     def default_allowed_keys(self):
         """Default keys."""
-        return ('id', 'product_id', 'version', 'cpid')
+        return ('id', 'version', 'cpid', 'product_info')

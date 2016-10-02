@@ -210,9 +210,9 @@ def update_product(product_info):
     return IMPL.update_product(product_info)
 
 
-def get_product(id):
+def get_product(id, allowed_keys=None):
     """Get product by id."""
-    return IMPL.get_product(id)
+    return IMPL.get_product(id, allowed_keys=allowed_keys)
 
 
 def delete_product(id):

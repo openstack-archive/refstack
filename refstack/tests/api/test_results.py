@@ -119,13 +119,13 @@ class TestResultsEndpoint(api.FunctionalTest):
         self.put_json(url, params=json.dumps(body))
         get_response = self.get_json(url)
         self.assertEqual(version_response['id'],
-                         get_response['product_version_id'])
+                         get_response['product_version']['id'])
 
         # Test when product_version_id is None.
         body = {'product_version_id': None}
         self.put_json(url, params=json.dumps(body))
         get_response = self.get_json(url)
-        self.assertIsNone(get_response['product_version_id'])
+        self.assertIsNone(get_response['product_version'])
 
         # Test when test verification preconditions are not met.
         body = {'verification_status': api_const.TEST_VERIFIED}
@@ -167,7 +167,7 @@ class TestResultsEndpoint(api.FunctionalTest):
         self.put_json(url, params=json.dumps(body))
         get_response = self.get_json(url)
         self.assertEqual(version_response['id'],
-                         get_response['product_version_id'])
+                         get_response['product_version']['id'])
 
         # Test non-Foundation user can't change verification_status.
         body = {'verification_status': 1}
@@ -327,6 +327,67 @@ class TestResultsEndpoint(api.FunctionalTest):
         url = '/v1/results?end_date=1000-01-01 12:00:00'
         filtering_results = self.get_json(url)
         self.assertEqual([], filtering_results['results'])
+
+    @mock.patch('refstack.api.utils.get_user_id')
+    def test_get_with_product_id(self, mock_get_user):
+        user_info = {
+            'openid': 'test-open-id',
+            'email': 'foo@bar.com',
+            'fullname': 'Foo Bar'
+        }
+        db.user_save(user_info)
+
+        mock_get_user.return_value = 'test-open-id'
+
+        fake_product = {
+            'name': 'product name',
+            'description': 'product description',
+            'product_type': api_const.CLOUD,
+        }
+
+        product = json.dumps(fake_product)
+        response = self.post_json('/v1/products/', params=product)
+        product_id = response['id']
+
+        # Create a version.
+        version_url = '/v1/products/' + product_id + '/versions'
+        version = {'cpid': '123', 'version': '6.0'}
+        post_response = self.post_json(version_url, params=json.dumps(version))
+        version_id = post_response['id']
+
+        # Create a test and associate it to the product version and user.
+        results = json.dumps(FAKE_TESTS_RESULT)
+        post_response = self.post_json('/v1/results', params=results)
+        test_id = post_response['test_id']
+        test_info = {'id': test_id, 'product_version_id': version_id}
+        db.update_test(test_info)
+        db.save_test_meta_item(test_id, api_const.USER, 'test-open-id')
+
+        url = self.URL + '?page=1&product_id=' + product_id
+
+        # Test GET.
+        response = self.get_json(url)
+        self.assertEqual(1, len(response['results']))
+        self.assertEqual(test_id, response['results'][0]['id'])
+
+        # Test unauthorized.
+        mock_get_user.return_value = 'test-foo-id'
+        response = self.get_json(url, expect_errors=True)
+        self.assertEqual(403, response.status_code)
+
+        # Make product public.
+        product_info = {'id': product_id, 'public': 1}
+        db.update_product(product_info)
+
+        # Test result is not shared yet, so no tests should return.
+        response = self.get_json(url)
+        self.assertFalse(response['results'])
+
+        # Share the test run.
+        db.save_test_meta_item(test_id, api_const.SHARED_TEST_RUN, 1)
+        response = self.get_json(url)
+        self.assertEqual(1, len(response['results']))
+        self.assertEqual(test_id, response['results'][0]['id'])
 
     @mock.patch('refstack.api.utils.check_owner')
     def test_delete(self, mock_check_owner):

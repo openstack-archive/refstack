@@ -769,7 +769,7 @@ class DBBackendTestCase(base.BaseTestCase):
     @mock.patch.object(api, 'get_session',
                        return_value=mock.Mock(name='session'),)
     @mock.patch('refstack.db.sqlalchemy.models.Product')
-    @mock.patch.object(api, '_to_dict', side_effect=lambda x: x)
+    @mock.patch.object(api, '_to_dict', side_effect=lambda x, allowed_keys: x)
     def test_product_get(self, mock_to_dict, mock_model, mock_get_session):
         _id = 12345
         session = mock_get_session.return_value

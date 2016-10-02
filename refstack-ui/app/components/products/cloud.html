@@ -1,4 +1,5 @@
 <h3>Cloud Product</h3>
+<div cg-busy="{promise:ctrl.productRequest,message:'Loading'}"></div>
 <div ng-show="ctrl.product" class="container-fluid">
     <div class="row">
         <div class="pull-left">
@@ -14,6 +15,8 @@
         <div ng-include src="'components/products/partials/management.html'"></div>
         <div class="clearfix"></div>
         <div ng-include src="'components/products/partials/versions.html'"></div>
+        <hr>
+        <div ng-include src="'components/products/partials/testsTable.html'"></div>
     </div>
 </div>
 <div ng-show="ctrl.showError" class="alert alert-danger" role="alert">

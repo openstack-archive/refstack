@@ -135,6 +135,17 @@ class TestProductsEndpoint(api.FunctionalTest):
                           self.get_json,
                           self.URL + post_response.get('id'))
 
+        mock_get_user.return_value = 'foo-open-id'
+        # Make product public.
+        product_info = {'id': post_response.get('id'), 'public': 1}
+        db.update_product(product_info)
+
+        # Test when getting product info when not owner/foundation.
+        get_response = self.get_json(self.URL + post_response.get('id'))
+        self.assertNotIn('created_by_user', get_response)
+        self.assertNotIn('created_at', get_response)
+        self.assertNotIn('updated_at', get_response)
+
     @mock.patch('refstack.api.utils.get_user_id', return_value='test-open-id')
     def test_delete(self, mock_get_user):
         """Test delete request."""
@@ -182,7 +193,7 @@ class TestProductsEndpoint(api.FunctionalTest):
 
 
 class TestProductVersionEndpoint(api.FunctionalTest):
-    """Test case for the 'product/<product_id>/version' API endpoint."""
+    """Test case for the 'products/<product_id>/version' API endpoint."""
 
     def setUp(self):
         super(TestProductVersionEndpoint, self).setUp()
@@ -218,7 +229,7 @@ class TestProductVersionEndpoint(api.FunctionalTest):
 
         response = self.get_json(self.URL)
         self.assertEqual(2, len(response))
-        self.assertEqual(post_response, response[1])
+        self.assertEqual(post_response['version'], response[1]['version'])
 
     def test_get_one(self):
         """"Test get a specific version."""
@@ -228,7 +239,7 @@ class TestProductVersionEndpoint(api.FunctionalTest):
         version_id = post_response['id']
 
         response = self.get_json(self.URL + version_id)
-        self.assertEqual(post_response, response)
+        self.assertEqual(post_response['version'], response['version'])
 
         # Test nonexistent version.
         self.assertRaises(webtest.app.AppError, self.get_json,
@@ -238,14 +249,17 @@ class TestProductVersionEndpoint(api.FunctionalTest):
         """Test creating a product version."""
         version = {'cpid': '123', 'version': '5.0'}
         post_response = self.post_json(self.URL, params=json.dumps(version))
-        self.assertEqual(version['cpid'], post_response['cpid'])
-        self.assertEqual(version['version'], post_response['version'])
-        self.assertEqual(self.product_id, post_response['product_id'])
-        self.assertIn('id', post_response)
+
+        get_response = self.get_json(self.URL + post_response['id'])
+        self.assertEqual(version['cpid'], get_response['cpid'])
+        self.assertEqual(version['version'], get_response['version'])
+        self.assertEqual(self.product_id, get_response['product_id'])
+        self.assertIn('id', get_response)
 
         # Test 'version' not in response body.
-        self.assertRaises(webtest.app.AppError, self.get_json,
-                          self.URL + '/sdsdsds')
+        response = self.post_json(self.URL, expect_errors=True,
+                                  params=json.dumps({'cpid': '123'}))
+        self.assertEqual(400, response.status_code)
 
     def test_put(self):
         """Test updating a product version."""

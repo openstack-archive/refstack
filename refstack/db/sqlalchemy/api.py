@@ -243,6 +243,13 @@ def _apply_filters_for_query(query, filters):
         query = query.filter(models.Test.verification_status ==
                              verification_status)
 
+    if api_const.PRODUCT_ID in filters:
+        query = (query
+                 .join(models.ProductVersion)
+                 .filter(models.ProductVersion.product_id ==
+                         filters[api_const.PRODUCT_ID]))
+
+    all_product_tests = filters.get(api_const.ALL_PRODUCT_TESTS)
     signed = api_const.SIGNED in filters
     # If we only want to get the user's test results.
     if signed:
@@ -251,7 +258,9 @@ def _apply_filters_for_query(query, filters):
                  .filter(models.TestMeta.meta_key == api_const.USER)
                  .filter(models.TestMeta.value == filters[api_const.OPENID])
                  )
-    else:
+    elif not all_product_tests:
+        # Get all non-signed (aka anonymously uploaded) test results
+        # along with signed but shared test results.
         signed_results = (query.session
                           .query(models.TestMeta.test_id)
                           .filter_by(meta_key=api_const.USER))
@@ -260,6 +269,7 @@ def _apply_filters_for_query(query, filters):
                           .filter_by(meta_key=api_const.SHARED_TEST_RUN))
         query = (query.filter(models.Test.id.notin_(signed_results))
                  .union(query.filter(models.Test.id.in_(shared_results))))
+
     return query
 
 
@@ -505,13 +515,13 @@ def update_product(product_info):
         return _to_dict(product)
 
 
-def get_product(id):
+def get_product(id, allowed_keys=None):
     """Get product by id."""
     session = get_session()
     product = session.query(models.Product).filter_by(id=id).first()
     if product is None:
         raise NotFound('Product with id "%s" not found' % id)
-    return _to_dict(product)
+    return _to_dict(product, allowed_keys=allowed_keys)
 
 
 def delete_product(id):
@@ -653,7 +663,8 @@ def get_product_versions(product_id, allowed_keys=None):
     """Get all versions for a product."""
     session = get_session()
     version_info = (
-        session.query(models.ProductVersion).filter_by(product_id=product_id)
+        session.query(models.ProductVersion)
+        .filter_by(product_id=product_id).all()
     )
     return _to_dict(version_info, allowed_keys=allowed_keys)
 

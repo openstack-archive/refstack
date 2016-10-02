@@ -133,7 +133,8 @@
          */
         function isEditingAllowed() {
             return Boolean(ctrl.resultsData &&
-                ctrl.resultsData.user_role === 'owner');
+                (ctrl.resultsData.user_role === 'owner' ||
+                 ctrl.resultsData.user_role == 'foundation'));
         }
         /**
          * This tells you whether the current results are shared with the

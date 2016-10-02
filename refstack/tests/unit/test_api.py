@@ -141,7 +141,7 @@ class ResultsControllerTestCase(BaseControllerTestCase):
         mock_get_test.assert_called_once_with(
             'fake_arg', allowed_keys=['id', 'cpid', 'created_at',
                                       'duration_seconds', 'meta',
-                                      'product_version_id',
+                                      'product_version',
                                       'verification_status']
         )
 
@@ -251,6 +251,7 @@ class ResultsControllerTestCase(BaseControllerTestCase):
             const.CPID,
             const.SIGNED,
             const.VERIFICATION_STATUS,
+            const.PRODUCT_ID
         ]
         page_number = 1
         total_pages_number = 10

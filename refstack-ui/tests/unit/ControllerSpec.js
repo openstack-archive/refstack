@@ -1107,6 +1107,9 @@ describe('Refstack controllers', function () {
                                'cpid': null,
                                'version': '1.0',
                                'product_id': '1234'}];
+        var fakeTestsResp = {'pagination': {'current_page': 1,
+                                            'total_pages': 1},
+                             'results':[{'id': 'foo-test'}]};
         var fakeVendorResp = {'id': 'fake-org-id',
                               'type': 3,
                               'can_manage': true,
@@ -1134,6 +1137,8 @@ describe('Refstack controllers', function () {
                 '/products/1234').respond(fakeProdResp);
             $httpBackend.when('GET', fakeApiUrl +
                 '/products/1234/versions').respond(fakeVersionResp);
+            $httpBackend.when('GET', fakeApiUrl +
+                '/results?page=1&product_id=1234').respond(fakeTestsResp);
             $httpBackend.when('GET', fakeApiUrl +
                 '/vendors/fake-org-id').respond(fakeVendorResp);
         }));
@@ -1187,6 +1192,26 @@ describe('Refstack controllers', function () {
                     .respond(200, {'id': 'foo'});
                 ctrl.addProductVersion();
                 $httpBackend.flush();
+            });
+
+        it('should have a function to get tests on a product',
+            function () {
+                ctrl.getProductTests();
+                $httpBackend.flush();
+                expect(ctrl.testsData).toEqual(fakeTestsResp.results);
+                expect(ctrl.currentPage).toEqual(1);
+            });
+
+        it('should have a function to unassociate a test from a product',
+            function () {
+                ctrl.testsData = [{'id': 'foo-test'}];
+                $httpBackend.expectPUT(
+                    fakeApiUrl + '/results/foo-test',
+                    {product_version_id: null})
+                    .respond(200, {'id': 'foo-test'});
+                ctrl.unassociateTest(0);
+                $httpBackend.flush();
+                expect(ctrl.testsData).toEqual([]);
             });
 
         it('should have a function to switch the publicity of a project',

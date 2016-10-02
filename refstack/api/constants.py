@@ -21,6 +21,8 @@ CPID = 'cpid'
 PAGE = 'page'
 SIGNED = 'signed'
 VERIFICATION_STATUS = 'verification_status'
+PRODUCT_ID = 'product_id'
+ALL_PRODUCT_TESTS = 'all_product_tests'
 OPENID = 'openid'
 USER_PUBKEYS = 'pubkeys'
 

@@ -51,7 +51,8 @@ class VersionsController(validation.BaseRestControllerWithValidation):
         if not product['public'] and not is_admin:
             pecan.abort(403, 'Forbidden.')
 
-        return db.get_product_versions(id)
+        allowed_keys = ['id', 'product_id', 'version', 'cpid']
+        return db.get_product_versions(id, allowed_keys=allowed_keys)
 
     @pecan.expose('json')
     def get_one(self, id, version_id):
@@ -62,8 +63,8 @@ class VersionsController(validation.BaseRestControllerWithValidation):
                     api_utils.check_user_is_vendor_admin(vendor_id))
         if not product['public'] and not is_admin:
             pecan.abort(403, 'Forbidden.')
-
-        return db.get_product_version(version_id)
+        allowed_keys = ['id', 'product_id', 'version', 'cpid']
+        return db.get_product_version(version_id, allowed_keys=allowed_keys)
 
     @secure(api_utils.is_authenticated)
     @pecan.expose('json')
@@ -171,19 +172,21 @@ class ProductsController(validation.BaseRestControllerWithValidation):
     @pecan.expose('json')
     def get_one(self, id):
         """Get information about product."""
-        product = db.get_product(id)
+        allowed_keys = ['id', 'name', 'description',
+                        'product_ref_id', 'product_type',
+                        'public', 'properties', 'created_at', 'updated_at',
+                        'organization_id', 'created_by_user', 'type']
+        product = db.get_product(id, allowed_keys=allowed_keys)
         vendor_id = product['organization_id']
         is_admin = (api_utils.check_user_is_foundation_admin() or
                     api_utils.check_user_is_vendor_admin(vendor_id))
         if not is_admin and not product['public']:
             pecan.abort(403, 'Forbidden.')
-
         if not is_admin:
-            allowed_keys = ['id', 'name', 'description', 'product_ref_id',
-                            'type', 'product_type', 'public',
-                            'organization_id']
+            admin_only_keys = ['created_by_user', 'created_at', 'updated_at',
+                               'properties']
             for key in product.keys():
-                if key not in allowed_keys:
+                if key in admin_only_keys:
                     product.pop(key)
 
         product['can_manage'] = is_admin
