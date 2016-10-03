@@ -38,7 +38,7 @@ class Guidelines:
                  raw_url=None):
         """Initialize class with needed URLs.
 
-        The URL for the the guidelines repository is specified with 'repo_url'.
+        The URL for the guidelines repository is specified with 'repo_url'.
         The URL for where raw files are served is specified with 'raw_url'.
         These values will default to the values specified in the RefStack
         config file.
