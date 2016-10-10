@@ -215,6 +215,8 @@ describe('Refstack controllers', function () {
         beforeEach(inject(function ($rootScope, $controller) {
             scope = $rootScope.$new();
             ctrl = $controller('ResultsController', {$scope: scope});
+            $httpBackend.when('GET', fakeApiUrl +
+                '/results?page=1').respond(fakeResponse);
         }));
 
         it('should fetch the first page of results with proper URL args',
@@ -300,6 +302,51 @@ describe('Refstack controllers', function () {
                 // Expect the list to have the latest guideline first.
                 expect(ctrl.versionList).toEqual(['2015.04.json',
                                                   '2015.03.json']);
+            });
+
+        it('should have a function to get products manageable by a user',
+            function () {
+                var prodResp = {'products': [{'id': 'abc',
+                                              'can_manage': true},
+                                             {'id': 'foo',
+                                              'can_manage': false}]};
+                ctrl.products = null;
+                $httpBackend.expectGET(fakeApiUrl + '/products')
+                    .respond(200, prodResp);
+                ctrl.getUserProducts();
+                $httpBackend.flush();
+                var expected = {'abc': {'id': 'abc', 'can_manage': true}};
+                expect(ctrl.products).toEqual(expected);
+            });
+
+        it('should have a function to associate a product version to a test',
+            function () {
+                var result = {'id': 'bar',
+                              'selectedVersion': {'id': 'foo'},
+                              'selectedProduct': {'id': 'prod'}};
+                ctrl.products = null;
+                $httpBackend.expectPUT(fakeApiUrl + '/results/bar')
+                    .respond(201);
+                ctrl.associateProductVersion(result);
+                $httpBackend.flush();
+                var expected = {'id': 'foo', 'product_info': {'id': 'prod'}};
+                expect(result.product_version).toEqual(expected);
+            });
+
+        it('should have a function to get product versions',
+            function () {
+                var result = {'id': 'bar',
+                              'selectedProduct': {'id': 'prod'}};
+                var verResp = [{'id': 'ver1', 'version': '1.0'},
+                               {'id': 'ver2', 'version': null}];
+                ctrl.products = null;
+                $httpBackend.expectGET(fakeApiUrl + '/products/prod/versions')
+                    .respond(200, verResp);
+                ctrl.getProductVersions(result);
+                $httpBackend.flush();
+                expect(result.productVersions).toEqual(verResp);
+                var expected = {'id': 'ver2', 'version': null};
+                expect(result.selectedVersion).toEqual(expected);
             });
     });
 

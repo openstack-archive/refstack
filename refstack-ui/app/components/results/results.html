@@ -134,7 +134,7 @@
                         <option value="object">OpenStack Powered Object Storage</option>
                     </select>
                     <a ng-if="!result.targetEdit"
-                       ng-click="result.targetEdit = true"
+                       ng-click="result.targetEdit = true;"
                        title="Edit"
                        class="glyphicon glyphicon-pencil">
                     </a>
@@ -143,6 +143,60 @@
                        title="Save"
                        class="glyphicon glyphicon-floppy-disk">
                     </a>
+                    <br />
+
+                    <strong>Associated Product:</strong>
+                    <span ng-if="!result.product_version && !result.productEdit">
+                        <em>None</em>
+                    </span>
+                    <span ng-if="result.product_version && !result.productEdit">
+                        <span ng-if="ctrl.products[result.product_version.product_info.id].product_type == 0">
+                            <a ui-sref="distro({id: result.product_version.product_info.id})">
+                                {{ctrl.products[result.product_version.product_info.id].name}}
+                                <small ng-if="result.product_version.version">
+                                    ({{result.product_version.version}})
+                                </small>
+                            </a>
+                        </span>
+                        <span ng-if="ctrl.products[result.product_version.product_info.id].product_type != 0">
+                            <a ui-sref="cloud({id: result.product_version.product_info.id})">
+                                {{ctrl.products[result.product_version.product_info.id].name}}
+                                <small ng-if="result.product_version.version">
+                                    ({{result.product_version.version}})
+                                </small>
+                            </a>
+                        </span>
+                    </span>
+
+                    <select ng-if="result.productEdit"
+                            ng-options="product as product.name for product in ctrl.products | arrayConverter | orderBy: 'name' track by product.id"
+                            ng-model="result.selectedProduct"
+                            ng-change="ctrl.getProductVersions(result)">
+                        <option value="">-- No Product --</option>
+                    </select>
+
+                    <span ng-if="result.productVersions.length && result.productEdit">
+                        <span class="glyphicon glyphicon-arrow-right" style="padding-right:3px;color:#303030;"></span>
+                        Version:
+                        <select ng-options="version as version.version for version in result.productVersions | orderBy: 'version' track by version.id"
+                                ng-model="result.selectedVersion">
+                        </select>
+
+                    </span>
+                    <a ng-if="!result.productEdit"
+                       ng-click="ctrl.prepVersionEdit(result)"
+                       title="Edit"
+                       class="glyphicon glyphicon-pencil">
+                    </a>
+                    <a ng-if="result.productEdit"
+                       ng-click="ctrl.associateProductVersion(result)"
+                       confirm="Once you associate this test to this product, ownership
+                                will be transferred to the product's vendor admins.
+                                Continue?"
+                       title="Save"
+                       class="glyphicon glyphicon-floppy-disk">
+                    </a>
+                    <br />
                 </td>
             </tr>
         </tbody>

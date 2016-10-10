@@ -31,7 +31,9 @@
         return function (objects) {
             var array = [];
             angular.forEach(objects, function (object, key) {
-                object.id = key;
+                if (!('id' in object)) {
+                    object.id = key;
+                }
                 array.push(object);
             });
             return array;

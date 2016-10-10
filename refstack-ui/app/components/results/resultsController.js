@@ -37,6 +37,10 @@
         ctrl.clearFilters = clearFilters;
         ctrl.associateMeta = associateMeta;
         ctrl.getVersionList = getVersionList;
+        ctrl.getUserProducts = getUserProducts;
+        ctrl.associateProductVersion = associateProductVersion;
+        ctrl.getProductVersions = getProductVersions;
+        ctrl.prepVersionEdit = prepVersionEdit;
 
         /** Mappings of DefCore components to marketing program names. */
         ctrl.targetMappings = {
@@ -90,6 +94,7 @@
         if (ctrl.isUserResults) {
             ctrl.authRequest = $scope.auth.doSignCheck()
                 .then(ctrl.update);
+            ctrl.getUserProducts();
         } else {
             ctrl.update();
         }
@@ -204,6 +209,99 @@
                     raiseAlert('danger', error.title,
                                'Unable to retrieve version list');
                 });
+        }
+
+        /**
+         * Get products user has management rights to or all products depending
+         * on the passed in parameter value.
+         */
+        function getUserProducts() {
+            if (ctrl.products) {
+                return;
+            }
+            var contentUrl = refstackApiUrl + '/products';
+            ctrl.productsRequest =
+                $http.get(contentUrl).success(function (data) {
+                    ctrl.products = {};
+                    angular.forEach(data.products, function(prod) {
+                        if (prod.can_manage) {
+                            ctrl.products[prod.id] = prod;
+                        }
+                    });
+                }).error(function (error) {
+                    ctrl.products = null;
+                    ctrl.showError = true;
+                    ctrl.error =
+                        'Error retrieving Products listing from server: ' +
+                        angular.toJson(error);
+                });
+        }
+
+        /**
+         * Send a PUT request to the API server to associate a product with
+         * a test result.
+         */
+        function associateProductVersion(result) {
+            var verId = (result.selectedVersion ?
+                         result.selectedVersion.id : null);
+            var testId = result.id;
+            var url = refstackApiUrl + '/results/' + testId;
+            ctrl.associateRequest = $http.put(url, {'product_version_id':
+                                                    verId})
+                .success(function (data) {
+                    result.product_version = result.selectedVersion;
+                    if (result.selectedVersion) {
+                        result.product_version.product_info =
+                            result.selectedProduct;
+                    }
+                    result.productEdit = false;
+                }).error(function (error) {
+                    raiseAlert('danger', error.title, error.detail);
+                });
+        }
+
+        /**
+         * Get all versions for a product.
+         */
+        function getProductVersions(result) {
+            if (!result.selectedProduct) {
+                result.productVersions = [];
+                result.selectedVersion = null;
+                return;
+            }
+
+            var url = refstackApiUrl + '/products/' +
+                result.selectedProduct.id + '/versions';
+            ctrl.getVersionsRequest = $http.get(url)
+                .success(function (data) {
+                    result.productVersions = data;
+
+                    // If the test result isn't already associated to a
+                    // version, default it to the null version.
+                    if (!result.product_version) {
+                        angular.forEach(data, function(ver) {
+                            if (!ver.version) {
+                                result.selectedVersion = ver;
+                            }
+                        });
+                    }
+                }).error(function (error) {
+                    raiseAlert('danger', error.title, error.detail);
+                });
+        }
+
+        /**
+         * Instantiate variables needed for editing product/version
+         * associations.
+         */
+        function prepVersionEdit(result) {
+            result.productEdit = true;
+            if (result.product_version) {
+                result.selectedProduct =
+                    ctrl.products[result.product_version.product_info.id];
+            }
+            result.selectedVersion = result.product_version;
+            ctrl.getProductVersions(result);
         }
 
     }
