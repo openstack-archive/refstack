@@ -167,12 +167,9 @@ above. RefStack, by default, points to this endpoint.
 
 Instructions for setting this up are outside of the scope of this doc,
 but you can get started at
-[https://github.com/openstack-infra/openstackid]
-(https://github.com/openstack-infra/openstackid) or
-[https://github.com/fremontlabs/vagrant-openstackid]
-(https://github.com/fremontlabs/vagrant-openstackid). You would then
-need to modify the ``openstack_openid_endpoint`` field in the ``[osid]``
-section in refstack.conf to match the local endpoint.
+`Openstackid project <https://github.com/openstack-infra/openstackid>`__ . 
+You would then need to modify the ``openstack_openid_endpoint`` field in 
+the ``[osid]`` section in refstack.conf to match the local endpoint.
 
 Database sync
 ^^^^^^^^^^^^^
