@@ -74,8 +74,7 @@
                            && $rootScope.auth.currentUser.is_admin;
 
         /**
-         * This will contact the Refstack API to get a listing of test run
-         * results.
+         * This will contact the Refstack API to get a listing of vendors
          */
         function update() {
             ctrl.showError = false;

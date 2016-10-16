@@ -158,6 +158,24 @@ def delete_test(test_id):
             raise NotFound('Test result %s not found' % test_id)
 
 
+def update_test(test_info):
+    """Update test from the given test_info dictionary."""
+    session = get_session()
+    _id = test_info.get('id')
+    test = session.query(models.Test).filter_by(id=_id).first()
+    if test is None:
+        raise NotFound('Test result with id %s not found' % _id)
+
+    keys = ['product_version_id', 'verification_status']
+    for key in keys:
+        if key in test_info:
+            setattr(test, key, test_info[key])
+
+    with session.begin():
+        test.save(session=session)
+        return _to_dict(test)
+
+
 def get_test_meta_key(test_id, key, default=None):
     """Get metadata value related to specified test run."""
     session = get_session()
@@ -220,6 +238,18 @@ def _apply_filters_for_query(query, filters):
     if cpid:
         query = query.filter(models.Test.cpid == cpid)
 
+    verification_status = filters.get(api_const.VERIFICATION_STATUS)
+    if verification_status:
+        query = query.filter(models.Test.verification_status ==
+                             verification_status)
+
+    if api_const.PRODUCT_ID in filters:
+        query = (query
+                 .join(models.ProductVersion)
+                 .filter(models.ProductVersion.product_id ==
+                         filters[api_const.PRODUCT_ID]))
+
+    all_product_tests = filters.get(api_const.ALL_PRODUCT_TESTS)
     signed = api_const.SIGNED in filters
     # If we only want to get the user's test results.
     if signed:
@@ -228,7 +258,9 @@ def _apply_filters_for_query(query, filters):
                  .filter(models.TestMeta.meta_key == api_const.USER)
                  .filter(models.TestMeta.value == filters[api_const.OPENID])
                  )
-    else:
+    elif not all_product_tests:
+        # Get all non-signed (aka anonymously uploaded) test results
+        # along with signed but shared test results.
         signed_results = (query.session
                           .query(models.TestMeta.test_id)
                           .filter_by(meta_key=api_const.USER))
@@ -237,6 +269,7 @@ def _apply_filters_for_query(query, filters):
                           .filter_by(meta_key=api_const.SHARED_TEST_RUN))
         query = (query.filter(models.Test.id.notin_(signed_results))
                  .union(query.filter(models.Test.id.in_(shared_results))))
+
     return query
 
 
@@ -424,6 +457,12 @@ def delete_organization(organization_id):
     """delete organization by id."""
     session = get_session()
     with session.begin():
+        product_ids = (session
+                       .query(models.Product.id)
+                       .filter_by(organization_id=organization_id))
+        (session.query(models.ProductVersion).
+         filter(models.ProductVersion.product_id.in_(product_ids)).
+         delete(synchronize_session=False))
         (session.query(models.Product).
          filter_by(organization_id=organization_id).
          delete(synchronize_session=False))
@@ -435,9 +474,10 @@ def delete_organization(organization_id):
 def add_product(product_info, creator):
     """Add product."""
     product = models.Product()
+    product.id = str(uuid.uuid4())
     product.type = product_info['type']
     product.product_type = product_info['product_type']
-    product.product_id = product_info.get('product_id')
+    product.product_ref_id = product_info.get('product_ref_id')
     product.name = product_info['name']
     product.description = product_info.get('description')
     product.organization_id = product_info['organization_id']
@@ -448,6 +488,12 @@ def add_product(product_info, creator):
     session = get_session()
     with session.begin():
         product.save(session=session)
+        product_version = models.ProductVersion()
+        product_version.created_by_user = creator
+        product_version.version = product_info.get('version')
+        product_version.product_id = product.id
+        product_version.save(session=session)
+
         return _to_dict(product)
 
 
@@ -459,7 +505,7 @@ def update_product(product_info):
     if product is None:
         raise NotFound('Product with id %s not found' % _id)
 
-    keys = ['name', 'description', 'product_id', 'public', 'properties']
+    keys = ['name', 'description', 'product_ref_id', 'public', 'properties']
     for key in keys:
         if key in product_info:
             setattr(product, key, product_info[key])
@@ -469,19 +515,22 @@ def update_product(product_info):
         return _to_dict(product)
 
 
-def get_product(id):
+def get_product(id, allowed_keys=None):
     """Get product by id."""
     session = get_session()
     product = session.query(models.Product).filter_by(id=id).first()
     if product is None:
         raise NotFound('Product with id "%s" not found' % id)
-    return _to_dict(product)
+    return _to_dict(product, allowed_keys=allowed_keys)
 
 
 def delete_product(id):
     """delete product by id."""
     session = get_session()
     with session.begin():
+        (session.query(models.ProductVersion)
+         .filter_by(product_id=id)
+         .delete(synchronize_session=False))
         (session.query(models.Product).filter_by(id=id).
          delete(synchronize_session=False))
 
@@ -588,3 +637,73 @@ def get_products_by_user(user_openid, allowed_keys=None):
         .order_by(models.Organization.created_at.desc()).all())
     items = [item[0] for item in items]
     return _to_dict(items, allowed_keys=allowed_keys)
+
+
+def get_product_by_version(product_version_id, allowed_keys=None):
+    """Get product info from a product version ID."""
+    session = get_session()
+    product = (session.query(models.Product).join(models.ProductVersion)
+               .filter(models.ProductVersion.id == product_version_id).first())
+    return _to_dict(product, allowed_keys=allowed_keys)
+
+
+def get_product_version(product_version_id, allowed_keys=None):
+    """Get details of a specific version given the id."""
+    session = get_session()
+    version = (
+        session.query(models.ProductVersion)
+        .filter_by(id=product_version_id).first()
+    )
+    if version is None:
+        raise NotFound('Version with id "%s" not found' % product_version_id)
+    return _to_dict(version, allowed_keys=allowed_keys)
+
+
+def get_product_versions(product_id, allowed_keys=None):
+    """Get all versions for a product."""
+    session = get_session()
+    version_info = (
+        session.query(models.ProductVersion)
+        .filter_by(product_id=product_id).all()
+    )
+    return _to_dict(version_info, allowed_keys=allowed_keys)
+
+
+def add_product_version(product_id, version, creator, cpid, allowed_keys=None):
+    """Add a new product version."""
+    product_version = models.ProductVersion()
+    product_version.created_by_user = creator
+    product_version.version = version
+    product_version.product_id = product_id
+    product_version.cpid = cpid
+    session = get_session()
+    with session.begin():
+        product_version.save(session=session)
+        return _to_dict(product_version, allowed_keys=allowed_keys)
+
+
+def update_product_version(product_version_info):
+    """Update product version from product_info_version dictionary."""
+    session = get_session()
+    _id = product_version_info.get('id')
+    version = session.query(models.ProductVersion).filter_by(id=_id).first()
+    if version is None:
+        raise NotFound('Product version with id %s not found' % _id)
+
+    # Only allow updating cpid.
+    keys = ['cpid']
+    for key in keys:
+        if key in product_version_info:
+            setattr(version, key, product_version_info[key])
+
+    with session.begin():
+        version.save(session=session)
+        return _to_dict(version)
+
+
+def delete_product_version(product_version_id):
+    """Delete a product version."""
+    session = get_session()
+    with session.begin():
+        (session.query(models.ProductVersion).filter_by(id=product_version_id).
+         delete(synchronize_session=False))

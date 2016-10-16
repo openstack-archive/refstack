@@ -140,7 +140,9 @@ class ResultsControllerTestCase(BaseControllerTestCase):
         mock_get_test_res.assert_called_once_with('fake_arg')
         mock_get_test.assert_called_once_with(
             'fake_arg', allowed_keys=['id', 'cpid', 'created_at',
-                                      'duration_seconds', 'meta']
+                                      'duration_seconds', 'meta',
+                                      'product_version',
+                                      'verification_status']
         )
 
     @mock.patch('refstack.db.store_results')
@@ -247,7 +249,9 @@ class ResultsControllerTestCase(BaseControllerTestCase):
             const.START_DATE,
             const.END_DATE,
             const.CPID,
-            const.SIGNED
+            const.SIGNED,
+            const.VERIFICATION_STATUS,
+            const.PRODUCT_ID
         ]
         page_number = 1
         total_pages_number = 10
@@ -285,13 +289,21 @@ class ResultsControllerTestCase(BaseControllerTestCase):
 
         db_get_test.assert_called_once_with(page_number, per_page, filters)
 
+    @mock.patch('refstack.db.get_test')
     @mock.patch('refstack.db.delete_test')
-    def test_delete(self, mock_db_delete):
+    def test_delete(self, mock_db_delete, mock_get_test):
         self.mock_get_user_role.return_value = const.ROLE_OWNER
+
         self.controller.delete('test_id')
         self.assertEqual(204, self.mock_response.status)
+
+        # Verified test deletion attempt should raise error.
+        mock_get_test.return_value = {'verification_status':
+                                      const.TEST_VERIFIED}
+        self.assertRaises(webob.exc.HTTPError,
+                          self.controller.delete, 'test_id')
+
         self.mock_get_user_role.return_value = const.ROLE_USER
-        self.mock_abort.side_effect = webob.exc.HTTPError()
         self.assertRaises(webob.exc.HTTPError,
                           self.controller.delete, 'test_id')
 
@@ -633,9 +645,13 @@ class MetadataControllerTestCase(BaseControllerTestCase):
         self.mock_get_user_role.return_value = const.ROLE_FOUNDATION
         self.assertEqual(42, self.controller.get_one('test_id', 'user'))
 
+    @mock.patch('refstack.db.get_test')
     @mock.patch('refstack.db.save_test_meta_item')
-    def test_post(self, mock_save_test_meta_item):
+    def test_post(self, mock_save_test_meta_item, mock_get_test):
         self.mock_get_user_role.return_value = const.ROLE_OWNER
+        mock_get_test.return_value = {
+            'verification_status': const.TEST_NOT_VERIFIED
+        }
 
         # Test trying to post a valid key.
         self.controller.post('test_id', 'shared')
@@ -653,9 +669,13 @@ class MetadataControllerTestCase(BaseControllerTestCase):
         self.assertRaises(webob.exc.HTTPError,
                           self.controller.post, 'test_id', 'shared')
 
+    @mock.patch('refstack.db.get_test')
     @mock.patch('refstack.db.delete_test_meta_item')
-    def test_delete(self, mock_delete_test_meta_item):
+    def test_delete(self, mock_delete_test_meta_item, mock_get_test):
         self.mock_get_user_role.return_value = const.ROLE_OWNER
+        mock_get_test.return_value = {
+            'verification_status': const.TEST_NOT_VERIFIED
+        }
         self.controller.delete('test_id', 'shared')
         self.assertEqual(204, self.mock_response.status)
         mock_delete_test_meta_item.assert_called_once_with('test_id', 'shared')

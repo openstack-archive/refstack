@@ -93,6 +93,26 @@
                 url: '/vendor/:vendorID',
                 templateUrl: '/components/vendors/vendor.html',
                 controller: 'VendorController as ctrl'
+            }).
+            state('userProducts', {
+                url: '/user_products',
+                templateUrl: '/components/products/products.html',
+                controller: 'ProductsController as ctrl'
+            }).
+            state('publicProducts', {
+                url: '/public_products',
+                templateUrl: '/components/products/products.html',
+                controller: 'ProductsController as ctrl'
+            }).
+            state('cloud', {
+                url: '/cloud/:id',
+                templateUrl: '/components/products/cloud.html',
+                controller: 'ProductController as ctrl'
+            }).
+            state('distro', {
+                url: '/distro/:id',
+                templateUrl: '/components/products/distro.html',
+                controller: 'ProductController as ctrl'
             });
     }
 

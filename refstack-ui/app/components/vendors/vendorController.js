@@ -21,7 +21,7 @@
 
     VendorController.$inject = [
         '$rootScope', '$scope', '$http', '$state', '$stateParams', '$window',
-        'refstackApiUrl', 'raiseAlert', 'confirmModal'
+        '$uibModal', 'refstackApiUrl', 'raiseAlert', 'confirmModal'
     ];
 
     /**
@@ -30,7 +30,7 @@
      * view details of the Vendor and manage users.
      */
     function VendorController($rootScope, $scope, $http, $state, $stateParams,
-            $window, refstackApiUrl, raiseAlert, confirmModal) {
+            $window, $uibModal, refstackApiUrl, raiseAlert, confirmModal) {
         var ctrl = this;
 
         ctrl.getVendor = getVendor;
@@ -41,6 +41,7 @@
         ctrl.deleteVendor = deleteVendor;
         ctrl.removeUserFromVendor = removeUserFromVendor;
         ctrl.addUserToVendor = addUserToVendor;
+        ctrl.openVendorEditModal = openVendorEditModal;
 
         /** The vendor id extracted from the URL route. */
         ctrl.vendorId = $stateParams.vendorID;
@@ -62,7 +63,8 @@
                 $http.get(contentUrl).success(function(data) {
                     ctrl.vendor = data;
                     var isAdmin = $rootScope.auth.currentUser.is_admin;
-                    ctrl.vendor.canDelete = ctrl.vendor.type != 0
+                    ctrl.vendor.canDelete = ctrl.vendor.canEdit =
+                        ctrl.vendor.type != 0
                         && (ctrl.vendor.can_manage || isAdmin);
                     ctrl.vendor.canRegister =
                         ctrl.vendor.type == 1;
@@ -180,6 +182,122 @@
                                      'Is the Open ID correct? Error: ',
                            error.detail);
             });
+        }
+
+        /**
+         * This will open the modal that will allow a user to edit
+         */
+        function openVendorEditModal() {
+            $uibModal.open({
+                templateUrl: '/components/vendors/partials' +
+                        '/vendorEditModal.html',
+                backdrop: true,
+                windowClass: 'modal',
+                animation: true,
+                controller: 'VendorEditModalController as modal',
+                size: 'lg',
+                resolve: {
+                    vendor: function () {
+                        return ctrl.vendor;
+                    }
+                }
+            });
+        }
+    }
+
+    angular
+        .module('refstackApp')
+        .controller('VendorEditModalController', VendorEditModalController);
+
+    VendorEditModalController.$inject = [
+        '$uibModalInstance', '$http', '$state', 'vendor', 'refstackApiUrl'
+    ];
+
+    /**
+     * Vendor Edit Modal Controller
+     * This controls the modal that allows editing a vendor.
+     */
+    function VendorEditModalController($uibModalInstance, $http, $state,
+        vendor, refstackApiUrl) {
+
+        var ctrl = this;
+
+        ctrl.close = close;
+        ctrl.addField = addField;
+        ctrl.saveChanges = saveChanges;
+        ctrl.removeProperty = removeProperty;
+
+        ctrl.vendor = vendor;
+        ctrl.vendorProperties = [];
+
+        parseVendorProperties();
+
+        /**
+         * Close the vendor edit modal.
+         */
+        function close() {
+            $uibModalInstance.dismiss('exit');
+        }
+
+        /**
+         * Push a blank property key-value pair into the vendorProperties
+         * array. This will spawn new input boxes.
+         */
+        function addField() {
+            ctrl.vendorProperties.push({'key': '', 'value': ''});
+        }
+
+        /**
+         * Send a PUT request to the server with the changes.
+         */
+        function saveChanges() {
+            ctrl.showError = false;
+            ctrl.showSuccess = false;
+            var url = [refstackApiUrl, '/vendors/', ctrl.vendor.id].join('');
+            var properties = propertiesToJson();
+            var content = {'name': ctrl.vendor.name,
+                           'description': ctrl.vendor.description,
+                           'properties': properties};
+            $http.put(url, content).success(function() {
+                ctrl.showSuccess = true;
+                $state.reload();
+            }).error(function(error) {
+                ctrl.showError = true;
+                ctrl.error = error.detail;
+            });
+        }
+
+        /**
+         * Remove a property from the vendorProperties array at the given index.
+         */
+        function removeProperty(index) {
+            ctrl.vendorProperties.splice(index, 1);
+        }
+
+        /**
+         * Parse the vendor properties and put them in a format more suitable
+         * for forms.
+         */
+        function parseVendorProperties() {
+            var props = angular.fromJson(ctrl.vendor.properties);
+            angular.forEach(props, function(value, key) {
+                ctrl.vendorProperties.push({'key': key, 'value': value});
+            });
+        }
+
+        /**
+         * Convert the list of property objects to a dict containing the
+         * each key-value pair..
+         */
+        function propertiesToJson() {
+            var properties = {};
+            for (var i = 0, len = ctrl.vendorProperties.length; i < len; i++) {
+                var prop = ctrl.vendorProperties[i];
+                if (prop.key && prop.value) {
+                    properties[prop.key] = prop.value;
+                }
+            }
+            return properties;
         }
     }
 })();

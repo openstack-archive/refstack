@@ -59,11 +59,16 @@ class Test(BASE, RefStackBase):  # pragma: no cover
     duration_seconds = sa.Column(sa.Integer, nullable=False)
     results = orm.relationship('TestResults', backref='test')
     meta = orm.relationship('TestMeta', backref='test')
+    product_version_id = sa.Column(sa.String(36),
+                                   sa.ForeignKey('product_version.id'),
+                                   nullable=True, unique=False)
+    verification_status = sa.Column(sa.Integer, nullable=False, default=0)
+    product_version = orm.relationship('ProductVersion', backref='test')
 
     @property
     def _extra_keys(self):
         """Relation should be pointed directly."""
-        return ['results', 'meta']
+        return ['results', 'meta', 'product_version']
 
     @property
     def metadata_keys(self):
@@ -74,7 +79,8 @@ class Test(BASE, RefStackBase):  # pragma: no cover
     @property
     def default_allowed_keys(self):
         """Default keys."""
-        return 'id', 'created_at', 'duration_seconds', 'meta'
+        return ('id', 'created_at', 'duration_seconds', 'meta',
+                'verification_status', 'product_version')
 
 
 class TestResults(BASE, RefStackBase):  # pragma: no cover
@@ -225,7 +231,6 @@ class Product(BASE, RefStackBase):  # pragma: no cover
 
     id = sa.Column(sa.String(36), primary_key=True,
                    default=lambda: six.text_type(uuid.uuid4()))
-    product_id = sa.Column(sa.String(36), nullable=True)
     name = sa.Column(sa.String(80), nullable=False)
     description = sa.Column(sa.Text())
     organization_id = sa.Column(sa.String(36),
@@ -241,6 +246,33 @@ class Product(BASE, RefStackBase):  # pragma: no cover
     @property
     def default_allowed_keys(self):
         """Default keys."""
-        return ('id', 'name', 'description', 'product_id', 'product_type',
-                'public', 'properties', 'created_at', 'updated_at',
-                'organization_id', 'created_by_user', 'type')
+        return ('id', 'name', 'organization_id', 'public')
+
+
+class ProductVersion(BASE, RefStackBase):
+    """Product Version definition."""
+
+    __tablename__ = 'product_version'
+    __table_args__ = (
+        sa.UniqueConstraint('product_id', 'version'),
+    )
+
+    id = sa.Column(sa.String(36), primary_key=True,
+                   default=lambda: six.text_type(uuid.uuid4()))
+    product_id = sa.Column(sa.String(36), sa.ForeignKey('product.id'),
+                           index=True, nullable=False, unique=False)
+    version = sa.Column(sa.String(length=36), nullable=True)
+    cpid = sa.Column(sa.String(36), nullable=True)
+    created_by_user = sa.Column(sa.String(128), sa.ForeignKey('user.openid'),
+                                nullable=False)
+    product_info = orm.relationship('Product', backref='product_version')
+
+    @property
+    def _extra_keys(self):
+        """Relation should be pointed directly."""
+        return ['product_info']
+
+    @property
+    def default_allowed_keys(self):
+        """Default keys."""
+        return ('id', 'version', 'cpid', 'product_info')

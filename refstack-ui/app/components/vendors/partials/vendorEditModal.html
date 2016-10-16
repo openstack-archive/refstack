@@ -1,0 +1,61 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" aria-hidden="true" ng-click="modal.close()">&times;</button>
+        <h4>Edit Vendor</h4>
+        <p>Make changes to your vendor.</p>
+    </div>
+    <div class="modal-body">
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text"
+                   class="form-control"
+                   id="name"
+                   ng-model="modal.vendor.name">
+            <br />
+            <label for="description">Description</label>
+            <textarea type="text"
+                   class="form-control"
+                   id="description"
+                   ng-model="modal.vendor.description"
+                   rows="4"
+                   wrap="off">
+            </textarea>
+            <br />
+            <label for="properties">Properties</label>
+            <small><span class="text-muted glyphicon glyphicon-info-sign" title="Add arbitrary custom properties to your vendor."></span></small>
+            <div class="row" ng-repeat="(index, prop) in modal.vendorProperties">
+                <div class="col-md-2">
+                    <input type="text"
+                           class="form-control"
+                           ng-model="prop.key">
+                </div>
+                <div class="col-md-6">
+                    <input type="text"
+                           class="form-control"
+                           ng-model="prop.value">
+                </div>
+                <div class="col-md-2">
+                    <a class="text-danger glyphicon glyphicon-remove"
+                       title="Delete this property?"
+                       ng-click="modal.removeProperty(index)"
+                       style='top:8px'></a>
+                </div>
+            </div>
+            <div><small><a ng-click="modal.addField()"><span class="glyphicon glyphicon-plus"></span>&nbsp;Add new property</a></small></div>
+        </div>
+        <div ng-show="modal.showError" class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            {{modal.error}}
+        </div>
+        <div ng-show="modal.showSuccess" class="alert alert-success" role="success">
+            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+            <span class="sr-only">Success:</span>
+            Changes saved successfully.
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" type="button" ng-click="modal.saveChanges()">Save Changes</button>
+        <button class="btn btn-primary" type="button" ng-click="modal.close()">Close</button>
+    </div>
+</div>

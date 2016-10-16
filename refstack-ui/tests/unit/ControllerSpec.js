@@ -215,6 +215,8 @@ describe('Refstack controllers', function () {
         beforeEach(inject(function ($rootScope, $controller) {
             scope = $rootScope.$new();
             ctrl = $controller('ResultsController', {$scope: scope});
+            $httpBackend.when('GET', fakeApiUrl +
+                '/results?page=1').respond(fakeResponse);
         }));
 
         it('should fetch the first page of results with proper URL args',
@@ -300,6 +302,51 @@ describe('Refstack controllers', function () {
                 // Expect the list to have the latest guideline first.
                 expect(ctrl.versionList).toEqual(['2015.04.json',
                                                   '2015.03.json']);
+            });
+
+        it('should have a function to get products manageable by a user',
+            function () {
+                var prodResp = {'products': [{'id': 'abc',
+                                              'can_manage': true},
+                                             {'id': 'foo',
+                                              'can_manage': false}]};
+                ctrl.products = null;
+                $httpBackend.expectGET(fakeApiUrl + '/products')
+                    .respond(200, prodResp);
+                ctrl.getUserProducts();
+                $httpBackend.flush();
+                var expected = {'abc': {'id': 'abc', 'can_manage': true}};
+                expect(ctrl.products).toEqual(expected);
+            });
+
+        it('should have a function to associate a product version to a test',
+            function () {
+                var result = {'id': 'bar',
+                              'selectedVersion': {'id': 'foo'},
+                              'selectedProduct': {'id': 'prod'}};
+                ctrl.products = null;
+                $httpBackend.expectPUT(fakeApiUrl + '/results/bar')
+                    .respond(201);
+                ctrl.associateProductVersion(result);
+                $httpBackend.flush();
+                var expected = {'id': 'foo', 'product_info': {'id': 'prod'}};
+                expect(result.product_version).toEqual(expected);
+            });
+
+        it('should have a function to get product versions',
+            function () {
+                var result = {'id': 'bar',
+                              'selectedProduct': {'id': 'prod'}};
+                var verResp = [{'id': 'ver1', 'version': '1.0'},
+                               {'id': 'ver2', 'version': null}];
+                ctrl.products = null;
+                $httpBackend.expectGET(fakeApiUrl + '/products/prod/versions')
+                    .respond(200, verResp);
+                ctrl.getProductVersions(result);
+                $httpBackend.flush();
+                expect(result.productVersions).toEqual(verResp);
+                var expected = {'id': 'ver2', 'version': null};
+                expect(result.selectedVersion).toEqual(expected);
             });
     });
 
@@ -883,7 +930,59 @@ describe('Refstack controllers', function () {
             });
     });
 
-    describe('VendorsController', function() {
+    describe('VendorEditModalController', function() {
+        var ctrl, modalInstance, state;
+        var fakeVendor = {'name': 'Foo', 'description': 'Bar', 'id': '1234',
+                          'properties': {'key1': 'value1', 'key2': 'value2'}};
+
+        beforeEach(inject(function ($controller) {
+            modalInstance = {
+                dismiss: jasmine.createSpy('modalInstance.dismiss')
+            };
+            state = {
+                reload: jasmine.createSpy('state.reload')
+            };
+            ctrl = $controller('VendorEditModalController',
+                {$uibModalInstance: modalInstance, $state: state,
+                 vendor: fakeVendor}
+            );
+        }));
+
+        it('should be able to add/remove properties',
+            function () {
+                var expected = [{'key': 'key1', 'value': 'value1'},
+                                {'key': 'key2', 'value': 'value2'}];
+                expect(ctrl.vendorProperties).toEqual(expected);
+                ctrl.removeProperty(0);
+                expected = [{'key': 'key2', 'value': 'value2'}];
+                expect(ctrl.vendorProperties).toEqual(expected);
+                ctrl.addField();
+                expected = [{'key': 'key2', 'value': 'value2'},
+                            {'key': '', 'value': ''}];
+                expect(ctrl.vendorProperties).toEqual(expected);
+            });
+
+        it('should have a function to save changes',
+            function () {
+                var expectedContent = {
+                    'name': 'Foo', 'description': 'Bar',
+                    'properties': {'key1': 'value1', 'key2': 'value2'}
+                };
+                $httpBackend.expectPUT(
+                    fakeApiUrl + '/vendors/1234', expectedContent)
+                    .respond(200, '');
+                ctrl.saveChanges();
+                $httpBackend.flush();
+            });
+
+        it('should have a function to exit the modal',
+            function () {
+                ctrl.close();
+                expect(modalInstance.dismiss).toHaveBeenCalledWith('exit');
+            });
+    });
+
+    describe('VendorsController', function () {
         var rootScope, scope, ctrl;
         var fakeResp = {'vendors': [{'can_manage': true,
                                      'type': 3,
@@ -946,6 +1045,279 @@ describe('Refstack controllers', function () {
                     {name: ctrl.name, description: ctrl.description})
                     .respond(200, fakeResp);
                 ctrl.addVendor();
+                $httpBackend.flush();
+            });
+    });
+
+    describe('ProductsController', function() {
+        var rootScope, scope, ctrl;
+        var vendResp = {'vendors': [{'can_manage': true,
+                                     'type': 3,
+                                     'name': 'Foo',
+                                     'id': '123'}]};
+        var prodResp = {'products': [{'id': 'abc',
+                                      'product_type': 1,
+                                      'public': 1,
+                                      'name': 'Foo Product',
+                                      'organization_id': '123'}]};
+
+        beforeEach(inject(function ($controller, $rootScope) {
+            scope = $rootScope.$new();
+            rootScope = $rootScope.$new();
+            rootScope.auth = {'currentUser' : {'is_admin': false,
+                                               'openid': 'foo'}
+                             };
+            ctrl = $controller('ProductsController',
+                {$rootScope: rootScope, $scope: scope}
+            );
+            $httpBackend.when('GET', fakeApiUrl +
+                '/vendors').respond(vendResp);
+            $httpBackend.when('GET', fakeApiUrl +
+                '/products').respond(prodResp);
+        }));
+
+        it('should have a function to get/update vendors',
+            function () {
+                $httpBackend.flush();
+                var newVendResp = {'vendors': [{'name': 'Foo',
+                                                'id': '123',
+                                                'can_manage': true},
+                                               {'name': 'Bar',
+                                                'id': '345',
+                                                'can_manage': false}]};
+                $httpBackend.expectGET(fakeApiUrl + '/vendors')
+                    .respond(200, newVendResp);
+                ctrl.updateVendors();
+                $httpBackend.flush();
+                expect(ctrl.allVendors).toEqual({'123': {'name': 'Foo',
+                                                         'id': '123',
+                                                         'can_manage': true},
+                                                 '345': {'name': 'Bar',
+                                                         'id': '345',
+                                                         'can_manage': false}});
+                expect(ctrl.vendors).toEqual([{'name': 'Foo',
+                                               'id': '123',
+                                               'can_manage': true}]);
+            });
+
+        it('should have a function to get products',
+            function () {
+                $httpBackend.expectGET(fakeApiUrl + '/products')
+                    .respond(200, prodResp);
+                ctrl.update();
+                $httpBackend.flush();
+                expect(ctrl.rawData).toEqual(prodResp);
+            });
+
+        it('should have a function to update the view',
+            function () {
+                $httpBackend.flush();
+                ctrl.allVendors = {'123': {'name': 'Foo',
+                                           'id': '123',
+                                           'can_manage': true}};
+                ctrl.updateData();
+                var expectedData = {'products': [{'id': 'abc',
+                                                  'product_type': 1,
+                                                  'public': 1,
+                                                  'name': 'Foo Product',
+                                                  'organization_id': '123'}]};
+                expect(ctrl.data).toEqual(expectedData);
+            });
+
+        it('should have a function to map product types with descriptions',
+            function () {
+                expect(ctrl.getProductTypeDescription(0)).toEqual('Distro');
+                expect(ctrl.getProductTypeDescription(1))
+                    .toEqual('Public Cloud');
+                expect(ctrl.getProductTypeDescription(2))
+                    .toEqual('Hosted Private Cloud');
+                expect(ctrl.getProductTypeDescription(5)).toEqual('Unknown');
+            });
+    });
+
+    describe('ProductController', function() {
+        var rootScope, scope, stateParams, ctrl;
+        var fakeProdResp = {'product_type': 1,
+                            'product_ref_id': null,
+                            'name': 'Good Stuff',
+                            'created_at': '2016-01-01 01:02:03',
+                            'updated_at': '2016-06-15 01:02:04',
+                            'properties': null,
+                            'organization_id': 'fake-org-id',
+                            'public': true,
+                            'can_manage': true,
+                            'created_by_user': 'fake-open-id',
+                            'type': 0,
+                            'id': '1234',
+                            'description': 'some description'};
+        var fakeVersionResp = [{'id': 'asdf',
+                               'cpid': null,
+                               'version': '1.0',
+                               'product_id': '1234'}];
+        var fakeTestsResp = {'pagination': {'current_page': 1,
+                                            'total_pages': 1},
+                             'results':[{'id': 'foo-test'}]};
+        var fakeVendorResp = {'id': 'fake-org-id',
+                              'type': 3,
+                              'can_manage': true,
+                              'properties' : {},
+                              'name': 'Foo Vendor',
+                              'description': 'foo bar'};
+        var fakeWindow = {
+            location: {
+                href: ''
+            }
+        };
+
+        beforeEach(inject(function ($controller, $rootScope) {
+            scope = $rootScope.$new();
+            rootScope = $rootScope.$new();
+            stateParams = {id: 1234};
+            rootScope.auth = {'currentUser' : {'is_admin': false,
+                                               'openid': 'foo'}
+                             };
+            ctrl = $controller('ProductController',
+                {$rootScope: rootScope, $scope: scope,
+                 $stateParams: stateParams, $window: fakeWindow}
+            );
+            $httpBackend.when('GET', fakeApiUrl +
+                '/products/1234').respond(fakeProdResp);
+            $httpBackend.when('GET', fakeApiUrl +
+                '/products/1234/versions').respond(fakeVersionResp);
+            $httpBackend.when('GET', fakeApiUrl +
+                '/results?page=1&product_id=1234').respond(fakeTestsResp);
+            $httpBackend.when('GET', fakeApiUrl +
+                '/vendors/fake-org-id').respond(fakeVendorResp);
+        }));
+
+        it('should have a function to get product information',
+            function () {
+                $httpBackend.expectGET(fakeApiUrl + '/products/1234')
+                    .respond(200, fakeProdResp);
+                $httpBackend.expectGET(fakeApiUrl + '/vendors/fake-org-id')
+                    .respond(200, fakeVendorResp);
+                ctrl.getProduct();
+                $httpBackend.flush();
+                expect(ctrl.product).toEqual(fakeProdResp);
+                expect(ctrl.vendor).toEqual(fakeVendorResp);
+            });
+
+        it('should have a function to get a list of product versions',
+            function () {
+                $httpBackend
+                    .expectGET(fakeApiUrl + '/products/1234/versions')
+                    .respond(200, fakeVersionResp);
+                ctrl.getProductVersions();
+                $httpBackend.flush();
+                expect(ctrl.productVersions).toEqual(fakeVersionResp);
+            });
+
+        it('should have a function to delete a product',
+            function () {
+                $httpBackend.expectDELETE(fakeApiUrl + '/products/1234')
+                    .respond(202, '');
+                ctrl.deleteProduct();
+                $httpBackend.flush();
+                expect(fakeWindow.location.href).toEqual('/');
+            });
+
+        it('should have a function to delete a product version',
+            function () {
+                $httpBackend
+                    .expectDELETE(fakeApiUrl + '/products/1234/versions/abc')
+                    .respond(204, '');
+                ctrl.deleteProductVersion('abc');
+                $httpBackend.flush();
+            });
+
+        it('should have a function to add a product version',
+            function () {
+                ctrl.newProductVersion = 'abc';
+                $httpBackend.expectPOST(
+                    fakeApiUrl + '/products/1234/versions',
+                    {version: 'abc'})
+                    .respond(200, {'id': 'foo'});
+                ctrl.addProductVersion();
+                $httpBackend.flush();
+            });
+
+        it('should have a function to get tests on a product',
+            function () {
+                ctrl.getProductTests();
+                $httpBackend.flush();
+                expect(ctrl.testsData).toEqual(fakeTestsResp.results);
+                expect(ctrl.currentPage).toEqual(1);
+            });
+
+        it('should have a function to unassociate a test from a product',
+            function () {
+                ctrl.testsData = [{'id': 'foo-test'}];
+                $httpBackend.expectPUT(
+                    fakeApiUrl + '/results/foo-test',
+                    {product_version_id: null})
+                    .respond(200, {'id': 'foo-test'});
+                ctrl.unassociateTest(0);
+                $httpBackend.flush();
+                expect(ctrl.testsData).toEqual([]);
+            });
+
+        it('should have a function to switch the publicity of a project',
+            function () {
+                ctrl.product = {'public': true};
+                $httpBackend.expectPUT(fakeApiUrl + '/products/1234',
+                    {'public': false})
+                    .respond(200, fakeProdResp);
+                ctrl.switchProductPublicity();
+                $httpBackend.flush();
+            });
+
+        it('should have a method to open a modal for version management',
+            function () {
+                var modal;
+                inject(function ($uibModal) {
+                    modal = $uibModal;
+                });
+                spyOn(modal, 'open');
+                ctrl.openVersionModal();
+                expect(modal.open).toHaveBeenCalled();
+            });
+    });
+
+    describe('ProductVersionModalController', function() {
+
+        var ctrl, modalInstance, state, parent;
+        var fakeVersion = {'id': 'asdf', 'cpid': null,
+                           'version': '1.0','product_id': '1234'};
+
+        beforeEach(inject(function ($controller) {
+            modalInstance = {
+                dismiss: jasmine.createSpy('modalInstance.dismiss')
+            };
+            parent = {
+                deleteProductVersion: jasmine.createSpy('deleteProductVersion')
+            };
+            ctrl = $controller('ProductVersionModalController',
+                {$uibModalInstance: modalInstance, $state: state,
+                 version: fakeVersion, parent: parent}
+            );
+        }));
+
+        it('should have a function to prompt a version deletion',
+            function () {
+                ctrl.deleteProductVersion();
+                expect(parent.deleteProductVersion)
+                    .toHaveBeenCalledWith('asdf');
+                expect(modalInstance.dismiss).toHaveBeenCalledWith('exit');
+            });
+
+        it('should have a function to save changes',
+            function () {
+                ctrl.version.cpid = 'some-cpid';
+                var expectedContent = { 'cpid': 'some-cpid'};
+                $httpBackend.expectPUT(
+                    fakeApiUrl + '/products/1234/versions/asdf',
+                    expectedContent).respond(200, '');
+                ctrl.saveChanges();
                 $httpBackend.flush();
             });
     });

@@ -1,0 +1,137 @@
+<h4><strong>Test Runs on Product</strong></h4>
+<div cg-busy="{promise:ctrl.testsRequest,message:'Loading'}"></div>
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th></th>
+            <th>Upload Date</th>
+            <th>Test Run ID</th>
+            <th>Product Version</th>
+            <th>Shared</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr ng-repeat-start="(index, result) in ctrl.testsData">
+            <td>
+                <a ng-if="!result.expanded"
+                   class="glyphicon glyphicon-plus"
+                   ng-click="result.expanded = true">
+                </a>
+                <a ng-if="result.expanded"
+                   class="glyphicon glyphicon-minus"
+                   ng-click="result.expanded = false">
+                </a>
+            </td>
+            <td>{{result.created_at}}</td>
+            <td><a ui-sref="resultsDetail({testID: result.id})">{{result.id}}</a></td>
+            <td>{{result.product_version.version}}</td>
+            <td>
+                <span ng-show="result.meta.shared" class="glyphicon glyphicon-share"></span>
+            </td>
+        </tr>
+        <tr ng-if="result.expanded" ng-repeat-end>
+            <td></td>
+            <td colspan="4">
+                <strong>Publicly Shared:</strong>
+                <span ng-if="result.meta.shared == 'true' && !result.sharedEdit">Yes</span>
+                <span ng-if="!result.meta.shared && !result.sharedEdit">
+                    <em>No</em>
+                </span>
+                <select ng-if="result.sharedEdit"
+                        ng-model="result.meta.shared"
+                        class="form-inline">
+                        <option value="true">Yes</option>
+                        <option value="">No</option>
+                </select>
+                <a ng-if="!result.sharedEdit"
+                   ng-click="result.sharedEdit = true"
+                   title="Edit"
+                   class="glyphicon glyphicon-pencil"></a>
+                <a ng-if="result.sharedEdit"
+                   ng-click="ctrl.associateTestMeta(index,'shared',result.meta.shared)"
+                   title="Save"
+                   class="glyphicon glyphicon-floppy-disk"></a>
+                <br />
+
+                <strong>Associated Guideline:</strong>
+                <span ng-if="!result.meta.guideline && !result.guidelineEdit">
+                    <em>None</em>
+                </span>
+                <span ng-if="result.meta.guideline && !result.guidelineEdit">
+                    {{result.meta.guideline.slice(0, -5)}}
+                </span>
+                <select ng-if="result.guidelineEdit"
+                        ng-model="result.meta.guideline"
+                        ng-options="o as o.slice(0, -5) for o in ctrl.versionList"
+                        class="form-inline">
+                    <option value="">None</option>
+                </select>
+                <a ng-if="!result.guidelineEdit"
+                   ng-click="ctrl.getGuidelineVersionList();result.guidelineEdit = true"
+                   title="Edit"
+                   class="glyphicon glyphicon-pencil"></a>
+                <a ng-if="result.guidelineEdit"
+                   ng-click="ctrl.associateTestMeta(index, 'guideline', result.meta.guideline)"
+                   title="Save"
+                   class="glyphicon glyphicon-floppy-disk">
+                </a>
+                <br />
+
+                <strong>Associated Target Program:</strong>
+                <span ng-if="!result.meta.target && !result.targetEdit">
+                    <em>None</em>
+                </span>
+                <span ng-if="result.meta.target && !result.targetEdit">
+                    {{ctrl.targetMappings[result.meta.target]}}</span>
+                <select ng-if="result.targetEdit"
+                        ng-model="result.meta.target"
+                        class="form-inline">
+                    <option value="">None</option>
+                    <option value="platform">OpenStack Powered Platform</option>
+                    <option value="compute">OpenStack Powered Compute</option>
+                    <option value="object">OpenStack Powered Object Storage</option>
+                </select>
+                <a ng-if="!result.targetEdit"
+                   ng-click="result.targetEdit = true"
+                   title="Edit"
+                   class="glyphicon glyphicon-pencil">
+                </a>
+                <a ng-if="result.targetEdit"
+                   ng-click="ctrl.associateTestMeta(index, 'target', result.meta.target)"
+                   title="Save"
+                   class="glyphicon glyphicon-floppy-disk">
+                </a>
+                <br />
+                <br />
+                <small>
+                    <a ng-click="ctrl.unassociateTest(index)"
+                       confirm="Are you sure you want to unassociate this test result with product: {{ctrl.product.name}}? Test result ownership will be given back to the original owner only.">
+                        <span class="glyphicon glyphicon-remove-circle" ></span> Unassociate test result from product
+                    </a>
+                </small>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="pages">
+    <uib-pagination
+        total-items="ctrl.totalItems"
+        ng-model="ctrl.currentPage"
+        items-per-page="ctrl.itemsPerPage"
+        max-size="ctrl.maxSize"
+        class="pagination-sm"
+        boundary-links="true"
+        rotate="false"
+        num-pages="ctrl.numPages"
+        ng-change="ctrl.getProductTests()">
+    </uib-pagination>
+</div>
+
+<div ng-show="ctrl.showTestsError" class="alert alert-danger" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    <span class="sr-only">Error:</span>
+    {{ctrl.testsError}}
+</div>

@@ -249,8 +249,16 @@ def check_owner(test_id):
     """Check that user has access to specified test run as owner."""
     if not is_authenticated():
         return False
-    user = db.get_test_meta_key(test_id, const.USER)
-    return user and user == get_user_id()
+
+    test = db.get_test(test_id)
+    # If the test is owned by a product.
+    if test.get('product_version_id'):
+        version = db.get_product_version(test['product_version_id'])
+        return check_user_is_product_admin(version['product_id'])
+    # Otherwise, check the user ownership.
+    else:
+        user = db.get_test_meta_key(test_id, const.USER)
+        return user and user == get_user_id()
 
 
 def check_permissions(level):
@@ -330,3 +338,10 @@ def check_user_is_vendor_admin(vendor_id):
     user = get_user_id()
     org_users = db.get_organization_users(vendor_id)
     return user in org_users
+
+
+def check_user_is_product_admin(product_id):
+    """Check if the current user is in the vendor group for a product."""
+    product = db.get_product(product_id)
+    vendor_id = product['organization_id']
+    return check_user_is_vendor_admin(vendor_id)

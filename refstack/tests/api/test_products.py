@@ -135,6 +135,17 @@ class TestProductsEndpoint(api.FunctionalTest):
                           self.get_json,
                           self.URL + post_response.get('id'))
 
+        mock_get_user.return_value = 'foo-open-id'
+        # Make product public.
+        product_info = {'id': post_response.get('id'), 'public': 1}
+        db.update_product(product_info)
+
+        # Test when getting product info when not owner/foundation.
+        get_response = self.get_json(self.URL + post_response.get('id'))
+        self.assertNotIn('created_by_user', get_response)
+        self.assertNotIn('created_at', get_response)
+        self.assertNotIn('updated_at', get_response)
+
     @mock.patch('refstack.api.utils.get_user_id', return_value='test-open-id')
     def test_delete(self, mock_get_user):
         """Test delete request."""
@@ -179,3 +190,97 @@ class TestProductsEndpoint(api.FunctionalTest):
         """Test get(list) request with no items in DB."""
         results = self.get_json(self.URL)
         self.assertEqual([], results['products'])
+
+
+class TestProductVersionEndpoint(api.FunctionalTest):
+    """Test case for the 'products/<product_id>/version' API endpoint."""
+
+    def setUp(self):
+        super(TestProductVersionEndpoint, self).setUp()
+        self.config_fixture = config_fixture.Config()
+        self.CONF = self.useFixture(self.config_fixture).conf
+
+        self.user_info = {
+            'openid': 'test-open-id',
+            'email': 'foo@bar.com',
+            'fullname': 'Foo Bar'
+        }
+        db.user_save(self.user_info)
+
+        patcher = mock.patch('refstack.api.utils.get_user_id')
+        self.addCleanup(patcher.stop)
+        self.mock_get_user = patcher.start()
+        self.mock_get_user.return_value = 'test-open-id'
+
+        product = json.dumps(FAKE_PRODUCT)
+        response = self.post_json('/v1/products/', params=product)
+        self.product_id = response['id']
+        self.URL = '/v1/products/' + self.product_id + '/versions/'
+
+    def test_get(self):
+        """Test getting a list of versions."""
+        response = self.get_json(self.URL)
+        # Product created without version specified.
+        self.assertIsNone(response[0]['version'])
+
+        # Create a version
+        post_response = self.post_json(self.URL,
+                                       params=json.dumps({'version': '1.0'}))
+
+        response = self.get_json(self.URL)
+        self.assertEqual(2, len(response))
+        self.assertEqual(post_response['version'], response[1]['version'])
+
+    def test_get_one(self):
+        """"Test get a specific version."""
+        # Create a version
+        post_response = self.post_json(self.URL,
+                                       params=json.dumps({'version': '2.0'}))
+        version_id = post_response['id']
+
+        response = self.get_json(self.URL + version_id)
+        self.assertEqual(post_response['version'], response['version'])
+
+        # Test nonexistent version.
+        self.assertRaises(webtest.app.AppError, self.get_json,
+                          self.URL + 'sdsdsds')
+
+    def test_post(self):
+        """Test creating a product version."""
+        version = {'cpid': '123', 'version': '5.0'}
+        post_response = self.post_json(self.URL, params=json.dumps(version))
+
+        get_response = self.get_json(self.URL + post_response['id'])
+        self.assertEqual(version['cpid'], get_response['cpid'])
+        self.assertEqual(version['version'], get_response['version'])
+        self.assertEqual(self.product_id, get_response['product_id'])
+        self.assertIn('id', get_response)
+
+        # Test 'version' not in response body.
+        response = self.post_json(self.URL, expect_errors=True,
+                                  params=json.dumps({'cpid': '123'}))
+        self.assertEqual(400, response.status_code)
+
+    def test_put(self):
+        """Test updating a product version."""
+        post_response = self.post_json(self.URL,
+                                       params=json.dumps({'version': '6.0'}))
+        version_id = post_response['id']
+
+        response = self.get_json(self.URL + version_id)
+        self.assertIsNone(response['cpid'])
+
+        props = {'cpid': '1233'}
+        self.put_json(self.URL + version_id, params=json.dumps(props))
+
+        response = self.get_json(self.URL + version_id)
+        self.assertEqual('1233', response['cpid'])
+
+    def test_delete(self):
+        """Test deleting a product version."""
+        post_response = self.post_json(self.URL,
+                                       params=json.dumps({'version': '7.0'}))
+        version_id = post_response['id']
+        self.delete(self.URL + version_id)
+        self.assertRaises(webtest.app.AppError, self.get_json,
+                          self.URL + 'version_id')

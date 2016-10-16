@@ -254,6 +254,21 @@ class DBBackendTestCase(base.BaseTestCase):
             .first.return_value = None
         self.assertRaises(api.NotFound, db.delete_test, 'fake_id')
 
+    @mock.patch.object(api, 'get_session')
+    @mock.patch.object(api, '_to_dict', side_effect=lambda x: x)
+    def test_update_test(self, mock_to_dict, mock_get_session):
+        session = mock_get_session.return_value
+        mock_test = mock.Mock()
+        session.query.return_value.filter_by.return_value\
+            .first.return_value = mock_test
+
+        test_info = {'product_version_id': '123'}
+        api.update_test(test_info)
+
+        mock_get_session.assert_called_once_with()
+        mock_test.save.assert_called_once_with(session=session)
+        session.begin.assert_called_once_with()
+
     @mock.patch('refstack.db.sqlalchemy.api.models')
     @mock.patch.object(api, 'get_session')
     def test_get_test_meta_key(self, mock_get_session, mock_models):
@@ -678,17 +693,23 @@ class DBBackendTestCase(base.BaseTestCase):
 
     @mock.patch.object(api, 'get_session')
     @mock.patch('refstack.db.sqlalchemy.models.Product')
+    @mock.patch('refstack.db.sqlalchemy.models.ProductVersion')
     @mock.patch.object(api, '_to_dict', side_effect=lambda x: x)
-    def test_product_add(self, mock_to_dict, mock_product, mock_get_session):
+    def test_product_add(self, mock_to_dict, mock_version,
+                         mock_product, mock_get_session):
         session = mock_get_session.return_value
+        version = mock_version.return_value
         product = mock_product.return_value
-        product_info = {'product_id': 'hash_or_guid', 'name': 'a',
+        product_info = {'product_ref_id': 'hash_or_guid', 'name': 'a',
                         'organization_id': 'GUID0', 'type': 0,
                         'product_type': 0}
         result = api.add_product(product_info, 'user-123')
         self.assertEqual(result, product)
 
         self.assertIsNotNone(product.id)
+        self.assertIsNotNone(version.id)
+        self.assertIsNotNone(version.product_id)
+        self.assertIsNone(version.version)
 
         mock_get_session.assert_called_once_with()
         product.save.assert_called_once_with(session=session)
@@ -710,12 +731,13 @@ class DBBackendTestCase(base.BaseTestCase):
         product.id = '123'
         filtered.first.return_value = product
 
-        product_info = {'product_id': '098', 'name': 'a', 'description': 'b',
-                        'creator_openid': 'abc', 'organization_id': '1',
-                        'type': 0, 'product_type': 0, 'id': '123'}
+        product_info = {'product_ref_id': '098', 'name': 'a',
+                        'description': 'b', 'creator_openid': 'abc',
+                        'organization_id': '1', 'type': 0, 'product_type': 0,
+                        'id': '123'}
         api.update_product(product_info)
 
-        self.assertEqual('098', product.product_id)
+        self.assertEqual('098', product.product_ref_id)
         self.assertIsNone(product.created_by_user)
         self.assertIsNone(product.organization_id)
         self.assertIsNone(product.type)
@@ -747,7 +769,7 @@ class DBBackendTestCase(base.BaseTestCase):
     @mock.patch.object(api, 'get_session',
                        return_value=mock.Mock(name='session'),)
     @mock.patch('refstack.db.sqlalchemy.models.Product')
-    @mock.patch.object(api, '_to_dict', side_effect=lambda x: x)
+    @mock.patch.object(api, '_to_dict', side_effect=lambda x, allowed_keys: x)
     def test_product_get(self, mock_to_dict, mock_model, mock_get_session):
         _id = 12345
         session = mock_get_session.return_value
@@ -768,7 +790,9 @@ class DBBackendTestCase(base.BaseTestCase):
         session = mock_get_session.return_value
         db.delete_product('product_id')
 
-        session.query.assert_called_once_with(mock_models.Product)
+        session.query.return_value.filter_by.assert_has_calls((
+            mock.call(product_id='product_id'),
+            mock.call().delete(synchronize_session=False)))
         session.query.return_value.filter_by.assert_has_calls((
             mock.call(id='product_id'),
             mock.call().delete(synchronize_session=False)))

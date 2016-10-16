@@ -1,0 +1,26 @@
+<h3>Distro Product</h3>
+<div cg-busy="{promise:ctrl.productRequest,message:'Loading'}"></div>
+<div ng-show="ctrl.product" class="container-fluid">
+    <div class="row">
+        <div class="pull-left">
+            <div class="test-report">
+                <strong>Name:</strong> {{ctrl.product.name}}<br />
+                <strong>Product ID:</strong> {{ctrl.id}}<br />
+                <strong>Description:</strong> {{ctrl.product.description}}<br />
+                <strong>Publicity:</strong> {{ctrl.product.public ? 'Public' : 'Private'}}<br />
+                <strong>Vendor Name:</strong> {{ctrl.vendor.name}}<br />
+                <strong>Vendor Description:</strong> {{ctrl.vendor.description || '-'}}<br />
+            </div>
+        </div>
+        <div ng-include src="'components/products/partials/management.html'"></div>
+        <div class="clearfix"></div>
+        <div ng-include src="'components/products/partials/versions.html'"></div>
+        <hr>
+        <div ng-include src="'components/products/partials/testsTable.html'"></div>
+    </div>
+</div>
+<div ng-show="ctrl.showError" class="alert alert-danger" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    <span class="sr-only">Error:</span>
+    {{ctrl.error}}
+</div>

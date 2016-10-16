@@ -64,6 +64,14 @@ def delete_test(test_id):
     return IMPL.delete_test(test_id)
 
 
+def update_test(test_info):
+    """Update test from the given test_info dictionary.
+
+    :param test_info: The test
+    """
+    return IMPL.update_test(test_info)
+
+
 def get_test_results(test_id):
     """Get all passed tempest tests for a specified test run.
 
@@ -202,9 +210,9 @@ def update_product(product_info):
     return IMPL.update_product(product_info)
 
 
-def get_product(id):
+def get_product(id, allowed_keys=None):
     """Get product by id."""
-    return IMPL.get_product(id)
+    return IMPL.get_product(id, allowed_keys=allowed_keys)
 
 
 def delete_product(id):
@@ -251,3 +259,37 @@ def get_products(allowed_keys=None):
 def get_products_by_user(user_openid, allowed_keys=None):
     """Get all products that user can manage."""
     return IMPL.get_products_by_user(user_openid, allowed_keys=allowed_keys)
+
+
+def get_product_by_version(product_version_id, allowed_keys=None):
+    """Get product info from a product version ID."""
+    return IMPL.get_product_by_version(product_version_id,
+                                       allowed_keys=allowed_keys)
+
+
+def get_product_version(product_version_id, allowed_keys=None):
+    """Get details of a specific version given the id."""
+    return IMPL.get_product_version(product_version_id,
+                                    allowed_keys=allowed_keys)
+
+
+def get_product_versions(product_id, allowed_keys=None):
+    """Get all versions for a product."""
+    return IMPL.get_product_versions(product_id, allowed_keys=allowed_keys)
+
+
+def add_product_version(product_id, version, creator, cpid=None,
+                        allowed_keys=None):
+    """Add a new product version."""
+    return IMPL.add_product_version(product_id, version, creator, cpid,
+                                    allowed_keys=allowed_keys)
+
+
+def update_product_version(product_version_info):
+    """Update product version from product_info_version dictionary."""
+    return IMPL.update_product_version(product_version_info)
+
+
+def delete_product_version(product_version_id):
+    """Delete a product version."""
+    return IMPL.delete_product_version(product_version_id)
