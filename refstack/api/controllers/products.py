@@ -115,6 +115,15 @@ class VersionsController(validation.BaseRestControllerWithValidation):
 
             pecan.abort(403, 'Forbidden.')
         try:
+            version = db.get_product_version(version_id,
+                                             allowed_keys=['version'])
+            if not version['version']:
+                pecan.abort(400, 'Can not delete the empty version as it is '
+                                 'used for basic product/test association. '
+                                 'This version was implicitly created with '
+                                 'the product, and so it cannot be deleted '
+                                 'explicitly.')
+
             db.delete_product_version(version_id)
         except DBReferenceError:
             pecan.abort(400, 'Unable to delete. There are still tests '

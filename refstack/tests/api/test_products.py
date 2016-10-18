@@ -284,3 +284,9 @@ class TestProductVersionEndpoint(api.FunctionalTest):
         self.delete(self.URL + version_id)
         self.assertRaises(webtest.app.AppError, self.get_json,
                           self.URL + 'version_id')
+
+        # Get the null version and ensure it can't be deleted.
+        versions = self.get_json(self.URL)
+        version_id = versions[0]['id']
+        response = self.delete(self.URL + version_id, expect_errors=True)
+        self.assertEqual(400, response.status_code)
