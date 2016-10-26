@@ -139,15 +139,15 @@
 # Template for test result url. (string value)
 #test_results_url = /#/results/%s
 
-# The GitHub API URL of the repository and location of the DefCore
-# capability files. This URL is used to get a listing of all
-# capability files. (string value)
-#github_api_capabilities_url = https://api.github.com/repos/openstack/defcore/contents
+# The GitHub API URL of the repository and location of the
+# Interop Working Group capability files.
+# This URL is used to get a listing of all capability files. (string value)
+#github_api_capabilities_url = https://api.github.com/repos/openstack/interop/contents
 
 # This is the base URL that is used for retrieving specific capability
 # files. Capability file names will be appended to this URL to get the
 # contents of that file. (string value)
-#github_raw_base_url = https://raw.githubusercontent.com/openstack/defcore/master/
+#github_raw_base_url = https://raw.githubusercontent.com/openstack/interop/master/
 
 # Number of results for one page (integer value)
 #results_per_page = 20

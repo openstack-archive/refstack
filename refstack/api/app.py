@@ -83,14 +83,14 @@ API_OPTS = [
                ),
     cfg.StrOpt('github_api_capabilities_url',
                default='https://api.github.com'
-                       '/repos/openstack/defcore/contents',
-               help='The GitHub API URL of the repository and location of '
-                    'the DefCore capability files. This URL is used to get '
-                    'a listing of all capability files.'
+                       '/repos/openstack/interop/contents',
+               help='The GitHub API URL of the repository and location of the '
+                    'Interop Working Group capability files. This URL is used '
+                    'to get a listing of all capability files.'
                ),
     cfg.StrOpt('github_raw_base_url',
                default='https://raw.githubusercontent.com'
-                       '/openstack/defcore/master/',
+                       '/openstack/interop/master/',
                help='This is the base URL that is used for retrieving '
                     'specific capability files. Capability file names will '
                     'be appended to this URL to get the contents of that file.'
