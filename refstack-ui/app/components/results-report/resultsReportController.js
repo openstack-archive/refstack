@@ -36,10 +36,11 @@
 
         ctrl.getVersionList = getVersionList;
         ctrl.getResults = getResults;
-        ctrl.isEditingAllowed = isEditingAllowed;
+        ctrl.isResultAdmin = isResultAdmin;
         ctrl.isShared = isShared;
         ctrl.shareTestRun = shareTestRun;
         ctrl.deleteTestRun = deleteTestRun;
+        ctrl.updateVerificationStatus = updateVerificationStatus;
         ctrl.updateGuidelines = updateGuidelines;
         ctrl.getTargetCapabilities = getTargetCapabilities;
         ctrl.buildCapabilityV1_2 = buildCapabilityV1_2;
@@ -114,6 +115,7 @@
                 $http.get(content_url).success(function (data) {
                     ctrl.resultsData = data;
                     ctrl.version = ctrl.resultsData.meta.guideline;
+                    ctrl.isVerified = ctrl.resultsData.verification_status;
                     if (ctrl.resultsData.meta.target) {
                         ctrl.target = ctrl.resultsData.meta.target;
                     }
@@ -127,14 +129,14 @@
         }
 
         /**
-         * This tells you whether the current results can be edited/managed
-         * based on if the current user is the owner of the results set.
-         * @returns {Boolean} true if editing is allowed
+         * This tells you whether the current user has administrative
+         * privileges for the test result.
+         * @returns {Boolean} true if the user has admin privileges.
          */
-        function isEditingAllowed() {
+        function isResultAdmin() {
             return Boolean(ctrl.resultsData &&
                 (ctrl.resultsData.user_role === 'owner' ||
-                 ctrl.resultsData.user_role == 'foundation'));
+                 ctrl.resultsData.user_role === 'foundation'));
         }
         /**
          * This tells you whether the current results are shared with the
@@ -188,6 +190,27 @@
                 }).error(function (error) {
                     raiseAlert('danger', error.title, error.detail);
                 });
+        }
+
+        /**
+         * This will send a request to the API to delete the current
+         * test results set.
+         */
+        function updateVerificationStatus() {
+            var content_url = [
+                refstackApiUrl, '/results/', ctrl.testId
+            ].join('');
+            var data = {'verification_status': ctrl.isVerified};
+            ctrl.updateRequest =
+                $http.put(content_url, data).success(
+                    function () {
+                        ctrl.resultsData.verification_status = ctrl.isVerified;
+                        raiseAlert('success', '',
+                                   'Verification status changed!');
+                    }).error(function (error) {
+                        ctrl.isVerified = ctrl.resultsData.verification_status;
+                        raiseAlert('danger', error.title, error.detail);
+                    });
         }
 
         /**

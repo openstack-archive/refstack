@@ -80,6 +80,12 @@ h1, h2, h3, h4, h5, h6 {
   cursor: help;
 }
 
+.checkbox-verified {
+  border: 1px solid #A9A9A9;
+  text-align: center;
+  width: 150px;
+}
+
 .capabilities {
   color: #4B4B4B;
 }
