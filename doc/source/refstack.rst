@@ -8,6 +8,9 @@ Ubuntu 14 and 16 LTS.
 Install API dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
+Ubuntu 14 and 16 LTS
+--------------------
+
 ``sudo apt-get install git python-dev libssl-dev python-setuptools build-essential libffi-dev``
 
 ``sudo apt-get install mysql-server python-mysqldb``
@@ -16,11 +19,32 @@ Install API dependencies
 
 ``sudo easy_install -U virtualenv``
 
+CentOS 7
+--------
+
+``sudo yum install epel-release``
+
+``sudo yum groupinstall 'Development Tools'``
+
+``sudo yum install git python-virtualenv python2-setuptools python2-funcsigs libffi-devel``
+
+``sudo yum install mariadb-server``
+
+
 Install RefStack UI dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Ubuntu 14 and 16 LTS
+--------------------
+
 ``curl -sL https://deb.nodesource.com/setup_4.x | sudo bash -``
 
 ``sudo apt-get install nodejs``
+
+CentOS 7
+--------
+
+``sudo yum install npm``
 
 Setup the RefStack database
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -72,6 +96,12 @@ Install RefStack application
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``pip install .``
+
+CentOS 7
+--------
+for CentOS 7 you will have to update oslo.config additionally
+
+``pip install --upgrade oslo.config``
 
 Install needed RefStack UI library dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
