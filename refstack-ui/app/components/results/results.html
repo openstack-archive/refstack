@@ -32,7 +32,7 @@
                 </span>
             </p>
         </div>
-        <div class="col-md-3"style="margin-top:24px;">
+        <div class="col-md-3" style="margin-top:24px;">
             <button type="submit" class="btn btn-primary" ng-click="ctrl.update()">Filter</button>
             <button type="submit" class="btn btn-primary btn-danger" ng-click="ctrl.clearFilters()">Clear</button>
         </div>
@@ -82,8 +82,8 @@
                     <select ng-if="result.sharedEdit"
                             ng-model="result.meta.shared"
                             class="form-inline">
-                            <option value="true">Share</option>
-                            <option value="">Unshare</option>
+                            <option value="true">Yes</option>
+                            <option value="">No</option>
                     </select>
                     <a ng-if="!result.sharedEdit"
                        ng-click="result.sharedEdit = true"

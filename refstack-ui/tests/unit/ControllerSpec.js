@@ -381,6 +381,12 @@ describe('Refstack controllers', function () {
             ctrl = $controller('ResultsReportController',
                 {$stateParams: stateparams}
             );
+            $httpBackend.when('GET', fakeApiUrl +
+                '/results/1234').respond(fakeResultResponse);
+            $httpBackend.when('GET', fakeApiUrl +
+                '/guidelines').respond(['2015.03.json', '2015.04.json']);
+            $httpBackend.when('GET', fakeApiUrl +
+                '/guidelines/2015.04.json').respond(fakeCapabilityResponse);
         }));
 
         it('should make all necessary API requests to get results ' +
@@ -703,6 +709,19 @@ describe('Refstack controllers', function () {
                 // Test when caps has not been set yet.
                 ctrl.caps = null;
                 expect(ctrl.getStatusTestCount('required')).toEqual(-1);
+            });
+
+        it('should have a method to update the verification status of a test',
+            function () {
+                $httpBackend.flush();
+                ctrl.isVerified = 1;
+                $httpBackend.expectPUT(fakeApiUrl + '/results/1234',
+                    {'verification_status': ctrl.isVerified}).respond(204, '');
+                $httpBackend.when('GET', /\.html$/).respond(200);
+                ctrl.updateVerificationStatus();
+                $httpBackend.flush();
+                expect(ctrl.resultsData.verification_status).toEqual(1);
+
             });
 
         it('should have a method to open a modal for the full passed test list',
