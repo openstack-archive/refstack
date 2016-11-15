@@ -27,7 +27,7 @@ from refstack.api import config as api_config
 
 
 def get_pecan_config():
-    """ Get path to pecan configuration file """
+    """Get path to pecan configuration file"""
     filename = api_config.__file__.replace('.pyc', '.py')
     return filename
 
