@@ -224,7 +224,7 @@ class VendorsController(validation.BaseRestControllerWithValidation):
         elif 'cancel' in params:
             self.cancel(vendor)
         else:
-            self.deny(vendor, kw.get('reason'))
+            self.deny(vendor, kw.get('registration_decline_reason'))
 
     def register(self, vendor):
         """Handler for applying for registration with Foundation."""
@@ -290,14 +290,15 @@ class VendorsController(validation.BaseRestControllerWithValidation):
         _check_is_not_foundation(vendor['id'])
 
         if not reason:
-            raise api_exc.ValidationError('Param "reason" can not be empty')
+            raise api_exc.ValidationError(
+                'The decline reason can not be empty')
         if vendor['type'] != const.PENDING_VENDOR:
             raise api_exc.ValidationError(
                 'Invalid organization state for this action.')
 
         props = vendor.get('properties')
         props = json.loads(props) if props else {}
-        props['reason'] = reason
+        props['registration_decline_reason'] = reason
 
         # change vendor type back to private
         org_info = {

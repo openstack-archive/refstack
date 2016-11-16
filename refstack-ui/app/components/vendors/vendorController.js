@@ -112,7 +112,8 @@
             confirmModal('Please input decline reason', function(reason) {
                 var url = [refstackApiUrl, '/vendors/', ctrl.vendorId,
                            '/action'].join('');
-                $http.post(url, {deny: null, reason: reason}).success(
+                var content = {deny: null, registration_decline_reason: reason};
+                $http.post(url, content).success(
                     function() {
                         ctrl.getVendor();
                     }).error(function(error) {
