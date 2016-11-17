@@ -16,7 +16,6 @@
 """Authentication controller."""
 
 from oslo_config import cfg
-from oslo_log import log
 import pecan
 from pecan import rest
 from six.moves.urllib import parse
@@ -25,8 +24,6 @@ from refstack.api import constants as const
 from refstack.api import utils as api_utils
 from refstack import db
 
-
-LOG = log.getLogger(__name__)
 
 OPENID_OPTS = [
     cfg.StrOpt('openstack_openid_endpoint',

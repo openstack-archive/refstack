@@ -15,15 +15,12 @@
 
 """Defcore guidelines controller."""
 
-from oslo_log import log
 import pecan
 from pecan import rest
 
 from refstack.api import constants as const
 from refstack.api import guidelines
 from refstack.api import utils as api_utils
-
-LOG = log.getLogger(__name__)
 
 
 class TestsController(rest.RestController):
