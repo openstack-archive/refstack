@@ -849,6 +849,7 @@ describe('Refstack controllers', function () {
         var fakeResp = {'id': 'fake-id', 'type': 1,
                          'can_manage': true, 'properties' : {}};
         var fakeUsersResp = [{'openid': 'foo'}];
+        var fakeProdResp = {'products': [{'id': 123}]};
         var fakeWindow = {
             location: {
                 href: ''
@@ -871,6 +872,8 @@ describe('Refstack controllers', function () {
             $httpBackend.when('GET', fakeApiUrl +
             '/vendors/1234').respond(fakeResp);
             $httpBackend.when('GET', fakeApiUrl +
+            '/products?organization_id=1234').respond(fakeProdResp);
+            $httpBackend.when('GET', fakeApiUrl +
             '/vendors/1234/users').respond(fakeUsersResp);
         }));
 
@@ -891,6 +894,14 @@ describe('Refstack controllers', function () {
                 $httpBackend.flush();
                 expect(ctrl.vendorUsers).toEqual(fakeUsersResp);
                 expect(ctrl.currentUser).toEqual('foo');
+            });
+
+        it('should have a function to get vendor products',
+            function () {
+                ctrl.vendorProducts = null;
+                ctrl.getVendorProducts();
+                $httpBackend.flush();
+                expect(ctrl.vendorProducts).toEqual(fakeProdResp.products);
             });
 
         it('should have a function to register a vendor',

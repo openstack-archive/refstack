@@ -35,6 +35,8 @@
 
         ctrl.getVendor = getVendor;
         ctrl.getVendorUsers = getVendorUsers;
+        ctrl.getVendorProducts = getVendorProducts;
+        ctrl.getProductTypeDescription = getProductTypeDescription;
         ctrl.registerVendor = registerVendor;
         ctrl.approveVendor = approveVendor;
         ctrl.declineVendor = declineVendor;
@@ -50,6 +52,10 @@
         if (!$scope.auth.isAuthenticated) {
             $state.go('home');
         }
+
+        ctrl.getVendor();
+        ctrl.getVendorUsers();
+        ctrl.getVendorProducts();
 
         /**
          * This will contact the Refstack API to get a vendor information.
@@ -77,7 +83,6 @@
                         angular.toJson(error);
                 });
         }
-        ctrl.getVendor();
 
         /**
          * This will 'send' application for registration.
@@ -151,7 +156,40 @@
                         angular.toJson(error);
                 });
         }
-        ctrl.getVendorUsers();
+
+        /**
+         * Updates list of users in the vendor's group
+         */
+        function getVendorProducts() {
+            ctrl.showError = false;
+            var contentUrl = refstackApiUrl + '/products?organization_id='
+                              + ctrl.vendorId;
+            ctrl.productsRequest =
+                $http.get(contentUrl).success(function(data) {
+                    ctrl.vendorProducts = data.products;
+                }).error(function(error) {
+                    ctrl.showError = true;
+                    ctrl.error =
+                        'Error retrieving from server: ' +
+                        angular.toJson(error);
+                });
+        }
+
+        /**
+         * Get the product type description given the type integer.
+         */
+        function getProductTypeDescription(product_type) {
+            switch (product_type) {
+                case 0:
+                    return 'Distro';
+                case 1:
+                    return 'Public Cloud';
+                case 2:
+                    return 'Hosted Private Cloud';
+                default:
+                    return 'Unknown';
+            }
+        }
 
         /**
          * Removes user with specific openid from vendor's group

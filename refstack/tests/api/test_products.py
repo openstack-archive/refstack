@@ -109,6 +109,36 @@ class TestProductsEndpoint(api.FunctionalTest):
         post_response = self.post_json(self.URL, params=product)
 
     @mock.patch('refstack.api.utils.get_user_id', return_value='test-open-id')
+    def test_get_by_org(self, mock_get_user):
+        """Test getting products of an organization."""
+        org1 = db.add_organization({'name': 'test-vendor1'}, 'test-open-id')
+        org2 = db.add_organization({'name': 'test-vendor2'}, 'test-open-id')
+        prod_info = {'name': 'product1',
+                     'description': 'product description',
+                     'product_type': 1, 'type': 0,
+                     'organization_id': org1['id'], 'public': True}
+        prod1 = db.add_product(prod_info, 'test-open-id')
+        prod_info['name'] = 'product2'
+        prod_info['organization_id'] = org2['id']
+        prod2 = db.add_product(prod_info, 'test-open-id')
+        get_response = self.get_json(self.URL +
+                                     '?organization_id=' + org1['id'])
+        self.assertEqual(1, len(get_response['products']))
+        self.assertEqual(prod1['id'], get_response['products'][0]['id'])
+
+        get_response = self.get_json(self.URL +
+                                     '?organization_id=' + org2['id'])
+        self.assertEqual(1, len(get_response['products']))
+        self.assertEqual(prod2['id'], get_response['products'][0]['id'])
+
+        # Test that non-admin can't view non-public products of an org.
+        db.update_product({'id': prod1['id'], 'public': False})
+        mock_get_user.return_value = 'some-user'
+        get_response = self.get_json(self.URL +
+                                     '?organization_id=' + org1['id'])
+        self.assertFalse(get_response['products'])
+
+    @mock.patch('refstack.api.utils.get_user_id', return_value='test-open-id')
     def test_get_one(self, mock_get_user):
         """Test get_one request."""
         product = json.dumps(FAKE_PRODUCT)

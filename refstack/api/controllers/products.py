@@ -145,25 +145,33 @@ class ProductsController(validation.BaseRestControllerWithValidation):
     @pecan.expose('json')
     def get(self):
         """Get information of all products."""
+        filters = api_utils.parse_input_params(['organization_id'])
+
         allowed_keys = ['id', 'name', 'description', 'product_ref_id', 'type',
                         'product_type', 'public', 'organization_id']
         user = api_utils.get_user_id()
         is_admin = user in db.get_foundation_users()
         try:
             if is_admin:
-                products = db.get_products(allowed_keys=allowed_keys)
+                products = db.get_products(allowed_keys=allowed_keys,
+                                           filters=filters)
                 for s in products:
                     s['can_manage'] = True
             else:
                 result = dict()
-                products = db.get_public_products(allowed_keys=allowed_keys)
+                filters['public'] = True
+
+                products = db.get_products(allowed_keys=allowed_keys,
+                                           filters=filters)
                 for s in products:
                     _id = s['id']
                     result[_id] = s
                     result[_id]['can_manage'] = False
 
+                filters.pop('public')
                 products = db.get_products_by_user(user,
-                                                   allowed_keys=allowed_keys)
+                                                   allowed_keys=allowed_keys,
+                                                   filters=filters)
                 for s in products:
                     _id = s['id']
                     if _id not in result:
