@@ -33,9 +33,9 @@
     </div>
 
     <div class="row">
-        <div ng-if="ctrl.vendorProperties.reason">
+        <div ng-if="ctrl.vendorProperties.registration_decline_reason">
             <hr />
-            <strong>Decline reason:</strong> {{ctrl.vendorProperties.reason}}<br />
+            <strong>Registration decline reason:</strong> {{ctrl.vendorProperties.registration_decline_reason}}<br />
         </div>
     </div>
 
@@ -65,10 +65,10 @@
                 </tr>
             </tbody>
         </table>
-        
+
         <div class="row form-group">
             <div class="col-md-6">
-                <label for="new_user">Add user to vendor:</label> 
+                <label for="new_user">Add user to vendor:</label>
                 <input type="text"
                        class="form-control"
                        id="new_user"
