@@ -250,3 +250,6 @@ class ProductVersionValidator(BaseValidator):
     def validate(self, request):
         """Validate product version data."""
         super(ProductVersionValidator, self).validate(request)
+        body = json.loads(request.body)
+
+        self.check_emptyness(body, ['version'])
