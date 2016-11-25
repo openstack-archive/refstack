@@ -1,6 +1,12 @@
-=========
+========
 RefStack
-=========
+========
+
+RefStack team and repository tags
+#################################
+.. image:: http://governance.openstack.org/badges/refstack.svg
+    :target: http://governance.openstack.org/reference/tags/index.html
+
 
 What is RefStack?
 #################
@@ -11,7 +17,7 @@ What is RefStack?
 - User interface to display individual test run results.
 
 Overview
-##########
+########
 
 RefStack intends on being THE source of tools for interoperability testing
 of OpenStack clouds.
@@ -31,7 +37,7 @@ be used to validate clouds against existing DefCore capability lists,
 giving you assurance that your cloud faithfully implements OpenStack
 standards.
 
-**Value Add for Vendors** - Vendors can use RefStack to demonstrate that
+**Value add for vendors** - Vendors can use RefStack to demonstrate that
 their distros, and/or their customers' installed clouds remain with OpenStack
 after their software has been incorporated into the distro or cloud.
 
@@ -53,10 +59,10 @@ after their software has been incorporated into the distro or cloud.
    * reviews: https://review.openstack.org/#q,status:open+refstack-client,n,z
 
 Get involved!
-###############
+#############
 
 * Mailing List: openstack-dev@lists.openstack.org
 * IRC: #refstack on Freenode
-* Dev Meetings: Mondays @ 19:00 UTC in #openstack-meeting-alt on Freenode
+* Dev Meetings: Tuesdays @ 19:00 UTC in #openstack-meeting-alt on Freenode
 * Web-site: https://refstack.openstack.org
 * Wiki: https://wiki.OpenStack.org/wiki/RefStack
