@@ -18,14 +18,12 @@
 
 import uuid
 
-from oslo_config import cfg
 from oslo_db.sqlalchemy import models
 import six
 import sqlalchemy as sa
 from sqlalchemy import orm
 from sqlalchemy.ext.declarative import declarative_base
 
-CONF = cfg.CONF
 BASE = declarative_base()
 
 

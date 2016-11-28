@@ -18,7 +18,6 @@
 import json
 import uuid
 
-from oslo_config import cfg
 from oslo_db.exception import DBReferenceError
 from oslo_log import log
 import pecan
@@ -32,8 +31,6 @@ from refstack.api import validators
 from refstack import db
 
 LOG = log.getLogger(__name__)
-
-CONF = cfg.CONF
 
 
 class VersionsController(validation.BaseRestControllerWithValidation):
