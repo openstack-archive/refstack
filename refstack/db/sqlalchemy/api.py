@@ -602,29 +602,31 @@ def get_organizations_by_user(user_openid, allowed_keys=None):
     return _to_dict(items, allowed_keys=allowed_keys)
 
 
-def get_public_products(allowed_keys=None):
-    """Get public products."""
+def get_products(allowed_keys=None, filters=None):
+    """Get products based on passed in filters."""
+    if filters is None:
+        filters = {}
+    expected_filters = ['public', 'organization_id']
+    filter_args = {}
+    for key, value in six.iteritems(filters):
+        if key not in expected_filters:
+            raise Exception('Unknown filter key "%s"' % key)
+        filter_args[key] = value
+
     session = get_session()
-    items = (
-        session.query(models.Product)
-        .filter_by(public=True)
-        .order_by(models.Product.created_at.desc()).all())
+    query = session.query(models.Product)
+    if filter_args:
+        query = query.filter_by(**filter_args)
+    items = query.order_by(models.Product.created_at.desc()).all()
     return _to_dict(items, allowed_keys=allowed_keys)
 
 
-def get_products(allowed_keys=None):
-    """Get all products."""
+def get_products_by_user(user_openid, allowed_keys=None, filters=None):
+    """Get products that a user can manage."""
+    if filters is None:
+        filters = {}
     session = get_session()
-    items = (
-        session.query(models.Product)
-        .order_by(models.Product.created_at.desc()).all())
-    return _to_dict(items, allowed_keys=allowed_keys)
-
-
-def get_products_by_user(user_openid, allowed_keys=None):
-    """Get all products that user can manage."""
-    session = get_session()
-    items = (
+    query = (
         session.query(models.Product, models.Organization, models.Group,
                       models.UserToGroup)
         .join(models.Organization,
@@ -633,8 +635,15 @@ def get_products_by_user(user_openid, allowed_keys=None):
               models.Group.id == models.Organization.group_id)
         .join(models.UserToGroup,
               models.Group.id == models.UserToGroup.group_id)
-        .filter(models.UserToGroup.user_openid == user_openid)
-        .order_by(models.Organization.created_at.desc()).all())
+        .filter(models.UserToGroup.user_openid == user_openid))
+
+    expected_filters = ['organization_id']
+    for key, value in six.iteritems(filters):
+        if key not in expected_filters:
+            raise Exception('Unknown filter key "%s"' % key)
+        query = query.filter(getattr(models.Product, key) ==
+                             filters[key])
+    items = query.order_by(models.Organization.created_at.desc()).all()
     items = [item[0] for item in items]
     return _to_dict(items, allowed_keys=allowed_keys)
 
