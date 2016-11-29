@@ -255,7 +255,7 @@ class VendorsController(validation.BaseRestControllerWithValidation):
         # change vendor type to public
         props = vendor.get('properties')
         props = json.loads(props) if props else {}
-        props.pop('reason', None)
+        props.pop('registration_decline_reason', None)
         org_info = {
             'id': vendor['id'],
             'type': const.OFFICIAL_VENDOR,
