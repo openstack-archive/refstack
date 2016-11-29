@@ -186,7 +186,14 @@
                     .success(function () {
                         ctrl.data.results[index][editFlag] = false;
                     }).error(function (error) {
-                        raiseAlert('danger', error.title, error.detail);
+                        if (error.code == 404) {
+                            // Key doesn't exist, so count it as a success,
+                            // and don't raise an alert.
+                            ctrl.data.results[index][editFlag] = false;
+                        }
+                        else {
+                            raiseAlert('danger', error.title, error.detail);
+                        }
                     });
             }
         }
