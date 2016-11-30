@@ -961,21 +961,27 @@ describe('Refstack controllers', function () {
     });
 
     describe('VendorEditModalController', function() {
-        var ctrl, modalInstance, state;
+        var rootScope, ctrl, modalInstance, state;
         var fakeVendor = {'name': 'Foo', 'description': 'Bar', 'id': '1234',
                           'properties': {'key1': 'value1', 'key2': 'value2'}};
 
-        beforeEach(inject(function ($controller) {
+        beforeEach(inject(function ($controller, $rootScope) {
             modalInstance = {
                 dismiss: jasmine.createSpy('modalInstance.dismiss')
             };
             state = {
                 reload: jasmine.createSpy('state.reload')
             };
+            rootScope = $rootScope.$new();
+            rootScope.auth = {'currentUser' : {'is_admin': true,
+                                               'openid': 'foo'}
+                             };
             ctrl = $controller('VendorEditModalController',
-                {$uibModalInstance: modalInstance, $state: state,
+                {$rootScope: rootScope,
+                 $uibModalInstance: modalInstance, $state: state,
                  vendor: fakeVendor}
             );
+
         }));
 
         it('should be able to add/remove properties',
@@ -995,12 +1001,13 @@ describe('Refstack controllers', function () {
         it('should have a function to save changes',
             function () {
                 var expectedContent = {
-                    'name': 'Foo', 'description': 'Bar',
+                    'name': 'Foo1', 'description': 'Bar',
                     'properties': {'key1': 'value1', 'key2': 'value2'}
                 };
                 $httpBackend.expectPUT(
                     fakeApiUrl + '/vendors/1234', expectedContent)
                     .respond(200, '');
+                ctrl.vendor.name = 'Foo1';
                 ctrl.saveChanges();
                 $httpBackend.flush();
             });

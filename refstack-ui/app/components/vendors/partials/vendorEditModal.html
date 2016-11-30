@@ -7,7 +7,8 @@
     <div class="modal-body">
         <div class="form-group">
             <label for="name">Name</label>
-            <input type="text"
+            <input ng-disabled="modal.vendor.type==3 && !modal.isAdmin"
+                   type="text"
                    class="form-control"
                    id="name"
                    ng-model="modal.vendor.name">

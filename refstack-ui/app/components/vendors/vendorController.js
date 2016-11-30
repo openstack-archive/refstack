@@ -249,6 +249,7 @@
         .controller('VendorEditModalController', VendorEditModalController);
 
     VendorEditModalController.$inject = [
+        '$rootScope',
         '$uibModalInstance', '$http', '$state', 'vendor', 'refstackApiUrl'
     ];
 
@@ -256,8 +257,8 @@
      * Vendor Edit Modal Controller
      * This controls the modal that allows editing a vendor.
      */
-    function VendorEditModalController($uibModalInstance, $http, $state,
-        vendor, refstackApiUrl) {
+    function VendorEditModalController($rootScope, $uibModalInstance, $http,
+        $state, vendor, refstackApiUrl) {
 
         var ctrl = this;
 
@@ -267,7 +268,9 @@
         ctrl.removeProperty = removeProperty;
 
         ctrl.vendor = vendor;
+        ctrl.vendorName = vendor.name;
         ctrl.vendorProperties = [];
+        ctrl.isAdmin = $rootScope.auth.currentUser.is_admin;
 
         parseVendorProperties();
 
@@ -294,9 +297,11 @@
             ctrl.showSuccess = false;
             var url = [refstackApiUrl, '/vendors/', ctrl.vendor.id].join('');
             var properties = propertiesToJson();
-            var content = {'name': ctrl.vendor.name,
-                           'description': ctrl.vendor.description,
+            var content = {'description': ctrl.vendor.description,
                            'properties': properties};
+            if (ctrl.vendorName != ctrl.vendor.name) {
+                content.name = ctrl.vendor.name;
+            }
             $http.put(url, content).success(function() {
                 ctrl.showSuccess = true;
                 $state.reload();

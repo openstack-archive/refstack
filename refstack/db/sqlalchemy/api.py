@@ -441,6 +441,7 @@ def update_organization(organization_info):
         organization.properties = organization_info.get(
             'properties', organization.properties)
         organization.save(session=session)
+        return _to_dict(organization)
 
 
 def get_organization(organization_id, allowed_keys=None):

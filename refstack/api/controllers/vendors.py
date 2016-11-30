@@ -115,22 +115,26 @@ class VendorsController(validation.BaseRestControllerWithValidation):
     @pecan.expose('json', method='PUT')
     def put(self, vendor_id, **kw):
         """Handler for update item. Should return full info with updates."""
-        is_admin = (api_utils.check_user_is_foundation_admin()
+        is_foundation_admin = api_utils.check_user_is_foundation_admin()
+        is_admin = (is_foundation_admin
                     or api_utils.check_user_is_vendor_admin(vendor_id))
         if not is_admin:
             pecan.abort(403, 'Forbidden.')
-
         vendor_info = {'id': vendor_id}
+        vendor = db.get_organization(vendor_id)
         if 'name' in kw:
+            if (vendor['type'] == const.OFFICIAL_VENDOR and
+                    not is_foundation_admin):
+                pecan.abort(
+                    403, 'Name change for an official vendor is not allowed.')
             vendor_info['name'] = kw['name']
         if 'description' in kw:
             vendor_info['description'] = kw['description']
         if 'properties' in kw:
             vendor_info['properties'] = json.dumps(kw['properties'])
-        db.update_organization(vendor_info)
+        vendor = db.update_organization(vendor_info)
 
         pecan.response.status = 200
-        vendor = db.get_organization(vendor_id)
         vendor['can_manage'] = True
         return vendor
 
