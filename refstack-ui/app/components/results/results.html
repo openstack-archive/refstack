@@ -49,6 +49,11 @@
                 <th ng-if="ctrl.isUserResults"></th>
                 <th>Upload Date</th>
                 <th>Test Run ID</th>
+                <th ng-if="ctrl.isUserResults">Vendor</th>
+                <th ng-if="ctrl.isUserResults">Product (version)</th>
+                <th ng-if="ctrl.isUserResults">Target Program</th>
+                <th ng-if="ctrl.isUserResults">Guideline</th>
+                <th ng-if="ctrl.isUserResults">Verified</th>
                 <th ng-if="ctrl.isUserResults">Shared</th>
             </tr>
         </thead>
@@ -66,7 +71,25 @@
                     </a>
                 </td>
                 <td>{{result.created_at}}</td>
-                <td><a ui-sref="resultsDetail({testID: result.id})">{{result.id}}</a></td>
+                <td><a ui-sref="resultsDetail({testID: result.id})">
+                        {{result.id.slice(0, 8)}}...{{result.id.slice(-8)}}
+                    </a>
+                </td>
+                <td ng-if="ctrl.isUserResults">
+                    {{ctrl.vendors[result.product_version.product_info.organization_id].name || '-'}}
+                </td>
+                <td ng-if="ctrl.isUserResults">{{result.product_version.product_info.name || '-'}}
+                    <span ng-if="result.product_version.version">
+                        ({{result.product_version.version}})
+                    </span>
+                </td>
+                <td ng-if="ctrl.isUserResults">{{ctrl.targetMappings[result.meta.target] || '-'}}</td>
+                <td ng-if="ctrl.isUserResults">{{result.meta.guideline.slice(0, -5) || '-'}}</td>
+                <td ng-if="ctrl.isUserResults">
+                    <span ng-if="result.verification_status" class="glyphicon glyphicon-ok"></span>
+                    <span ng-if="!result.verification_status">-</span>
+
+                </td>
                 <td ng-if="ctrl.isUserResults">
                     <span ng-show="result.meta.shared" class="glyphicon glyphicon-share"></span>
                 </td>

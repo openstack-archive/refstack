@@ -19,6 +19,7 @@ RefStack
             <li ng-class="{ active: header.isActive('/about')}"><a ui-sref="about">About</a></li>
             <li ng-class="{ active: header.isActive('/guidelines')}"><a ui-sref="guidelines">DefCore Guidelines</a></li>
             <li ng-class="{ active: header.isActive('/community_results')}"><a ui-sref="communityResults">Community Results</a></li>
+            <!--
             <li ng-class="{ active: header.isCatalogActive('public')}" class="dropdown" uib-dropdown>
                 <a role="button" class="dropdown-toggle" uib-dropdown-toggle>
                     Catalog <strong class="caret"></strong>
@@ -28,6 +29,7 @@ RefStack
                     <li><a ui-sref="publicProducts">Products</a></li>
                 </ul>
             </li>
+            -->
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li ng-class="{ active: header.isActive('/user_results')}" ng-if="auth.isAuthenticated"><a ui-sref="userResults">My Results</a></li>

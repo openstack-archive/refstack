@@ -38,6 +38,7 @@
         ctrl.associateMeta = associateMeta;
         ctrl.getVersionList = getVersionList;
         ctrl.getUserProducts = getUserProducts;
+        ctrl.getVendors = getVendors;
         ctrl.associateProductVersion = associateProductVersion;
         ctrl.getProductVersions = getProductVersions;
         ctrl.prepVersionEdit = prepVersionEdit;
@@ -98,6 +99,8 @@
         } else {
             ctrl.update();
         }
+
+        ctrl.getVendors();
 
         /**
          * This will contact the Refstack API to get a listing of test run
@@ -240,6 +243,27 @@
                     ctrl.showError = true;
                     ctrl.error =
                         'Error retrieving Products listing from server: ' +
+                        angular.toJson(error);
+                });
+        }
+
+        /**
+         * This will contact the Refstack API to get a listing of
+         * vendors.
+         */
+        function getVendors() {
+            var contentUrl = refstackApiUrl + '/vendors';
+            ctrl.vendorsRequest =
+                $http.get(contentUrl).success(function (data) {
+                    ctrl.vendors = {};
+                    data.vendors.forEach(function(vendor) {
+                        ctrl.vendors[vendor.id] = vendor;
+                    });
+                }).error(function (error) {
+                    ctrl.vendors = null;
+                    ctrl.showError = true;
+                    ctrl.error =
+                        'Error retrieving vendor listing from server: ' +
                         angular.toJson(error);
                 });
         }
