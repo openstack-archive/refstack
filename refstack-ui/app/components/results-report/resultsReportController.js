@@ -53,6 +53,7 @@
         ctrl.getCapabilityTestCount = getCapabilityTestCount;
         ctrl.getStatusTestCount = getStatusTestCount;
         ctrl.openFullTestListModal = openFullTestListModal;
+        ctrl.openEditTestModal = openEditTestModal;
 
         /** The testID extracted from the URL route. */
         ctrl.testId = $stateParams.testID;
@@ -610,6 +611,27 @@
             });
         }
 
+        /**
+         * This will open the modal that will all a user to edit test run
+         * metadata.
+         */
+        function openEditTestModal() {
+            $uibModal.open({
+                templateUrl: '/components/results-report/partials' +
+                        '/editTestModal.html',
+                backdrop: true,
+                windowClass: 'modal',
+                animation: true,
+                controller: 'EditTestModalController as modal',
+                size: 'lg',
+                resolve: {
+                    resultsData: function () {
+                        return ctrl.resultsData;
+                    }
+                }
+            });
+        }
+
         getResults();
     }
 
@@ -642,6 +664,199 @@
          */
         ctrl.getTestListString = function () {
             return ctrl.tests.sort().join('\n');
+        };
+    }
+
+    angular
+        .module('refstackApp')
+        .controller('EditTestModalController', EditTestModalController);
+
+    EditTestModalController.$inject = [
+        '$uibModalInstance', '$http', '$state', 'raiseAlert',
+        'refstackApiUrl', 'resultsData'
+    ];
+
+    /**
+     * Edit Test Modal Controller
+     * This controller is for the modal that appears if a user wants to edit
+     * test run metadata.
+     */
+    function EditTestModalController($uibModalInstance, $http, $state,
+        raiseAlert, refstackApiUrl, resultsData) {
+
+        var ctrl = this;
+
+        ctrl.getVersionList = getVersionList;
+        ctrl.getUserProducts = getUserProducts;
+        ctrl.associateProductVersion = associateProductVersion;
+        ctrl.getProductVersions = getProductVersions;
+        ctrl.saveChanges = saveChanges;
+
+        ctrl.resultsData = resultsData;
+        ctrl.metaCopy = angular.copy(resultsData.meta);
+        ctrl.prodVersionCopy = angular.copy(resultsData.product_version);
+
+        ctrl.getVersionList();
+        ctrl.getUserProducts();
+
+        /**
+         * Retrieve an array of available capability files from the Refstack
+         * API server, sort this array reverse-alphabetically, and store it in
+         * a scoped variable.
+         * Sample API return array: ["2015.03.json", "2015.04.json"]
+         */
+        function getVersionList() {
+            if (ctrl.versionList) {
+                return;
+            }
+            var content_url = refstackApiUrl + '/guidelines';
+            ctrl.versionsRequest =
+                $http.get(content_url).success(function (data) {
+                    ctrl.versionList = data.sort().reverse();
+                }).error(function (error) {
+                    raiseAlert('danger', error.title,
+                               'Unable to retrieve version list');
+                });
+        }
+
+        /**
+         * Get products user has management rights to or all products depending
+         * on the passed in parameter value.
+         */
+        function getUserProducts() {
+            var contentUrl = refstackApiUrl + '/products';
+            ctrl.productsRequest =
+                $http.get(contentUrl).success(function (data) {
+                    ctrl.products = {};
+                    angular.forEach(data.products, function(prod) {
+                        if (prod.can_manage) {
+                            ctrl.products[prod.id] = prod;
+                        }
+                    });
+                    if (ctrl.prodVersionCopy) {
+                        ctrl.selectedProduct = ctrl.products[
+                            ctrl.prodVersionCopy.product_info.id
+                        ];
+                    }
+                    ctrl.getProductVersions();
+                }).error(function (error) {
+                    ctrl.products = null;
+                    ctrl.showError = true;
+                    ctrl.error =
+                        'Error retrieving Products listing from server: ' +
+                        angular.toJson(error);
+                });
+        }
+
+        /**
+         * Send a PUT request to the API server to associate a product with
+         * a test result.
+         */
+        function associateProductVersion() {
+            var verId = (ctrl.selectedVersion ?
+                         ctrl.selectedVersion.id : null);
+            var testId = resultsData.id;
+            var url = refstackApiUrl + '/results/' + testId;
+            ctrl.associateRequest = $http.put(url, {'product_version_id':
+                                                    verId})
+                .error(function (error) {
+                    ctrl.showError = true;
+                    ctrl.showSuccess = false;
+                    ctrl.error =
+                        'Error associating product version with test run: ' +
+                        angular.toJson(error);
+                });
+        }
+
+        /**
+         * Get all versions for a product.
+         */
+        function getProductVersions() {
+            if (!ctrl.selectedProduct) {
+                ctrl.productVersions = [];
+                ctrl.selectedVersion = null;
+                return;
+            }
+
+            var url = refstackApiUrl + '/products/' +
+                ctrl.selectedProduct.id + '/versions';
+            ctrl.getVersionsRequest = $http.get(url)
+                .success(function (data) {
+                    ctrl.productVersions = data;
+                    if (ctrl.prodVersionCopy &&
+                        ctrl.prodVersionCopy.product_info.id ==
+                        ctrl.selectedProduct.id) {
+                        ctrl.selectedVersion = ctrl.prodVersionCopy;
+                    }
+                    else {
+                        angular.forEach(data, function(ver) {
+                            if (!ver.version) {
+                                ctrl.selectedVersion = ver;
+                            }
+                        });
+                    }
+                }).error(function (error) {
+                    raiseAlert('danger', error.title, error.detail);
+                });
+        }
+
+        /**
+         * Send a PUT request to the server with the changes.
+         */
+        function saveChanges() {
+            ctrl.showError = false;
+            ctrl.showSuccess = false;
+            var metaBaseUrl = [
+                refstackApiUrl, '/results/', resultsData.id, '/meta/'
+            ].join('');
+            var metaFields = ['target', 'guideline', 'shared'];
+            var meta = ctrl.metaCopy;
+            angular.forEach(metaFields, function(field) {
+                var oldMetaValue = (field in ctrl.resultsData.meta) ?
+                    ctrl.resultsData.meta[field] : '';
+                if (field in meta && oldMetaValue != meta[field]) {
+                    var metaUrl = metaBaseUrl + field;
+                    if (meta[field]) {
+                        ctrl.assocRequest = $http.post(metaUrl, meta[field])
+                            .success(function(data) {
+                                ctrl.resultsData.meta[field] = meta[field];
+                            })
+                            .error(function (error) {
+                                ctrl.showError = true;
+                                ctrl.showSuccess = false;
+                                ctrl.error =
+                                    'Error associating metadata with ' +
+                                    'test run: ' + angular.toJson(error);
+                            });
+                    }
+                    else {
+                        ctrl.unassocRequest = $http.delete(metaUrl)
+                            .success(function (data) {
+                                delete ctrl.resultsData.meta[field];
+                                delete meta[field];
+                            })
+                            .error(function (error) {
+                                ctrl.showError = true;
+                                ctrl.showSuccess = false;
+                                ctrl.error =
+                                    'Error associating metadata with ' +
+                                    'test run: ' + angular.toJson(error);
+                            });
+                    }
+                }
+            });
+            ctrl.associateProductVersion();
+            if (!ctrl.showError) {
+                ctrl.showSuccess = true;
+                $state.reload();
+            }
+        }
+
+        /**
+         * This function will close/dismiss the modal.
+         */
+        ctrl.close = function () {
+            $uibModalInstance.dismiss('exit');
         };
     }
 })();

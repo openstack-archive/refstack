@@ -1,0 +1,65 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" aria-hidden="true" ng-click="modal.close()">&times;</button>
+        <h4>Edit Test Run Metadata</h4>
+        <p>Make changes to your test metadata.</p>
+    </div>
+    <div class="modal-body">
+        <div class="form-group">
+            <strong>Publicly Shared:</strong>
+            <select ng-model="modal.metaCopy.shared"
+                    class="form-control">
+                    <option value="true">Yes</option>
+                    <option value="">No</option>
+            </select>
+            <br />
+            <strong>Associated Guideline:</strong>
+            <select ng-model="modal.metaCopy.guideline"
+                    ng-options="o as o.slice(0, -5) for o in modal.versionList"
+                    class="form-control">
+                <option value="">None</option>
+            </select>
+            <br />
+            <strong>Associated Target Program:</strong>
+            <select ng-model="modal.metaCopy.target"
+                    class="form-control">
+                <option value="">None</option>
+                <option value="platform">OpenStack Powered Platform</option>
+                <option value="compute">OpenStack Powered Compute</option>
+                <option value="object">OpenStack Powered Object Storage</option>
+            </select>
+            <hr>
+            <strong>Associated Product:</strong>
+            <select ng-options="product as product.name for product in modal.products | arrayConverter | orderBy: 'name' track by product.id"
+                    ng-model="modal.selectedProduct"
+                    ng-change="modal.getProductVersions()"
+                    class="form-control">
+                <option value="">-- No Product --</option>
+            </select>
+
+            <span ng-if="modal.productVersions.length">
+                <strong>Product Version:</strong>
+                <select ng-options="version as version.version for version in modal.productVersions | orderBy: 'version' track by version.id"
+                        ng-model="modal.selectedVersion"
+                        class="form-control">
+                </select>
+
+            </span>
+
+        </div>
+        <div ng-show="modal.showError" class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            {{modal.error}}
+        </div>
+        <div ng-show="modal.showSuccess" class="alert alert-success" role="success">
+            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+            <span class="sr-only">Success:</span>
+            Changes saved successfully.
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" type="button" ng-click="modal.saveChanges()">Save Changes</button>
+        <button class="btn btn-primary" type="button" ng-click="modal.close()">Close</button>
+    </div>
+</div>

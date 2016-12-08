@@ -734,6 +734,17 @@ describe('Refstack controllers', function () {
                 ctrl.openFullTestListModal();
                 expect(modal.open).toHaveBeenCalled();
             });
+
+        it('should have a method to open a modal for editing test metadata',
+            function () {
+                var modal;
+                inject(function ($uibModal) {
+                    modal = $uibModal;
+                });
+                spyOn(modal, 'open');
+                ctrl.openEditTestModal();
+                expect(modal.open).toHaveBeenCalled();
+            });
     });
 
     describe('FullTestListModalController', function () {
@@ -764,6 +775,72 @@ describe('Refstack controllers', function () {
                 var expectedString = 't1\nt2\nt3';
                 expect(ctrl.getTestListString()).toEqual(expectedString);
             });
+    });
+
+    describe('EditTestModalController', function () {
+        var modalInstance, ctrl, state;
+        var fakeResultsData = {
+            'results': ['test_id_1'],
+            'id': 'some-id',
+            'meta': {
+                'public_key': 'ssh-rsa', 'guideline': '2015.04.json',
+                'target': 'object'
+            }
+        };
+        var fakeProdResp = {'products': [{'id': 1234}]};
+        var fakeVersionResp = [{'id': 'ver1', 'version': '1.0'},
+                               {'id': 'ver2', 'version': null}];
+
+        beforeEach(inject(function ($controller) {
+            modalInstance = {
+                dismiss: jasmine.createSpy('modalInstance.dismiss')
+            };
+            state = {
+                reload: jasmine.createSpy('state.reload')
+            };
+            ctrl = $controller('EditTestModalController',
+                {$uibModalInstance: modalInstance, $state: state,
+                 resultsData: fakeResultsData}
+            );
+            $httpBackend.when('GET', fakeApiUrl +
+                '/guidelines').respond(['2015.03.json', '2015.04.json']);
+            $httpBackend.when('GET', fakeApiUrl + '/products')
+                    .respond(200, fakeResultsData);
+            $httpBackend.when('GET', fakeApiUrl +
+                '/products/1234/versions').respond(fakeVersionResp);
+        }));
+
+        it('should be able to get product versions', function () {
+            ctrl.selectedProduct = {'id': '1234'};
+            ctrl.products = null;
+            $httpBackend.expectGET(fakeApiUrl + '/products/1234/versions')
+                .respond(200, fakeVersionResp);
+            ctrl.getProductVersions();
+            $httpBackend.flush();
+            expect(ctrl.productVersions).toEqual(fakeVersionResp);
+            var expected = {'id': 'ver2', 'version': null};
+            expect(ctrl.selectedVersion).toEqual(expected);
+        });
+
+        it('should have a method to save all changes made.', function () {
+            ctrl.metaCopy.target = 'platform';
+            ctrl.metaCopy.shared = 'true';
+            ctrl.selectedVersion = {'id': 'ver2', 'version': null};
+            ctrl.saveChanges();
+            // Only meta changed should send a POST request.
+            $httpBackend.expectPOST(
+                fakeApiUrl + '/results/some-id/meta/target',
+                'platform')
+                .respond(201, '');
+            $httpBackend.expectPOST(
+                fakeApiUrl + '/results/some-id/meta/shared',
+                'true')
+                .respond(201, '');
+            $httpBackend.expectPUT(fakeApiUrl + '/results/some-id',
+                {'product_version_id': 'ver2'})
+                .respond(201);
+            $httpBackend.flush();
+        });
     });
 
     describe('TestRaiseAlertModalController', function() {

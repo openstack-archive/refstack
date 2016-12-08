@@ -14,6 +14,12 @@
                 </a>
             </div>
             <hr>
+            <div ng-show="ctrl.isResultAdmin()">
+                <strong>Publicly Shared:</strong>
+                <span ng-if="ctrl.resultsData.meta.shared">Yes</span>
+                <span ng-if="!ctrl.resultsData.meta.shared">No</span>
+                <br />
+            </div>
             <div ng-show="ctrl.resultsData.product_version">
                 <strong>Product:</strong>
                 {{ctrl.resultsData.product_version.product_info.name}}
@@ -29,12 +35,16 @@
                 <strong>Associated Target Program:</strong>
                 {{ctrl.targetMappings[ctrl.resultsData.meta.target]}}
             </div>
+            <div ng-show="ctrl.resultsData.verification_status">
+                <strong>Verified:</strong>
+                <span class="yes">YES</span>
+            </div>
             <hr>
         </div>
+
         <div class="pull-right">
             <div ng-show="ctrl.isResultAdmin() && !ctrl.resultsData.verification_status">
-                <button class="btn btn-warning" ng-hide="ctrl.isShared()" ng-click="ctrl.shareTestRun(true)" confirm="Are you sure you want to share these test run results with the community?">Share</button>
-                <button class="btn btn-success" ng-show="ctrl.isShared()" ng-click="ctrl.shareTestRun(false)">Unshare</button>
+                <button class="btn btn-info" ng-click="ctrl.openEditTestModal()">Edit</button>
                 <button type="button" class="btn btn-danger" ng-click="ctrl.deleteTestRun()" confirm="Are you sure you want to delete these test run results?">Delete</button>
             </div>
             <div ng-show="ctrl.resultsData.user_role === 'foundation'">
@@ -112,8 +122,6 @@
                 <span ng-if="ctrl.nonFlagPassCount !== ctrl.totalNonFlagCount" class="no">NO</span>
             </strong>
         </p>
-        <p ng-if="ctrl.resultsData.verification_status"><strong>Verified:</strong>
-            <span class="yes">YES</span>
 
         <hr>
         <h4>Capability Overview</h4>
