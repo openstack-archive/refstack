@@ -13,3 +13,4 @@ requests>=2.2.0,!=2.4.0
 requests-cache>=0.4.9
 jsonschema>=2.0.0,<3.0.0
 PyMySQL>=0.6.2,!=0.6.4
+PyJWT>=1.0.1  # MIT

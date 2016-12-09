@@ -14,6 +14,7 @@
 #    under the License.
 
 """Refstack API's utils."""
+import binascii
 import copy
 import functools
 import random
@@ -21,11 +22,13 @@ import requests
 import string
 import types
 
+from Crypto.PublicKey import RSA
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import timeutils
 import pecan
 import pecan.rest
+import jwt
 import six
 from six.moves.urllib import parse
 
@@ -176,14 +179,26 @@ def get_user_session():
     return pecan.request.environ['beaker.session']
 
 
-def get_user_id():
+def get_token_data():
+    """Return dict with data encoded from token."""
+    return pecan.request.environ.get(const.JWT_TOKEN_ENV)
+
+
+def get_user_id(from_session=True, from_token=True):
     """Return authenticated user id."""
-    return get_user_session().get(const.USER_OPENID)
+    session = get_user_session()
+    token = get_token_data()
+    if from_session and session.get(const.USER_OPENID):
+        return session.get(const.USER_OPENID)
+    elif from_token and token:
+        return token.get(const.USER_OPENID)
 
 
-def get_user():
+def get_user(user_id=None):
     """Return db record for authenticated user."""
-    return db.user_get(get_user_id())
+    if not user_id:
+        user_id = get_user_id()
+    return db.user_get(user_id)
 
 
 def get_user_public_keys():
@@ -191,11 +206,12 @@ def get_user_public_keys():
     return db.get_user_pubkeys(get_user_id())
 
 
-def is_authenticated():
+def is_authenticated(by_session=True, by_token=True):
     """Return True if user is authenticated."""
-    if get_user_id():
+    user_id = get_user_id(from_session=by_session, from_token=by_token)
+    if user_id:
         try:
-            if get_user():
+            if get_user(user_id=user_id):
                 return True
         except db.NotFound:
             pass
@@ -345,3 +361,52 @@ def check_user_is_product_admin(product_id):
     product = db.get_product(product_id)
     vendor_id = product['organization_id']
     return check_user_is_vendor_admin(vendor_id)
+
+
+def decode_token(request):
+    """Validate request signature.
+
+    ValidationError rises if request is not valid.
+    """
+    if not request.headers.get(const.JWT_TOKEN_HEADER):
+        return
+    try:
+        auth_schema, token = request.headers.get(
+            const.JWT_TOKEN_HEADER).split(' ', 1)
+    except ValueError:
+        raise api_exc.ValidationError("Token is not valid")
+    if auth_schema != 'Bearer':
+        raise api_exc.ValidationError(
+            "Authorization schema 'Bearer' should be used")
+    try:
+        token_data = jwt.decode(token, algorithms='RS256', verify=False)
+    except jwt.InvalidTokenError:
+        raise api_exc.ValidationError("Token is not valid")
+
+    openid = token_data.get(const.USER_OPENID)
+    if not openid:
+        raise api_exc.ValidationError("Token does not contain user's openid")
+    pubkeys = db.get_user_pubkeys(openid)
+    for pubkey in pubkeys:
+        try:
+            pem_pubkey = RSA.importKey(
+                '%s %s' % (pubkey['format'], pubkey['pubkey'])
+            ).exportKey(format='PEM')
+        except (ValueError, IndexError, TypeError, binascii.Error):
+            pass
+        else:
+            try:
+                token_data = jwt.decode(
+                    token, key=pem_pubkey,
+                    options={'verify_signature': True,
+                             'verify_exp': True,
+                             'require_exp': True},
+                    leeway=const.JWT_VALIDATION_LEEWAY)
+                # NOTE(sslipushenko) If at least one key is valid, let
+                # the validation pass
+                return token_data
+            except jwt.InvalidTokenError:
+                pass
+
+    # NOTE(sslipushenko) If all user's keys are not valid, the validation fails
+    raise api_exc.ValidationError("Token is not valid")
