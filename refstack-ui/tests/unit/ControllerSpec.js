@@ -201,7 +201,7 @@ describe('Refstack controllers', function () {
             });
     });
 
-    describe('resultsController', function () {
+    describe('ResultsController', function () {
         var scope, ctrl;
         var fakeResponse = {
             'pagination': {'current_page': 1, 'total_pages': 2},
@@ -211,12 +211,17 @@ describe('Refstack controllers', function () {
                 'cpid': 'some-cpid'
             }]
         };
+        var fakeVendorResp = {
+            'vendors': [{'id': 'fakeid', 'name': 'Foo Vendor'}]
+        };
 
         beforeEach(inject(function ($rootScope, $controller) {
             scope = $rootScope.$new();
             ctrl = $controller('ResultsController', {$scope: scope});
             $httpBackend.when('GET', fakeApiUrl +
                 '/results?page=1').respond(fakeResponse);
+            $httpBackend.when('GET', fakeApiUrl +
+                '/vendors').respond(fakeVendorResp);
         }));
 
         it('should fetch the first page of results with proper URL args',
@@ -317,6 +322,16 @@ describe('Refstack controllers', function () {
                 $httpBackend.flush();
                 var expected = {'abc': {'id': 'abc', 'can_manage': true}};
                 expect(ctrl.products).toEqual(expected);
+            });
+
+        it('should have a function to get a listing of vendors',
+            function () {
+                $httpBackend.expectGET(fakeApiUrl + '/vendors')
+                    .respond(fakeVendorResp);
+                ctrl.getVendors();
+                $httpBackend.flush();
+                var expected = fakeVendorResp.vendors[0];
+                expect(ctrl.vendors.fakeid).toEqual(expected);
             });
 
         it('should have a function to associate a product version to a test',
