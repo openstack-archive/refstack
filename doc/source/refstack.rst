@@ -8,13 +8,9 @@ Ubuntu 14 and 16 LTS.
 Install API dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-``sudo apt-get install git python-dev libssl-dev python-setuptools build-essential libffi-dev``
+``sudo apt-get install git python-dev python-virtualenv libssl-dev build-essential libffi-dev``
 
 ``sudo apt-get install mysql-server python-mysqldb``
-
-``sudo easy_install -U pip``
-
-``sudo easy_install -U virtualenv``
 
 Install RefStack UI dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -67,6 +63,10 @@ Clone the repository
 **Source to virtual environment:**
 
 ``source .venv/bin/activate``
+
+**Update pip**
+
+``pip install -U pip``
 
 Install RefStack application
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
