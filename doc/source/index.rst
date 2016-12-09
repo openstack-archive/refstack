@@ -12,12 +12,14 @@ Overview
 --------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    README
    refstack
    run_in_docker
    uploading_private_results
+   vendor_product
+   test_result_management
 
 -----
 Specs
