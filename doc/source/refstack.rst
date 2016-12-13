@@ -68,6 +68,16 @@ Clone the repository
 
 ``pip install -U pip``
 
+**Install environment pre-requirements**
+
+# App server
+
+``pip install gunicorn==18``
+
+# python mysql connector
+
+``pip install PyMySQL>=0.6.2,!=0.6.4``
+
 Install RefStack application
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
