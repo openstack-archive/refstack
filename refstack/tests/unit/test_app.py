@@ -183,12 +183,13 @@ class SetupAppTestCase(base.BaseTestCase):
     @mock.patch('pecan.hooks')
     @mock.patch.object(app, 'JSONErrorHook')
     @mock.patch.object(app, 'CORSHook')
+    @mock.patch.object(app, 'JWTAuthHook')
     @mock.patch('os.path.join')
     @mock.patch('pecan.make_app')
     @mock.patch('refstack.api.app.SessionMiddleware')
     @mock.patch('refstack.api.utils.get_token', return_value='42')
     def test_setup_app(self, get_token, session_middleware, make_app, os_join,
-                       json_error_hook, cors_hook, pecan_hooks):
+                       auth_hook, json_error_hook, cors_hook, pecan_hooks):
 
         self.CONF.set_override('app_dev_mode',
                                True,
@@ -207,6 +208,7 @@ class SetupAppTestCase(base.BaseTestCase):
 
         json_error_hook.return_value = 'json_error_hook'
         cors_hook.return_value = 'cors_hook'
+        auth_hook.return_value = 'jwt_auth_hook'
         pecan_hooks.RequestViewerHook.return_value = 'request_viewer_hook'
         pecan_config = mock.Mock()
         pecan_config.app = {'root': 'fake_pecan_config'}
@@ -223,7 +225,8 @@ class SetupAppTestCase(base.BaseTestCase):
             debug=True,
             static_root='fake_static_root',
             template_path='fake_template_path',
-            hooks=['cors_hook', 'json_error_hook', 'request_viewer_hook']
+            hooks=['jwt_auth_hook', 'cors_hook', 'json_error_hook',
+                   'request_viewer_hook']
         )
         session_middleware.assert_called_once_with(
             'fake_app',

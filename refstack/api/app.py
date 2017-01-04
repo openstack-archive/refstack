@@ -28,6 +28,7 @@ import webob
 
 from refstack.api import exceptions as api_exc
 from refstack.api import utils as api_utils
+from refstack.api import constants as const
 from refstack import db
 
 LOG = log.getLogger(__name__)
@@ -188,6 +189,16 @@ class CORSHook(pecan.hooks.PecanHook):
             state.response.headers['Access-Control-Allow-Credentials'] = 'true'
 
 
+class JWTAuthHook(pecan.hooks.PecanHook):
+    """A pecan hook that handles authentication with JSON Web Tokens."""
+
+    def on_route(self, state):
+        """Check signature in request headers."""
+        token = api_utils.decode_token(state.request)
+        if token:
+            state.request.environ[const.JWT_TOKEN_ENV] = token
+
+
 def setup_app(config):
     """App factory."""
     # By default we expect path to oslo config file in environment variable
@@ -211,17 +222,19 @@ def setup_app(config):
 
     template_path = CONF.api.template_path % {'project_root': PROJECT_ROOT}
     static_root = CONF.api.static_root % {'project_root': PROJECT_ROOT}
-
     app_conf = dict(config.app)
     app = pecan.make_app(
         app_conf.pop('root'),
         debug=CONF.api.app_dev_mode,
         static_root=static_root,
         template_path=template_path,
-        hooks=[JSONErrorHook(), CORSHook(), pecan.hooks.RequestViewerHook(
-            {'items': ['status', 'method', 'controller', 'path', 'body']},
-            headers=False, writer=WritableLogger(LOG, logging.DEBUG)
-        )]
+        hooks=[
+            JWTAuthHook(), JSONErrorHook(), CORSHook(),
+            pecan.hooks.RequestViewerHook(
+                {'items': ['status', 'method', 'controller', 'path', 'body']},
+                headers=False, writer=WritableLogger(LOG, logging.DEBUG)
+            )
+        ]
     )
 
     beaker_conf = {

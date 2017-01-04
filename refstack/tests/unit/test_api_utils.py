@@ -14,12 +14,15 @@
 #    under the License.
 
 """Tests for API's utils"""
+import time
 
 import mock
 from oslo_config import fixture as config_fixture
 from oslo_utils import timeutils
 from oslotest import base
 from pecan import rest
+import jwt
+import six
 from six.moves.urllib import parse
 from webob import exc
 
@@ -27,6 +30,20 @@ from refstack.api import constants as const
 from refstack.api import exceptions as api_exc
 from refstack.api import utils as api_utils
 from refstack import db
+
+PRIV_KEY = '''-----BEGIN PRIVATE KEY-----
+MIIBVQIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEA2tgf+sqQ/aI7Cytr
+cpQYzbpOk1xy9GQP+kFN8ewIJgSLKX9bJf+7YqRuK8vsdtmPWVaLZtKTpPnXL0lM
+jMotYwIDAQABAkA1eKtPruEAZ/w/PWuygkcRNV1vmh4oYq6Yug4ed0qCZxPxkBNx
+0nnK9LeiWDnSCQ/Fi46y7XS6BLsbZ2wqGarJAiEA+r6oaDqFoScgl7KyQfkIY7ph
+bnlIxVm4HWCLwEH4020CIQDfbk76sO8NuUbSaU6tIAoF9jmtaSW7kMr8/7M+SISy
+DwIhAKsUaLzsqP4iPyehoeRHcMTyhsWkdNVJ+Mf6dn+Pw6ElAiEAnHFgW6gHulRA
+gpO5wv7sBcCiIgm9odeASiXAG5wrTYECIHKU0v03nQlGOL2HUognsEw/nihi/667
+pcPXhEWd4qmC
+-----END PRIVATE KEY-----'''
+
+PUB_KEY = ('AAAAB3NzaC1yc2EAAAADAQABAAAAQQDa2B/6ypD9ojsLK2tylBjNuk6TXH'
+           'L0ZA/6QU3x7AgmBIspf1sl/7tipG4ry+x22Y9ZVotm0pOk+dcvSUyMyi1j')
 
 
 class APIUtilsTestCase(base.BaseTestCase):
@@ -322,13 +339,25 @@ class APIUtilsTestCase(base.BaseTestCase):
 
     @mock.patch.object(api_utils, 'get_user_session')
     @mock.patch.object(api_utils, 'db')
-    def test_is_authenticated(self, mock_db, mock_get_user_session):
-        mock_session = mock.MagicMock(**{const.USER_OPENID: 'foo@bar.com'})
+    @mock.patch('pecan.request')
+    def test_is_authenticated(self, mock_request,
+                              mock_db, mock_get_user_session):
+        mock_request.headers = {}
+        mock_session = {const.USER_OPENID: 'foo@bar.com'}
         mock_get_user_session.return_value = mock_session
         mock_get_user = mock_db.user_get
-        mock_get_user.return_value = 'Dobby'
+        mock_get_user.return_value = 'FAKE_USER'
         self.assertTrue(api_utils.is_authenticated())
-        mock_db.user_get.called_once_with(mock_session)
+        mock_db.user_get.assert_called_once_with('foo@bar.com')
+
+        mock_request.environ = {
+            const.JWT_TOKEN_ENV: {const.USER_OPENID: 'foo@bar.com'}}
+        mock_get_user_session.return_value = {}
+        mock_get_user.reset_mock()
+        mock_get_user.return_value = 'FAKE_USER'
+        self.assertTrue(api_utils.is_authenticated())
+        mock_get_user.assert_called_once_with('foo@bar.com')
+
         mock_db.NotFound = db.NotFound
         mock_get_user.side_effect = mock_db.NotFound('User')
         self.assertFalse(api_utils.is_authenticated())
@@ -509,3 +538,42 @@ class APIUtilsTestCase(base.BaseTestCase):
         mock_db.return_value = ['another-user']
         result = api_utils.check_user_is_vendor_admin('some-vendor')
         self.assertFalse(result)
+
+    @mock.patch('refstack.db.get_user_pubkeys')
+    def test_encode_token(self, mock_pubkey):
+        mock_request = mock.MagicMock()
+        mock_request.headers = {}
+        self.assertIsNone(api_utils.decode_token(mock_request))
+
+        fake_token = jwt.encode({'foo': 'bar'}, key=PRIV_KEY,
+                                algorithm='RS256')
+        auth_str = 'Bearer %s' % six.text_type(fake_token, 'utf-8')
+        mock_request.headers = {const.JWT_TOKEN_HEADER: auth_str}
+        self.assertRaises(api_exc.ValidationError, api_utils.decode_token,
+                          mock_request)
+
+        fake_token = jwt.encode({const.USER_OPENID: 'oid'}, key=PRIV_KEY,
+                                algorithm='RS256')
+        auth_str = 'Bearer %s' % six.text_type(fake_token, 'utf-8')
+        mock_request.headers = {const.JWT_TOKEN_HEADER: auth_str}
+        mock_pubkey.return_value = [{'format': 'ssh-rsa',
+                                     'pubkey': 'fakepubkey'}]
+        self.assertRaises(api_exc.ValidationError, api_utils.decode_token,
+                          mock_request)
+
+        mock_pubkey.return_value = [{'format': 'ssh-rsa',
+                                     'pubkey': PUB_KEY}]
+        self.assertRaises(api_exc.ValidationError, api_utils.decode_token,
+                          mock_request)
+
+        fake_token = jwt.encode({const.USER_OPENID: 'oid',
+                                 'exp': int(time.time()) + 3600},
+                                key=PRIV_KEY,
+                                algorithm='RS256')
+        auth_str = 'Bearer %s' % six.text_type(fake_token, 'utf-8')
+        mock_request.headers = {const.JWT_TOKEN_HEADER: auth_str}
+        mock_pubkey.return_value = [{'format': 'ssh-rsa',
+                                     'pubkey': PUB_KEY}]
+        self.assertEqual('oid',
+                         api_utils.decode_token(
+                             mock_request)[const.USER_OPENID])
