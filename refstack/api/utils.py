@@ -342,25 +342,25 @@ def verify_openid_request(request):
     return True
 
 
-def check_user_is_foundation_admin():
+def check_user_is_foundation_admin(user_id=None):
     """Check is user in foundation group or not."""
-    user = get_user_id()
+    user = user_id if user_id else get_user_id()
     org_users = db.get_foundation_users()
     return user in org_users
 
 
-def check_user_is_vendor_admin(vendor_id):
+def check_user_is_vendor_admin(vendor_id, user_id=None):
     """Check is user in vendor group or not."""
-    user = get_user_id()
+    user = user_id if user_id else get_user_id()
     org_users = db.get_organization_users(vendor_id)
     return user in org_users
 
 
-def check_user_is_product_admin(product_id):
+def check_user_is_product_admin(product_id, user_id=None):
     """Check if the current user is in the vendor group for a product."""
     product = db.get_product(product_id)
     vendor_id = product['organization_id']
-    return check_user_is_vendor_admin(vendor_id)
+    return check_user_is_vendor_admin(vendor_id, user_id=user_id)
 
 
 def decode_token(request):

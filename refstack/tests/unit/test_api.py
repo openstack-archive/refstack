@@ -160,25 +160,34 @@ class ResultsControllerTestCase(BaseControllerTestCase):
         self.assertEqual(self.mock_response.status, 201)
         mock_store_results.assert_called_once_with({'answer': 42})
 
+    @mock.patch('refstack.api.utils.check_user_is_foundation_admin')
+    @mock.patch('refstack.api.utils.check_user_is_product_admin')
+    @mock.patch('refstack.db.get_product_version_by_cpid')
     @mock.patch('refstack.db.store_results')
     @mock.patch('refstack.db.get_pubkey')
-    def test_post_with_sign(self, mock_get_pubkey, mock_store_results):
-        self.mock_request.body = '{"answer": 42}'
+    def test_post_with_sign(self, mock_get_pubkey, mock_store_results,
+                            mock_get_version, mock_check, mock_foundation):
+        self.mock_request.body = '{"answer": 42, "cpid": "123"}'
         self.mock_request.headers = {
             'X-Signature': 'fake-sign',
             'X-Public-Key': 'ssh-rsa Zm9vIGJhcg=='
         }
 
         mock_get_pubkey.return_value.openid = 'fake_openid'
-
+        mock_get_version.return_value = [{'id': 'ver1',
+                                          'product_id': 'prod1'}]
+        mock_check.return_value = True
+        mock_foundation.return_value = False
         mock_store_results.return_value = 'fake_test_id'
         result = self.controller.post()
         self.assertEqual(result,
                          {'test_id': 'fake_test_id',
                           'url': self.test_results_url % 'fake_test_id'})
         self.assertEqual(self.mock_response.status, 201)
+        mock_check.assert_called_once_with('prod1', 'fake_openid')
         mock_store_results.assert_called_once_with(
-            {'answer': 42, 'meta': {const.USER: 'fake_openid'}}
+            {'answer': 42, 'cpid': '123', 'product_version_id': 'ver1',
+             'meta': {const.USER: 'fake_openid'}}
         )
 
     @mock.patch('refstack.db.get_test')

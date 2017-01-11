@@ -116,6 +116,7 @@ def store_results(results):
     test.id = test_id
     test.cpid = results.get('cpid')
     test.duration_seconds = results.get('duration_seconds')
+    test.product_version_id = results.get('product_version_id')
     session = get_session()
     with session.begin():
         for result in results.get('results', []):
@@ -666,6 +667,16 @@ def get_product_version(product_version_id, allowed_keys=None):
     )
     if version is None:
         raise NotFound('Version with id "%s" not found' % product_version_id)
+    return _to_dict(version, allowed_keys=allowed_keys)
+
+
+def get_product_version_by_cpid(cpid, allowed_keys=None):
+    """Get a product version given a cloud provider id."""
+    session = get_session()
+    version = (
+        session.query(models.ProductVersion)
+        .filter_by(cpid=cpid).all()
+    )
     return _to_dict(version, allowed_keys=allowed_keys)
 
 
