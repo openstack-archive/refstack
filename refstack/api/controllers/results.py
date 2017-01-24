@@ -149,6 +149,18 @@ class ResultsController(validation.BaseRestControllerWithValidation):
                                  'upload your key.')
 
             test_['meta'][const.USER] = pubkey.openid
+            if test.get('cpid'):
+                version = db.get_product_version_by_cpid(
+                    test['cpid'], allowed_keys=['id', 'product_id'])
+                # Only auto-associate if there is a single product version
+                # with the given cpid.
+                if len(version) == 1:
+                    is_foundation = api_utils.check_user_is_foundation_admin(
+                        pubkey.openid)
+                    is_product_admin = api_utils.check_user_is_product_admin(
+                        version[0]['product_id'], pubkey.openid)
+                    if is_foundation or is_product_admin:
+                        test_['product_version_id'] = version[0]['id']
         test_id = db.store_results(test_)
         return {'test_id': test_id,
                 'url': parse.urljoin(CONF.ui_url,

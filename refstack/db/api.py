@@ -269,6 +269,11 @@ def get_product_version(product_version_id, allowed_keys=None):
                                     allowed_keys=allowed_keys)
 
 
+def get_product_version_by_cpid(cpid, allowed_keys=None):
+    """Get a product version given a cloud provider id."""
+    return IMPL.get_product_version_by_cpid(cpid, allowed_keys=allowed_keys)
+
+
 def get_product_versions(product_id, allowed_keys=None):
     """Get all versions for a product."""
     return IMPL.get_product_versions(product_id, allowed_keys=allowed_keys)
