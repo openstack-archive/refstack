@@ -348,6 +348,13 @@
                 'passedFlagged': [],
                 'notPassedFlagged': []
             };
+
+            // For cases where a capability listed in components is not
+            // in the capabilities object.
+            if (!(capId in ctrl.guidelineData.capabilities)) {
+                return cap;
+            }
+
             // Loop through each test belonging to the capability.
             angular.forEach(ctrl.guidelineData.capabilities[capId].tests,
                 function (details, testId) {

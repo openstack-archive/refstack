@@ -554,6 +554,19 @@ describe('Refstack controllers', function () {
                 expect(ctrl.caps).toEqual(expectedCapsObject);
                 expect(ctrl.requiredPassPercent).toEqual(75);
                 expect(ctrl.nonFlagPassCount).toEqual(2);
+
+                // Test case where a component capability isn't listed in
+                // the capabilities object.
+                ctrl.guidelineData.components.compute.removed = ['fake_cap'];
+                ctrl.buildCapabilitiesObject();
+                expectedCapsObject.removed.caps = [{
+                    'id': 'fake_cap',
+                    'passedTests': [],
+                    'notPassedTests': [],
+                    'passedFlagged': [],
+                    'notPassedFlagged': []
+                }];
+                expect(ctrl.caps).toEqual(expectedCapsObject);
             });
 
         it('should have a method to determine if a test is flagged',
