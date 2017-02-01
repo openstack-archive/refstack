@@ -1423,6 +1423,17 @@ describe('Refstack controllers', function () {
                 ctrl.openVersionModal();
                 expect(modal.open).toHaveBeenCalled();
             });
+
+        it('should have a method to open a modal for product editing',
+            function () {
+                var modal;
+                inject(function ($uibModal) {
+                    modal = $uibModal;
+                });
+                spyOn(modal, 'open');
+                ctrl.openProductEditModal();
+                expect(modal.open).toHaveBeenCalled();
+            });
     });
 
     describe('ProductVersionModalController', function() {
@@ -1461,6 +1472,56 @@ describe('Refstack controllers', function () {
                     expectedContent).respond(200, '');
                 ctrl.saveChanges();
                 $httpBackend.flush();
+            });
+    });
+
+    describe('ProductEditModalController', function() {
+        var ctrl, modalInstance, state;
+        var fakeProduct = {'name': 'Foo', 'description': 'Bar', 'id': '1234',
+                          'properties': {'key1': 'value1'}};
+
+        beforeEach(inject(function ($controller) {
+            modalInstance = {
+                dismiss: jasmine.createSpy('modalInstance.dismiss')
+            };
+            state = {
+                reload: jasmine.createSpy('state.reload')
+            };
+            ctrl = $controller('ProductEditModalController',
+                {$uibModalInstance: modalInstance, $state: state,
+                 product: fakeProduct}
+            );
+        }));
+
+        it('should be able to add/remove properties',
+            function () {
+                var expected = [{'key': 'key1', 'value': 'value1'}];
+                expect(ctrl.productProperties).toEqual(expected);
+                ctrl.removeProperty(0);
+                expect(ctrl.productProperties).toEqual([]);
+                ctrl.addField();
+                expected = [{'key': '', 'value': ''}];
+                expect(ctrl.productProperties).toEqual(expected);
+            });
+
+        it('should have a function to save changes',
+            function () {
+                var expectedContent = {
+                    'name': 'Foo1', 'description': 'Bar',
+                    'properties': {'key1': 'value1'}
+                };
+                $httpBackend.expectPUT(
+                    fakeApiUrl + '/products/1234', expectedContent)
+                    .respond(200, '');
+                ctrl.product.name = 'Foo1';
+                ctrl.saveChanges();
+                $httpBackend.flush();
+            });
+
+        it('should have a function to exit the modal',
+            function () {
+                ctrl.close();
+                expect(modalInstance.dismiss).toHaveBeenCalledWith('exit');
             });
     });
 });

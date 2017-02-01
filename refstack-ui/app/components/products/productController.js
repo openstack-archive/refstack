@@ -44,6 +44,7 @@
         ctrl.addProductVersion = addProductVersion;
         ctrl.unassociateTest = unassociateTest;
         ctrl.openVersionModal = openVersionModal;
+        ctrl.openProductEditModal = openProductEditModal;
 
         /** The product id extracted from the URL route. */
         ctrl.id = $stateParams.id;
@@ -79,7 +80,7 @@
             ctrl.productRequest = $http.get(content_url).success(
                 function(data) {
                     ctrl.product = data;
-                    ctrl.product_properties =
+                    ctrl.productProperties =
                         angular.fromJson(data.properties);
                 }
             ).error(function(error) {
@@ -196,7 +197,7 @@
             $http.put(url, {public: !ctrl.product.public}).success(
                 function (data) {
                     ctrl.product = data;
-                    ctrl.product_properties = angular.fromJson(data.properties);
+                    ctrl.productProperties = angular.fromJson(data.properties);
                 }).error(function (error) {
                     raiseAlert('danger', 'Error: ', error.detail);
                 });
@@ -292,6 +293,28 @@
                 }
             });
         }
+
+        /**
+         * This will open the modal that will allow product details
+         * to be edited.
+         */
+        function openProductEditModal() {
+            $uibModal.open({
+                templateUrl: '/components/products/partials' +
+                        '/productEditModal.html',
+                backdrop: true,
+                windowClass: 'modal',
+                animation: true,
+                controller: 'ProductEditModalController as modal',
+                size: 'lg',
+                resolve: {
+                    product: function () {
+                        return ctrl.product;
+                    }
+                }
+            });
+
+        }
     }
 
     angular
@@ -353,5 +376,108 @@
             });
         }
 
+    }
+
+    angular
+        .module('refstackApp')
+        .controller('ProductEditModalController', ProductEditModalController);
+
+    ProductEditModalController.$inject = [
+        '$uibModalInstance', '$http', '$state', 'product', 'refstackApiUrl'
+    ];
+
+    /**
+     * Product Edit Modal Controller
+     * This controls the modal that allows editing a product.
+     */
+    function ProductEditModalController($uibModalInstance, $http,
+        $state, product, refstackApiUrl) {
+
+        var ctrl = this;
+
+        ctrl.close = close;
+        ctrl.addField = addField;
+        ctrl.saveChanges = saveChanges;
+        ctrl.removeProperty = removeProperty;
+
+        ctrl.product = product;
+        ctrl.productName = product.name;
+        ctrl.productProperties = [];
+
+        parseProductProperties();
+
+        /**
+         * Close the product edit modal.
+         */
+        function close() {
+            $uibModalInstance.dismiss('exit');
+        }
+
+        /**
+         * Push a blank property key-value pair into the productProperties
+         * array. This will spawn new input boxes.
+         */
+        function addField() {
+            ctrl.productProperties.push({'key': '', 'value': ''});
+        }
+
+        /**
+         * Send a PUT request to the server with the changes.
+         */
+        function saveChanges() {
+            ctrl.showError = false;
+            ctrl.showSuccess = false;
+            var url = [refstackApiUrl, '/products/', ctrl.product.id].join('');
+            var properties = propertiesToJson();
+            var content = {'description': ctrl.product.description,
+                           'properties': properties};
+            if (ctrl.productName != ctrl.product.name) {
+                content.name = ctrl.product.name;
+            }
+            $http.put(url, content).success(function() {
+                ctrl.showSuccess = true;
+                $state.reload();
+            }).error(function(error) {
+                ctrl.showError = true;
+                ctrl.error = error.detail;
+            });
+        }
+
+        /**
+         * Remove a property from the productProperties array at the given
+         * index.
+         */
+        function removeProperty(index) {
+            ctrl.productProperties.splice(index, 1);
+        }
+
+        /**
+         * Parse the product properties and put them in a format more suitable
+         * for forms.
+         */
+        function parseProductProperties() {
+            var props = angular.fromJson(ctrl.product.properties);
+            angular.forEach(props, function(value, key) {
+                ctrl.productProperties.push({'key': key, 'value': value});
+            });
+        }
+
+        /**
+         * Convert the list of property objects to a dict containing the
+         * each key-value pair.
+         */
+        function propertiesToJson() {
+            if (!ctrl.productProperties.length) {
+                return null;
+            }
+            var properties = {};
+            for (var i = 0, len = ctrl.productProperties.length; i < len; i++) {
+                var prop = ctrl.productProperties[i];
+                if (prop.key && prop.value) {
+                    properties[prop.key] = prop.value;
+                }
+            }
+            return properties;
+        }
     }
 })();

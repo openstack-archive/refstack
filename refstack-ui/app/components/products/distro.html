@@ -8,8 +8,15 @@
                 <strong>Product ID:</strong> {{ctrl.id}}<br />
                 <strong>Description:</strong> {{ctrl.product.description}}<br />
                 <strong>Publicity:</strong> {{ctrl.product.public ? 'Public' : 'Private'}}<br />
-                <strong>Vendor Name:</strong> {{ctrl.vendor.name}}<br />
-                <strong>Vendor Description:</strong> {{ctrl.vendor.description || '-'}}<br />
+                <strong>Vendor Name:</strong> <a ui-sref="vendor({vendorID: ctrl.vendor.id})">{{ctrl.vendor.name}}</a><br />
+                <div ng-if="ctrl.productProperties">
+                    <strong>Properties:</strong>
+                    <ul>
+                        <li ng-repeat="(key, value) in ctrl.productProperties">
+                            <em>{{key}}</em>: {{value}}
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
         <div ng-include src="'components/products/partials/management.html'"></div>
