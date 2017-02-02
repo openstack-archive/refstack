@@ -182,6 +182,8 @@
          * This will add new Product record.
          */
         function addProduct() {
+            ctrl.showSuccess = false;
+            ctrl.showError = false;
             var url = refstackApiUrl + '/products';
             var data = {
                 name: ctrl.name,
@@ -189,10 +191,12 @@
                 organization_id: ctrl.organizationId,
                 product_type: parseInt(ctrl.productType)
             };
-            ctrl.name = '';
-            ctrl.description = '';
             $http.post(url, data).success(function (data) {
                 ctrl.rawData = null;
+                ctrl.showSuccess = true;
+                ctrl.name = '';
+                ctrl.description = '';
+                ctrl.productType = null;
                 ctrl.update();
             }).error(function (error) {
                 ctrl.showError = true;
