@@ -141,14 +141,17 @@
          * This will add a new vendor record.
          */
         function addVendor() {
+            ctrl.showSuccess = false;
+            ctrl.showError = false;
             var url = refstackApiUrl + '/vendors';
             var data = {
                 name: ctrl.name,
                 description: ctrl.description
             };
-            ctrl.name = '';
-            ctrl.description = '';
             $http.post(url, data).success(function (data) {
+                ctrl.showSuccess = true;
+                ctrl.name = '';
+                ctrl.description = '';
                 ctrl.rawData = null;
                 ctrl.update();
             }).error(function (error) {

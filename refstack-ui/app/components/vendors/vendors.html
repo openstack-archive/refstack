@@ -35,7 +35,7 @@
 
 <div ng-if="ctrl.isUserVendors">
     <hr />
-    <h4>Add new vendor</h4>
+    <h4>Add New Vendor</h4>
     <p>Creating a vendor allows you to associate test results to specific vendors/products.
        Created vendors are private, but vendors can be registered with the Foundation to become public and official.
        This will require approval by a Foundation administrator.</p>
@@ -58,7 +58,13 @@
             <button type="submit" class="btn btn-primary" ng-click="ctrl.addVendor()">Add Vendor</button>
         </div>
     </div>
+    <div ng-show="ctrl.showSuccess" class="alert alert-success" role="success">
+            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+            <span class="sr-only">Success:</span>
+            Vendor successfully created.
+    </div>
 </div>
+<hr />
 
 <div cg-busy="{promise:ctrl.vendorsRequest,message:'Loading'}"></div>
 
