@@ -1,4 +1,9 @@
 <div class="pull-right">
+    <a ng-ig="ctrl.product.can_manage"
+       href="javascript:void(0)"
+       ng-click="ctrl.openProductEditModal()">
+       Edit
+    </a><br />
     <a ng-if="ctrl.product.can_manage"
        href="javascript:void(0)"
        ng-click="ctrl.deleteProduct()"
