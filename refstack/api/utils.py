@@ -22,7 +22,8 @@ import requests
 import string
 import types
 
-from Crypto.PublicKey import RSA
+from cryptography.hazmat import backends
+from cryptography.hazmat.primitives import serialization
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import timeutils
@@ -389,9 +390,14 @@ def decode_token(request):
     pubkeys = db.get_user_pubkeys(openid)
     for pubkey in pubkeys:
         try:
-            pem_pubkey = RSA.importKey(
-                '%s %s' % (pubkey['format'], pubkey['pubkey'])
-            ).exportKey(format='PEM')
+            pubkey_string = '%s %s' % (pubkey['format'], pubkey['pubkey'])
+            pubkey_obj = serialization.load_ssh_public_key(
+                pubkey_string.encode('utf-8'),
+                backend=backends.default_backend()
+            )
+            pem_pubkey = pubkey_obj.public_bytes(
+                serialization.Encoding.PEM,
+                serialization.PublicFormat.SubjectPublicKeyInfo)
         except (ValueError, IndexError, TypeError, binascii.Error):
             pass
         else:

@@ -15,9 +15,11 @@
 import binascii
 import json
 
-from Crypto.Hash import SHA256
-from Crypto.PublicKey import RSA
-from Crypto.Signature import PKCS1_v1_5
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import serialization
 import mock
 import webtest.app
 
@@ -49,12 +51,18 @@ class TestProfileEndpoint(api.FunctionalTest):
     def test_pubkeys(self, mock_get_user):
         """Test '/v1/profile/pubkeys' API endpoint."""
         url = self.URL + 'pubkeys'
-        data_hash = SHA256.new()
-        data_hash.update('signature'.encode('utf-8'))
-        key = RSA.generate(1024)
-        signer = PKCS1_v1_5.new(key)
-        sign = signer.sign(data_hash)
-        pubkey = key.publickey().exportKey('OpenSSH')
+        key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=1024,
+            backend=default_backend()
+        )
+        signer = key.signer(padding.PKCS1v15(), hashes.SHA256())
+        signer.update('signature'.encode('utf-8'))
+        sign = signer.finalize()
+        pubkey = key.public_key().public_bytes(
+            serialization.Encoding.OpenSSH,
+            serialization.PublicFormat.OpenSSH
+        )
         body = {'raw_key': pubkey,
                 'self_signature': binascii.b2a_hex(sign)}
         json_params = json.dumps(body)

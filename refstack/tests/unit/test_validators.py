@@ -17,13 +17,15 @@
 import binascii
 import json
 
-from Crypto.Hash import SHA256
-from Crypto.PublicKey import RSA
-from Crypto.Signature import PKCS1_v1_5
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import serialization
+
 import jsonschema
 import mock
 from oslotest import base
-import six
 
 from refstack.api import exceptions as api_exc
 from refstack.api import validators
@@ -102,18 +104,24 @@ class TestResultValidatorTestCase(base.BaseTestCase):
                                                   self.validator.schema)
 
     def test_validation_with_signature(self):
-        if six.PY3:
-            self.skip('https://github.com/dlitz/pycrypto/issues/99')
         request = mock.Mock()
         request.body = json.dumps(self.FAKE_JSON)
-        data_hash = SHA256.new()
-        data_hash.update(request.body.encode('utf-8'))
-        key = RSA.generate(1024)
-        signer = PKCS1_v1_5.new(key)
-        sign = signer.sign(data_hash)
+
+        key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=1024,
+            backend=default_backend()
+        )
+        signer = key.signer(padding.PKCS1v15(), hashes.SHA256())
+        signer.update(request.body.encode('utf-8'))
+        sign = signer.finalize()
+        pubkey = key.public_key().public_bytes(
+            serialization.Encoding.OpenSSH,
+            serialization.PublicFormat.OpenSSH
+        )
         request.headers = {
             'X-Signature': binascii.b2a_hex(sign),
-            'X-Public-Key': key.publickey().exportKey('OpenSSH')
+            'X-Public-Key': pubkey
         }
         self.validator.validate(request)
 
@@ -150,23 +158,25 @@ class TestResultValidatorTestCase(base.BaseTestCase):
 
     @mock.patch('jsonschema.validate')
     def test_validation_with_broken_signature(self, mock_validate):
-        if six.PY3:
-            self.skip('https://github.com/dlitz/pycrypto/issues/99')
 
         request = mock.Mock()
         request.body = json.dumps(self.FAKE_JSON)
-        key = RSA.generate(2048)
+        key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+            backend=default_backend()
+        )
+        pubkey = key.public_key().public_bytes(
+            serialization.Encoding.OpenSSH,
+            serialization.PublicFormat.OpenSSH
+        )
         request.headers = {
-            'X-Signature': binascii.b2a_hex('fake_sign'.encode('utf-8')),
-            'X-Public-Key': key.publickey().exportKey('OpenSSH')
+            'X-Signature': binascii.b2a_hex(b'fake_sign'),
+            'X-Public-Key': pubkey
         }
         self.assertRaises(api_exc.ValidationError,
                           self.validator.validate,
                           request)
-        request.headers = {
-            'X-Signature': binascii.b2a_hex('fake_sign'.encode('utf-8')),
-            'X-Public-Key': key.publickey().exportKey('OpenSSH')
-        }
         try:
             self.validator.validate(request)
         except api_exc.ValidationError as e:
@@ -175,16 +185,16 @@ class TestResultValidatorTestCase(base.BaseTestCase):
 
         request.headers = {
             'X-Signature': 'z-z-z-z!!!',
-            'X-Public-Key': key.publickey().exportKey('OpenSSH')
+            'X-Public-Key': pubkey
         }
         try:
             self.validator.validate(request)
         except api_exc.ValidationError as e:
-            self.assertIsInstance(e.exc, TypeError)
+            self.assertEqual(e.title, 'Malformed signature')
 
         request.headers = {
-            'X-Signature': binascii.b2a_hex('fake_sign'),
-            'X-Public-Key': 'H--0'
+            'X-Signature': binascii.b2a_hex(b'fake_sign'),
+            'X-Public-Key': b'H--0'
         }
         try:
             self.validator.validate(request)
@@ -213,8 +223,6 @@ class PubkeyValidatorTestCase(base.BaseTestCase):
         self.validator = validators.PubkeyValidator()
 
     def test_validation(self):
-        if six.PY3:
-            self.skip('https://github.com/dlitz/pycrypto/issues/99')
         request = mock.Mock()
         request.body = json.dumps(self.FAKE_JSON)
         self.validator.validate(request)
@@ -245,8 +253,6 @@ class PubkeyValidatorTestCase(base.BaseTestCase):
 
     @mock.patch('jsonschema.validate')
     def test_validation_with_broken_signature(self, mock_validate):
-        if six.PY3:
-            self.skip('https://github.com/dlitz/pycrypto/issues/99')
         body = self.FAKE_JSON.copy()
         body['self_signature'] = 'deadbeef'
 

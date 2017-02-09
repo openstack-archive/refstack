@@ -21,9 +21,11 @@ import uuid
 
 import json
 import jsonschema
-from Crypto.Hash import SHA256
-from Crypto.PublicKey import RSA
-from Crypto.Signature import PKCS1_v1_5
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat import backends
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.serialization import load_ssh_public_key
 
 from refstack.api import exceptions as api_exc
 
@@ -125,13 +127,18 @@ class TestResultValidator(BaseValidator):
                 raise api_exc.ValidationError('Malformed signature', e)
 
             try:
-                key = RSA.importKey(request.headers.get('X-Public-Key', ''))
+                key = load_ssh_public_key(
+                    request.headers.get('X-Public-Key', ''),
+                    backend=backends.default_backend()
+                )
             except (binascii.Error, ValueError) as e:
                 raise api_exc.ValidationError('Malformed public key', e)
-            signer = PKCS1_v1_5.new(key)
-            data_hash = SHA256.new()
-            data_hash.update(request.body.encode('utf-8'))
-            if not signer.verify(data_hash, sign):
+
+            verifier = key.verifier(sign, padding.PKCS1v15(), hashes.SHA256())
+            verifier.update(request.body.encode('utf-8'))
+            try:
+                verifier.verify()
+            except InvalidSignature:
                 raise api_exc.ValidationError('Signature verification failed')
         if self._is_empty_result(request):
             raise api_exc.ValidationError('Uploaded results must contain at '
@@ -179,13 +186,16 @@ class PubkeyValidator(BaseValidator):
             raise api_exc.ValidationError('Malformed signature', e)
 
         try:
-            key = RSA.importKey(body['raw_key'])
+            key = load_ssh_public_key(body['raw_key'].encode('utf-8'),
+                                      backend=backends.default_backend())
         except (binascii.Error, ValueError) as e:
             raise api_exc.ValidationError('Malformed public key', e)
-        signer = PKCS1_v1_5.new(key)
-        data_hash = SHA256.new()
-        data_hash.update('signature'.encode('utf-8'))
-        if not signer.verify(data_hash, sign):
+
+        verifier = key.verifier(sign, padding.PKCS1v15(), hashes.SHA256())
+        verifier.update('signature'.encode('utf-8'))
+        try:
+            verifier.verify()
+        except InvalidSignature:
             raise api_exc.ValidationError('Signature verification failed')
 
 
