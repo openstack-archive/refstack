@@ -79,8 +79,10 @@ class VersionsController(validation.BaseRestControllerWithValidation):
 
         creator = api_utils.get_user_id()
         pecan.response.status = 201
+        allowed_keys = ['id', 'product_id', 'version', 'cpid']
         return db.add_product_version(self.product_id, version_info['version'],
-                                      creator, version_info.get('cpid'))
+                                      creator, version_info.get('cpid'),
+                                      allowed_keys)
 
     @secure(api_utils.is_authenticated)
     @pecan.expose('json', method='PUT')

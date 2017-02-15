@@ -336,7 +336,7 @@
 
         var ctrl = this;
 
-        ctrl.version = version;
+        ctrl.version = angular.copy(version);
         ctrl.parent = parent;
 
         ctrl.close = close;
@@ -369,6 +369,8 @@
                 '/versions/', ctrl.version.id ].join('');
             var content = {'cpid': ctrl.version.cpid};
             $http.put(url, content).success(function() {
+                // Update the original version object.
+                version.cpid = ctrl.version.cpid;
                 ctrl.showSuccess = true;
             }).error(function(error) {
                 ctrl.showError = true;
@@ -400,7 +402,7 @@
         ctrl.saveChanges = saveChanges;
         ctrl.removeProperty = removeProperty;
 
-        ctrl.product = product;
+        ctrl.product = angular.copy(product);
         ctrl.productName = product.name;
         ctrl.productProperties = [];
 

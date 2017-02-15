@@ -267,7 +267,7 @@
         ctrl.saveChanges = saveChanges;
         ctrl.removeProperty = removeProperty;
 
-        ctrl.vendor = vendor;
+        ctrl.vendor = angular.copy(vendor);
         ctrl.vendorName = vendor.name;
         ctrl.vendorProperties = [];
         ctrl.isAdmin = $rootScope.auth.currentUser.is_admin;
