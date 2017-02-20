@@ -112,6 +112,14 @@
             ctrl.productVersionsRequest = $http.get(content_url).success(
                 function(data) {
                     ctrl.productVersions = data;
+
+                    // Determine the null version.
+                    for (var i = 0; i < data.length; i++) {
+                        if (data[i].version === null) {
+                            ctrl.nullVersion = data[i];
+                            break;
+                        }
+                    }
                 }
             ).error(function(error) {
                 ctrl.showError = true;
@@ -310,6 +318,9 @@
                 resolve: {
                     product: function () {
                         return ctrl.product;
+                    },
+                    version: function () {
+                        return ctrl.nullVersion;
                     }
                 }
             });
@@ -385,7 +396,8 @@
         .controller('ProductEditModalController', ProductEditModalController);
 
     ProductEditModalController.$inject = [
-        '$uibModalInstance', '$http', '$state', 'product', 'refstackApiUrl'
+        '$uibModalInstance', '$http', '$state', 'product',
+        'version', 'refstackApiUrl'
     ];
 
     /**
@@ -393,7 +405,7 @@
      * This controls the modal that allows editing a product.
      */
     function ProductEditModalController($uibModalInstance, $http,
-        $state, product, refstackApiUrl) {
+        $state, product, version, refstackApiUrl) {
 
         var ctrl = this;
 
@@ -405,6 +417,8 @@
         ctrl.product = angular.copy(product);
         ctrl.productName = product.name;
         ctrl.productProperties = [];
+        ctrl.productVersion = angular.copy(version);
+        ctrl.originalCpid = version ? version.cpid : null;
 
         parseProductProperties();
 
@@ -436,9 +450,29 @@
             if (ctrl.productName != ctrl.product.name) {
                 content.name = ctrl.product.name;
             }
+
+            // Request for product detail updating.
             $http.put(url, content).success(function() {
-                ctrl.showSuccess = true;
-                $state.reload();
+
+                // Request for product version CPID update if it has changed.
+                if (ctrl.productVersion &&
+                    ctrl.originalCpid !== ctrl.productVersion.cpid) {
+
+                    url = url + '/versions/' + ctrl.productVersion.id;
+                    content = {'cpid': ctrl.productVersion.cpid};
+                    $http.put(url, content).success(function() {
+                        ctrl.showSuccess = true;
+                        ctrl.originalCpid = ctrl.productVersion.cpid;
+                        $state.reload();
+                    }).error(function(error) {
+                        ctrl.showError = true;
+                        ctrl.error = error.detail;
+                    });
+                }
+                else {
+                    ctrl.showSuccess = true;
+                    $state.reload();
+                }
             }).error(function(error) {
                 ctrl.showError = true;
                 ctrl.error = error.detail;

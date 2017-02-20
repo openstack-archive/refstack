@@ -1478,7 +1478,9 @@ describe('Refstack controllers', function () {
     describe('ProductEditModalController', function() {
         var ctrl, modalInstance, state;
         var fakeProduct = {'name': 'Foo', 'description': 'Bar', 'id': '1234',
-                          'properties': {'key1': 'value1'}};
+                           'properties': {'key1': 'value1'}};
+        var fakeVersion = {'version': null, 'product_id': '1234',
+                           'cpid': null, 'id': 'asdf'};
 
         beforeEach(inject(function ($controller) {
             modalInstance = {
@@ -1489,7 +1491,8 @@ describe('Refstack controllers', function () {
             };
             ctrl = $controller('ProductEditModalController',
                 {$uibModalInstance: modalInstance, $state: state,
-                 product: fakeProduct}
+                 product: fakeProduct,
+                 version: fakeVersion}
             );
         }));
 
@@ -1510,9 +1513,14 @@ describe('Refstack controllers', function () {
                     'name': 'Foo1', 'description': 'Bar',
                     'properties': {'key1': 'value1'}
                 };
+                var verContent = {'cpid': 'abc'};
                 $httpBackend.expectPUT(
                     fakeApiUrl + '/products/1234', expectedContent)
                     .respond(200, '');
+                $httpBackend.expectPUT(
+                    fakeApiUrl + '/products/1234/versions/asdf', verContent)
+                    .respond(200, '');
+                ctrl.productVersion.cpid = 'abc';
                 ctrl.product.name = 'Foo1';
                 ctrl.saveChanges();
                 $httpBackend.flush();

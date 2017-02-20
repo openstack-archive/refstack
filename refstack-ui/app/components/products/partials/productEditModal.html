@@ -42,6 +42,20 @@
                 </div>
             </div>
             <div><small><a ng-click="modal.addField()"><span class="glyphicon glyphicon-plus"></span>&nbsp;Add new property</a></small></div>
+            <br />
+            <div ng-if="modal.productVersion.id">
+                <label for="name">Product CPID</label>
+                <small>
+                    <span class="text-muted glyphicon glyphicon-info-sign"
+                          title="You can optionally associate a cloud provider ID to this product. This is used to automatically associate uploaded test results to the product.">
+                    </span>
+                </small>
+                <input type="text"
+                       class="form-control"
+                       id="cpid"
+                       ng-model="modal.productVersion.cpid">
+                <br />
+            </div>
         </div>
         <div ng-show="modal.showError" class="alert alert-danger" role="alert">
             <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>

@@ -7,6 +7,7 @@
                 <strong>Name:</strong> {{ctrl.product.name}}<br />
                 <strong>Product ID:</strong> {{ctrl.id}}<br />
                 <strong>Description:</strong> {{ctrl.product.description}}<br />
+                <span ng-if="ctrl.nullVersion.cpid"><strong>CPID:</strong> {{ctrl.nullVersion.cpid}}<br /></span>
                 <strong>Publicity:</strong> {{ctrl.product.public ? 'Public' : 'Private'}}<br />
                 <strong>Vendor Name:</strong> <a ui-sref="vendor({vendorID: ctrl.vendor.id})">{{ctrl.vendor.name}}</a><br />
                 <div ng-if="ctrl.productProperties">
