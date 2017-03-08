@@ -166,12 +166,11 @@ class VendorsController(validation.BaseRestControllerWithValidation):
                     if _id not in result:
                         result[_id] = vendor
                     result[_id]['can_manage'] = True
-                vendors = result.values()
+                vendors = list(result.values())
         except Exception as ex:
             LOG.exception('An error occurred during '
                           'operation with database: %s' % ex)
             pecan.abort(400)
-
         return {'vendors': vendors}
 
     @pecan.expose('json')

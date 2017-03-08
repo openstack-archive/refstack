@@ -176,7 +176,7 @@ class ProductsController(validation.BaseRestControllerWithValidation):
                     if _id not in result:
                         result[_id] = s
                     result[_id]['can_manage'] = True
-                products = result.values()
+                products = list(result.values())
         except Exception as ex:
             LOG.exception('An error occurred during '
                           'operation with database: %s' % ex)
@@ -201,7 +201,7 @@ class ProductsController(validation.BaseRestControllerWithValidation):
         if not is_admin:
             admin_only_keys = ['created_by_user', 'created_at', 'updated_at',
                                'properties']
-            for key in product.keys():
+            for key in list(product):
                 if key in admin_only_keys:
                     product.pop(key)
 

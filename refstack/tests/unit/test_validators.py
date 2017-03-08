@@ -97,7 +97,7 @@ class TestResultValidatorTestCase(base.BaseTestCase):
     def test_validation(self):
         with mock.patch('jsonschema.validate') as mock_validate:
             request = mock.Mock()
-            request.body = json.dumps(self.FAKE_JSON)
+            request.body = json.dumps(self.FAKE_JSON).encode('utf-8')
             request.headers = {}
             self.validator.validate(request)
             mock_validate.assert_called_once_with(self.FAKE_JSON,
@@ -105,7 +105,7 @@ class TestResultValidatorTestCase(base.BaseTestCase):
 
     def test_validation_with_signature(self):
         request = mock.Mock()
-        request.body = json.dumps(self.FAKE_JSON)
+        request.body = json.dumps(self.FAKE_JSON).encode('utf-8')
 
         key = rsa.generate_private_key(
             public_exponent=65537,
@@ -113,7 +113,7 @@ class TestResultValidatorTestCase(base.BaseTestCase):
             backend=default_backend()
         )
         signer = key.signer(padding.PKCS1v15(), hashes.SHA256())
-        signer.update(request.body.encode('utf-8'))
+        signer.update(request.body)
         sign = signer.finalize()
         pubkey = key.public_key().public_bytes(
             serialization.Encoding.OpenSSH,
@@ -127,7 +127,7 @@ class TestResultValidatorTestCase(base.BaseTestCase):
 
     def test_validation_fail_no_json(self):
         wrong_request = mock.Mock()
-        wrong_request.body = 'foo'
+        wrong_request.body = b'foo'
         self.assertRaises(api_exc.ValidationError,
                           self.validator.validate,
                           wrong_request)
@@ -140,7 +140,7 @@ class TestResultValidatorTestCase(base.BaseTestCase):
         wrong_request = mock.Mock()
         wrong_request.body = json.dumps({
             'foo': 'bar'
-        })
+        }).encode('utf-8')
         self.assertRaises(api_exc.ValidationError,
                           self.validator.validate,
                           wrong_request)
@@ -151,7 +151,9 @@ class TestResultValidatorTestCase(base.BaseTestCase):
 
     def test_validation_fail_with_empty_result(self):
         wrong_request = mock.Mock()
-        wrong_request.body = json.dumps(self.FAKE_JSON_WITH_EMPTY_RESULTS)
+        wrong_request.body = json.dumps(
+            self.FAKE_JSON_WITH_EMPTY_RESULTS
+        ).encode('utf-8')
         self.assertRaises(api_exc.ValidationError,
                           self.validator.validate,
                           wrong_request)
@@ -160,7 +162,7 @@ class TestResultValidatorTestCase(base.BaseTestCase):
     def test_validation_with_broken_signature(self, mock_validate):
 
         request = mock.Mock()
-        request.body = json.dumps(self.FAKE_JSON)
+        request.body = json.dumps(self.FAKE_JSON).encode('utf-8')
         key = rsa.generate_private_key(
             public_exponent=65537,
             key_size=2048,
@@ -224,12 +226,12 @@ class PubkeyValidatorTestCase(base.BaseTestCase):
 
     def test_validation(self):
         request = mock.Mock()
-        request.body = json.dumps(self.FAKE_JSON)
+        request.body = json.dumps(self.FAKE_JSON).encode('utf-8')
         self.validator.validate(request)
 
     def test_validation_fail_no_json(self):
         wrong_request = mock.Mock()
-        wrong_request.body = 'foo'
+        wrong_request.body = b'foo'
         self.assertRaises(api_exc.ValidationError,
                           self.validator.validate,
                           wrong_request)
@@ -242,7 +244,7 @@ class PubkeyValidatorTestCase(base.BaseTestCase):
         wrong_request = mock.Mock()
         wrong_request.body = json.dumps({
             'foo': 'bar'
-        })
+        }).encode('utf-8')
         self.assertRaises(api_exc.ValidationError,
                           self.validator.validate,
                           wrong_request)
@@ -257,7 +259,7 @@ class PubkeyValidatorTestCase(base.BaseTestCase):
         body['self_signature'] = 'deadbeef'
 
         request = mock.Mock()
-        request.body = json.dumps(body)
+        request.body = json.dumps(body).encode('utf-8')
         try:
             self.validator.validate(request)
         except api_exc.ValidationError as e:
@@ -269,7 +271,7 @@ class PubkeyValidatorTestCase(base.BaseTestCase):
             'self_signature': 'deadbeef'
         }
         request = mock.Mock()
-        request.body = json.dumps(body)
+        request.body = json.dumps(body).encode('utf-8')
         try:
             self.validator.validate(request)
         except api_exc.ValidationError as e:
@@ -281,7 +283,7 @@ class PubkeyValidatorTestCase(base.BaseTestCase):
             'self_signature': 'deadbeef?'
         }
         request = mock.Mock()
-        request.body = json.dumps(body)
+        request.body = json.dumps(body).encode('utf-8')
         try:
             self.validator.validate(request)
         except api_exc.ValidationError as e:
@@ -293,7 +295,7 @@ class PubkeyValidatorTestCase(base.BaseTestCase):
             'self_signature': 'deadbeef'
         }
         request = mock.Mock()
-        request.body = json.dumps(body)
+        request.body = json.dumps(body).encode('utf-8')
         try:
             self.validator.validate(request)
         except api_exc.ValidationError as e:

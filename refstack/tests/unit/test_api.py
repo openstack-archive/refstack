@@ -147,7 +147,7 @@ class ResultsControllerTestCase(BaseControllerTestCase):
 
     @mock.patch('refstack.db.store_results')
     def test_post(self, mock_store_results):
-        self.mock_request.body = '{"answer": 42}'
+        self.mock_request.body = b'{"answer": 42}'
         self.mock_request.headers = {}
         mock_store_results.return_value = 'fake_test_id'
         result = self.controller.post()
@@ -167,7 +167,7 @@ class ResultsControllerTestCase(BaseControllerTestCase):
     @mock.patch('refstack.db.get_pubkey')
     def test_post_with_sign(self, mock_get_pubkey, mock_store_results,
                             mock_get_version, mock_check, mock_foundation):
-        self.mock_request.body = '{"answer": 42, "cpid": "123"}'
+        self.mock_request.body = b'{"answer": 42, "cpid": "123"}'
         self.mock_request.headers = {
             'X-Signature': 'fake-sign',
             'X-Public-Key': 'ssh-rsa Zm9vIGJhcg=='
@@ -438,7 +438,7 @@ class BaseRestControllerWithValidationTestCase(BaseControllerTestCase):
     @mock.patch('pecan.response')
     @mock.patch('pecan.request')
     def test_post(self, mock_request, mock_response):
-        mock_request.body = '[42]'
+        mock_request.body = b'[42]'
         self.controller.store_item = mock.Mock(return_value='fake_id')
 
         result = self.controller.post()
@@ -724,7 +724,9 @@ class PublicKeysControllerTestCase(BaseControllerTestCase):
             'comment': 'Don\'t_Panic.',
             'openid': 'fake_id'
         }
-        self.mock_request.body = json.dumps({'raw_key': raw_key})
+        self.mock_request.body = json.dumps(
+            {'raw_key': raw_key}
+        ).encode('utf-8')
         self.controller.post()
         self.assertEqual(201, self.mock_response.status)
         mock_store_pubkey.assert_called_once_with(fake_pubkey)
@@ -737,7 +739,9 @@ class PublicKeysControllerTestCase(BaseControllerTestCase):
             'comment': '',
             'openid': 'fake_id'
         }
-        self.mock_request.body = json.dumps({'raw_key': raw_key})
+        self.mock_request.body = json.dumps(
+            {'raw_key': raw_key}
+        ).encode('utf-8')
         self.controller.post()
         mock_store_pubkey.assert_called_once_with(fake_pubkey)
 

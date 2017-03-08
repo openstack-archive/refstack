@@ -62,9 +62,9 @@ class TestProfileEndpoint(api.FunctionalTest):
         pubkey = key.public_key().public_bytes(
             serialization.Encoding.OpenSSH,
             serialization.PublicFormat.OpenSSH
-        )
+        ).decode('utf-8')
         body = {'raw_key': pubkey,
-                'self_signature': binascii.b2a_hex(sign)}
+                'self_signature': binascii.b2a_hex(sign).decode('utf-8')}
         json_params = json.dumps(body)
 
         # POST endpoint

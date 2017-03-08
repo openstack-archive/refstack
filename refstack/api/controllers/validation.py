@@ -57,7 +57,7 @@ class BaseRestControllerWithValidation(rest.RestController):
     def post(self, ):
         """POST handler."""
         self.validator.validate(pecan.request)
-        item = json.loads(pecan.request.body)
+        item = json.loads(pecan.request.body.decode('utf-8'))
         item_id = self.store_item(item)
         pecan.response.status = 201
         return item_id

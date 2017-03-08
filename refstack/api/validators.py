@@ -65,7 +65,7 @@ class BaseValidator(object):
     def validate(self, request):
         """Validate request."""
         try:
-            body = json.loads(request.body)
+            body = json.loads(request.body.decode('utf-8'))
         except (ValueError, TypeError) as e:
             raise api_exc.ValidationError('Malformed request', e)
 
@@ -135,7 +135,7 @@ class TestResultValidator(BaseValidator):
                 raise api_exc.ValidationError('Malformed public key', e)
 
             verifier = key.verifier(sign, padding.PKCS1v15(), hashes.SHA256())
-            verifier.update(request.body.encode('utf-8'))
+            verifier.update(request.body)
             try:
                 verifier.verify()
             except InvalidSignature:
@@ -146,7 +146,7 @@ class TestResultValidator(BaseValidator):
 
     def _is_empty_result(self, request):
         """Check if the test results list is empty."""
-        body = json.loads(request.body)
+        body = json.loads(request.body.decode('utf-8'))
         if len(body['results']) != 0:
             return False
         return True
@@ -173,7 +173,7 @@ class PubkeyValidator(BaseValidator):
     def validate(self, request):
         """Validate uploaded test results."""
         super(PubkeyValidator, self).validate(request)
-        body = json.loads(request.body)
+        body = json.loads(request.body.decode('utf-8'))
         key_format = body['raw_key'].strip().split()[0]
 
         if key_format not in ('ssh-dss', 'ssh-rsa',
@@ -215,7 +215,7 @@ class VendorValidator(BaseValidator):
     def validate(self, request):
         """Validate uploaded vendor data."""
         super(VendorValidator, self).validate(request)
-        body = json.loads(request.body)
+        body = json.loads(request.body.decode('utf-8'))
 
         self.check_emptyness(body, ['name'])
 
@@ -239,7 +239,7 @@ class ProductValidator(BaseValidator):
     def validate(self, request):
         """Validate uploaded test results."""
         super(ProductValidator, self).validate(request)
-        body = json.loads(request.body)
+        body = json.loads(request.body.decode('utf-8'))
 
         self.check_emptyness(body, ['name', 'product_type'])
 
@@ -260,6 +260,6 @@ class ProductVersionValidator(BaseValidator):
     def validate(self, request):
         """Validate product version data."""
         super(ProductVersionValidator, self).validate(request)
-        body = json.loads(request.body)
+        body = json.loads(request.body.decode('utf-8'))
 
         self.check_emptyness(body, ['version'])
