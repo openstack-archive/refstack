@@ -12,7 +12,7 @@ Overview
 --------
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    README
    refstack
@@ -41,8 +41,17 @@ Specs
 
    specs/mitaka/implemented/*
 
+**Implemented in the Ocata Cycle**
+
+.. toctree::
+   :maxdepth: 1
+   :glob:
+
+   specs/ocata/implemented/*
+
+------------------
 Indices and tables
-==================
+------------------
 
 * :ref:`search`
 
