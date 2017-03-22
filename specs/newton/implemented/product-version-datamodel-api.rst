@@ -85,26 +85,26 @@ the system, "name" and "version" are user input fields. A row with two users
 input fields are created each time for a new product or a new version for an
 existing product.
 
-In the following examples, Are "ABC OpenStack®" and "ABC OpenStack" one or two
+
+.. |reg|  unicode:: U+00AE .. REGISTERED SIGN
+
+In the following examples, Are "ABC OpenStack\ |reg|." and "ABC OpenStack" one or two
 different products?
 
 * It could be one product because the users had made a mistake when creating a
-  new version for the existing "ABC OpenStack®" product.
+  new version for the existing "ABC OpenStack\ |reg|." product.
 * It could also be two products, since the 2 names are not the same.
 
 Such kind of data integrity and consistency issues should be avoid whenever
 possible with appropriate database design and/or bussiness layer code.
 
-+------------+------------------+----------+
-| product_id |   Name           | Version  |
-+============+==================+==========+
-| 11111      | ABC OpenStack®   |  v6.0    |
-+------------+------------------+----------+
-| 22222      | ABC OpenStack    |  v7.0    |
-+------------+------------------+----------+
-| 33333      | ABC OpenStack®   |  v8.0    |
-+------------+------------------+----------+
-
+==========    ===================    =======
+product_id    Name                   Version
+==========    ===================    =======
+11111         ABC OpenStack |reg|    v6.0
+22222         ABC OpenStack          v7.0
+33333         ABC OpenStack |reg|    v8.0
+==========    ===================    =======
 
 Data model impact
 -----------------
