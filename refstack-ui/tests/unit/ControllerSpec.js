@@ -58,6 +58,49 @@ describe('Refstack controllers', function () {
             });
     });
 
+    describe('AboutController', function () {
+        var $location, ctrl;
+
+        beforeEach(inject(function ($controller, _$location_) {
+            $location = _$location_;
+            ctrl = $controller('AboutController', {});
+            ctrl.options = {
+                'about' : {
+                    'title': 'About RefStack',
+                    'template': 'about-template'
+                },
+                'option1' : {
+                    'title': 'Option One',
+                    'template': 'template-1'
+                }
+            };
+        }));
+
+        it('should have a function to select an option',
+            function () {
+                ctrl.selectOption('option1');
+                expect(ctrl.selected).toBe('option1');
+                expect(ctrl.template).toBe('template-1');
+                expect($location.hash()).toBe('option1');
+            });
+
+        it('should have a function to get the URL hash and select it',
+            function () {
+                // Test existing option.
+                $location.url('/about#option1');
+                ctrl.getHash();
+                expect(ctrl.selected).toBe('option1');
+                expect(ctrl.template).toBe('template-1');
+
+                // Test nonexistent option.
+                $location.url('/about#foobar');
+                ctrl.getHash();
+                expect(ctrl.selected).toBe('about');
+                expect(ctrl.template).toBe('about-template');
+            });
+
+    });
+
     describe('GuidelinesController', function () {
         var ctrl;
 

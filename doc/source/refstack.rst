@@ -204,6 +204,17 @@ performed to upgrade the database to the latest revision:
 
     Now it should be some revision number other than `None`.
 
+(Optional) Generate About Page Content
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The RefStack About page is populated with HTML templates generated from
+our RST documentation files. If you want this information displayed, then
+run the following command from the root of the project.
+
+``./tools/convert-docs.py -o ./refstack-ui/app/components/about/templates ./doc/source/*.rst``
+
+Ignore any unknown directive errors.
+
 Start RefStack
 ^^^^^^^^^^^^^^
 
