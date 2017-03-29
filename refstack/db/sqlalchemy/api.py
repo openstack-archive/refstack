@@ -24,7 +24,7 @@ from oslo_config import cfg
 from oslo_db import options as db_options
 from oslo_db.sqlalchemy import session as db_session
 from oslo_log import log
-import six
+
 
 from refstack.api import constants as api_const
 from refstack.db.sqlalchemy import models
@@ -125,7 +125,7 @@ def store_results(results):
             test_result.name = result['name']
             test_result.uuid = result.get('uuid', None)
             test.results.append(test_result)
-        for k, v in six.iteritems(results.get('meta', {})):
+        for k, v in results.get('meta', {}).items():
             meta = models.TestMeta()
             meta.meta_key, meta.value = k, v
             test.meta.append(meta)
@@ -610,7 +610,7 @@ def get_products(allowed_keys=None, filters=None):
         filters = {}
     expected_filters = ['public', 'organization_id']
     filter_args = {}
-    for key, value in six.iteritems(filters):
+    for key, value in filters.items():
         if key not in expected_filters:
             raise Exception('Unknown filter key "%s"' % key)
         filter_args[key] = value
@@ -640,7 +640,7 @@ def get_products_by_user(user_openid, allowed_keys=None, filters=None):
         .filter(models.UserToGroup.user_openid == user_openid))
 
     expected_filters = ['organization_id']
-    for key, value in six.iteritems(filters):
+    for key, value in filters.items():
         if key not in expected_filters:
             raise Exception('Unknown filter key "%s"' % key)
         query = query.filter(getattr(models.Product, key) ==
