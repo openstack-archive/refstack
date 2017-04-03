@@ -12,4 +12,4 @@ requests>=2.2.0,!=2.4.0
 requests-cache>=0.4.9
 jsonschema>=2.0.0,<3.0.0
 PyJWT>=1.0.1  # MIT
-WebOb>=1.6.0  # MIT
+WebOb>=1.7.1  # MIT

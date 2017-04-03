@@ -49,6 +49,7 @@ class JSONErrorHookTestCase(base.BaseTestCase):
         self.assertEqual(
             dict(body=expected_body,
                  status=expected_status_code,
+                 charset='UTF-8',
                  content_type='application/json'),
             get_response_kwargs(response)
         )

@@ -127,6 +127,7 @@ class JSONErrorHook(pecan.hooks.PecanHook):
                                  'title': exc.title,
                                  'detail': exc.detail}),
                 status=exc.status_int,
+                charset='UTF-8',
                 content_type='application/json'
             )
         title = None
@@ -149,6 +150,7 @@ class JSONErrorHook(pecan.hooks.PecanHook):
         return webob.Response(
             body=json.dumps(body),
             status=status_code,
+            charset='UTF-8',
             content_type='application/json'
         )
 
