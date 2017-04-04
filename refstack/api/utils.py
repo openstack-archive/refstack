@@ -30,7 +30,7 @@ from oslo_utils import timeutils
 import pecan
 import pecan.rest
 import jwt
-import six
+
 from six.moves.urllib import parse
 
 from refstack import db
@@ -336,7 +336,7 @@ def verify_openid_request(request):
                                        'your name.',
     }
 
-    for name, error in six.iteritems(required_parameters):
+    for name, error in required_parameters.items():
         if name not in verify_params or not verify_params[name]:
             pecan.abort(401, 'Authentication is failed. %s' % error)
 

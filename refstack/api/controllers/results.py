@@ -20,7 +20,7 @@ from oslo_config import cfg
 from oslo_log import log
 import pecan
 from pecan import rest
-import six
+
 from six.moves.urllib import parse
 
 from refstack import db
@@ -57,7 +57,7 @@ class MetadataController(rest.RestController):
         if role in (const.ROLE_FOUNDATION, const.ROLE_OWNER):
             return test_info['meta']
         elif role in (const.ROLE_USER):
-            return {k: v for k, v in six.iteritems(test_info['meta'])
+            return {k: v for k, v in test_info['meta'].items()
                     if k in self.rw_access_keys}
         pecan.abort(403)
 
@@ -130,7 +130,7 @@ class ResultsController(validation.BaseRestControllerWithValidation):
                 test_info['product_version'] = None
 
             test_info['meta'] = {
-                k: v for k, v in six.iteritems(test_info['meta'])
+                k: v for k, v in test_info['meta'].items()
                 if k in MetadataController.rw_access_keys
             }
         return test_info
@@ -230,7 +230,7 @@ class ResultsController(validation.BaseRestControllerWithValidation):
                     # Only show all metadata if the user is the owner or a
                     # member of the Foundation group.
                     result['meta'] = {
-                        k: v for k, v in six.iteritems(result['meta'])
+                        k: v for k, v in result['meta'].items()
                         if k in MetadataController.rw_access_keys
                     }
                 result.update({'url': parse.urljoin(
