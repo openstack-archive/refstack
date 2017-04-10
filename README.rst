@@ -4,8 +4,8 @@ RefStack
 
 RefStack team and repository tags
 #################################
-.. image:: http://governance.openstack.org/badges/refstack.svg
-    :target: http://governance.openstack.org/reference/tags/index.html
+.. image:: https://governance.openstack.org/badges/refstack.svg
+    :target: https://governance.openstack.org/reference/tags/index.html
 
 
 What is RefStack?
