@@ -7,47 +7,35 @@
 Welcome to RefStack's documentation!
 ====================================
 
---------
-Overview
---------
+--------------
+About RefStack
+--------------
 
 .. toctree::
    :maxdepth: 2
 
    README
+
+--------------------------
+Installing RefStack Server
+--------------------------
+
+.. toctree::
+   :maxdepth: 2
+
    refstack
    run_in_docker
+
+--------------
+Using RefStack
+--------------
+
+.. toctree::
+   :maxdepth: 2
+
    uploading_private_results
    vendor_product
    test_result_management
-
------
-Specs
------
-
-**Implemented in the Newton Cycle**
-
-.. toctree::
-   :maxdepth: 1
-   :glob:
-
-   specs/newton/implemented/*
-
-**Implemented in the Mitaka Cycle**
-
-.. toctree::
-   :maxdepth: 1
-   :glob:
-
-   specs/mitaka/implemented/*
-
-**Implemented in the Ocata Cycle**
-
-.. toctree::
-   :maxdepth: 1
-   :glob:
-
-   specs/ocata/implemented/*
 
 ------------------
 Indices and tables
