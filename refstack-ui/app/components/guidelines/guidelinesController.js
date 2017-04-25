@@ -24,7 +24,7 @@
     /**
      * RefStack Guidelines Controller
      * This controller is for the '/guidelines' page where a user can browse
-     * through tests belonging to DefCore-defined capabilities.
+     * through tests belonging to Interop WG defined capabilities.
      */
     function GuidelinesController($http, $uibModal, refstackApiUrl) {
         var ctrl = this;
@@ -99,7 +99,7 @@
         /**
          * This will update the scope's 'targetCapabilities' object with
          * capabilities belonging to the selected OpenStack marketing program
-         * (programs typically correspond to 'components' in the DefCore
+         * (programs typically correspond to 'components' in the Interop WG
          * schema). Each capability will have its status mapped to it.
          */
         function updateTargetCapabilities() {
@@ -227,7 +227,7 @@
     /**
      * Test List Modal Controller
      * This controller is for the modal that appears if a user wants to see the
-     * test list corresponding to DefCore capabilities with the selected
+     * test list corresponding to Interop WG capabilities with the selected
      * statuses.
      */
     function TestListModalController($uibModalInstance, $http, version,

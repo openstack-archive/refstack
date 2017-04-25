@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""Defcore guidelines controller."""
+"""Interop WG guidelines controller."""
 
 import pecan
 from pecan import rest
@@ -70,7 +70,7 @@ class GuidelinesController(rest.RestController):
     """/v1/guidelines handler.
 
     This acts as a proxy for retrieving guideline files
-    from the openstack/defcore Github repository.
+    from the openstack/interop Github repository.
     """
 
     tests = TestsController()

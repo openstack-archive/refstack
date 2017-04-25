@@ -61,7 +61,7 @@
         /** The target OpenStack marketing program to compare against. */
         ctrl.target = 'platform';
 
-        /** Mappings of DefCore components to marketing program names. */
+        /** Mappings of Interop WG components to marketing program names. */
         ctrl.targetMappings = {
             'platform': 'Openstack Powered Platform',
             'compute': 'OpenStack Powered Compute',
@@ -494,7 +494,7 @@
 
                 // Return a generic message since schema 1.2 does not
                 // provide flag reasons.
-                return 'DefCore has flagged this test.';
+                return 'Interop Working Group has flagged this test.';
             }
             else if ((ctrl.schemaVersion >= '1.3') &&
                 (ctrl.isTestFlagged(test, capObj))) {

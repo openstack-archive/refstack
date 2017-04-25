@@ -608,7 +608,7 @@ describe('Refstack controllers', function () {
 
                 ctrl.schemaVersion = '1.2';
                 expect(ctrl.getFlaggedReason('test1', capObj)).toEqual(
-                    'DefCore has flagged this test.');
+                    'Interop Working Group has flagged this test.');
 
                 // Check that non-flagged test returns empty string.
                 expect(ctrl.getFlaggedReason('test2', capObj)).toEqual('');
