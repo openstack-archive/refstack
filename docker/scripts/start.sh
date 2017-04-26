@@ -39,7 +39,7 @@ build_refstack_env () {
     [ ! -d .venv ] && virtualenv .venv
     .venv/bin/pip install -r requirements.txt
     #Install some dev tools
-    .venv/bin/pip install ipython ipdb httpie
+    .venv/bin/pip install pymysql httpie
     cd /home/dev/refstack
     npm install
 #    bower install --config.interactive=false
