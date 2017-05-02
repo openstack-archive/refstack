@@ -13,14 +13,14 @@ RUN \
     sudo git vim wget \
     nginx \
     python-dev python3-dev python-pip \
-    libmysqlclient-dev mysql-client-5.6 mysql-server-5.6 \
+    libmysqlclient-dev mysql-client-5.6 mysql-server-5.6 libffi-dev\
     npm && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/lib/mysql/* && \
     rm -rf /etc/nginx/sites-enabled/default
 
 RUN \
-    pip install virtualenv tox ipython ipdb httpie && \
+    pip install virtualenv tox httpie && \
     ln -s /usr/bin/nodejs /usr/bin/node
 
 ADD /docker/scripts/* /usr/bin/
