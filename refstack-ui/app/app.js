@@ -41,7 +41,9 @@
             }).
             state('about', {
                 url: '/about',
-                templateUrl: '/components/about/about.html'
+                templateUrl: '/components/about/about.html',
+                controller: 'AboutController as ctrl'
+
             }).
             state('guidelines', {
                 url: '/guidelines',

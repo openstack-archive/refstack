@@ -1,31 +1,13 @@
-<h1>RefStack Documentation</h1>
-
-<p>RefStack is a source of tools for interoperability testing of OpenStack clouds.</p>
-<p>To learn more about RefStack, visit the links below.</p>
-
-<ol>
-    <li>
-        <a href="http://github.com/openstack/refstack/blob/master/README.rst#refstack"
-           target="_blank"
-        </a>
-        <strong>About RefStack</strong>
-    </li>
-    <li>
-        <a href="http://github.com/openstack/refstack/blob/master/doc/source/uploading_private_results.rst#how-to-upload-test-results-to-refstack"
-           target="_blank"
-        </a>
-        <strong>How to upload test results to RefStack</strong>
-    </li>
-    <li>
-        <a href="http://github.com/openstack/refstack/blob/master/doc/source/vendor_product.rst#vendor-and-product-management"
-           target="_blank"
-        </a>
-        <strong>Vendor and product management</strong>
-    </li>
-    <li>
-        <a href="http://github.com/openstack/refstack/blob/master/doc/source/test_result_management.rst#test-result-management"
-           target="_blank"
-        </a>
-        <strong>Test result management</strong>
-    </li>
-</ol>
+<hr>
+<div class="about-sidebar">
+    <div ng-repeat="(key, data) in ctrl.options | arrayConverter | orderBy: 'order'">
+    <a><div class="about-option"
+            ng-click="ctrl.selectOption(data.id)"
+            ng-class="{ 'about-active': ctrl.selected === data.id }">
+        {{data.title}}
+    </div></a>
+    </div>
+</div>
+<div class="about-content">
+    <div ng-include src="ctrl.template"></div>
+</div>

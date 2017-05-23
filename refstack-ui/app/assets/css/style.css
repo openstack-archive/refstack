@@ -226,3 +226,26 @@ a.glyphicon {
 .modal-body .row {
   margin-bottom: 10px;
 }
+
+.about-sidebar {
+  width: 20%;
+  float: left;
+  padding-right: 2px;
+  padding-top: 25px;
+}
+
+.about-content {
+  width: 80%;
+  float: left;
+  padding-left: 5%;
+
+}
+
+.about-option {
+  padding: 5px 5px 5px 10px;
+}
+
+.about-active {
+  background: #f2f2f2;
+  border-left: 2px solid orange;
+}
