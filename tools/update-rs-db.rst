@@ -53,5 +53,18 @@ It then uses that test ID to update the internal db using refstack's built
 in RESTful api.
 
 Lastly, if at least one of the links has proven to be valid, we will
-then use the same RESTful api, and test ID to update the verification_status
+then use the same RESTful api and test ID to update the verification_status
 field associated with that test result.
+
+The status of each of these steps will be output to "verification_status.csv"
+by default. A '1' will denote that the resource was successfully updated while
+a '0' will denote that the resource was not successfully updated. The order of
+fields of this file are as follows:
+- Date modified
+- API link
+- Shared update status
+- Guideline
+- Guideline update success status
+- Target
+- Target update success status
+- Verification update success status
