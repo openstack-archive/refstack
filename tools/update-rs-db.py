@@ -1,6 +1,8 @@
 #!/usr/bin/python
-import requests
+
 import argparse
+import datetime
+import requests
 import os
 import json
 
@@ -50,34 +52,50 @@ def linkChk(link, token):
         return False
 
 
-def updateResult(apiLink, target, guideline, token):
-    response = requests.post(apiLink + '/meta/shared', headers={
-        'Authorization': 'Bearer ' + token}, data='true')
-    if response.status_code != 201:
-        print("Update shared status response_status_code=" +
-              str(response.status_code))
-        return False
-    if ".json" not in guideline:
-        guideline = str(guideline) + ".json"
-    response = requests.post(apiLink + '/meta/guideline', headers={
-        'Authorization': 'Bearer ' + token}, data=guideline)
-    if response.status_code != 201:
-        print("Update guideline response_status_code=" +
-              str(response.status_code))
-        return False
-    response = requests.post(apiLink + '/meta/target', headers={
-        'Authorization': 'Bearer ' + token}, data=target)
-    if response.status_code != 201:
-        print("Update target response_status_code=" +
-              str(response.status_code))
-        return False
-    print("test result updated. Verifying.")
-    response = requests.put(apiLink, headers={
-        'Authorization': 'Bearer ' + token}, json={'verification_status': 1})
-    if response.status_code != 201:
-        return False
-    print("Test result verified.")
-    return True
+def updateResult(apiLink, target, guideline, token, results_log):
+    success = True
+    with open(results_log, 'a') as logfile:
+        logfile.write(str(datetime.datetime.now()) + ",")
+        response = requests.post(apiLink + '/meta/shared', headers={
+            'Authorization': 'Bearer ' + token}, data='true')
+        if response.status_code != 201:
+            print("Update shared status response_status_code=" +
+                  str(response.status_code))
+            logfile.write(apiLink + ",0,")
+            success = False
+        else:
+            logfile.write(apiLink + ",1,")
+        if ".json" not in guideline:
+            guideline = str(guideline) + ".json"
+        response = requests.post(apiLink + '/meta/guideline', headers={
+            'Authorization': 'Bearer ' + token}, data=guideline)
+        if response.status_code != 201:
+            print("Update guideline response_status_code=" +
+                  str(response.status_code))
+            logfile.write(guideline + ",0,")
+            success = False
+        else:
+            logfile.write(guideline + ",1,")
+        response = requests.post(apiLink + '/meta/target', headers={
+            'Authorization': 'Bearer ' + token}, data=target)
+        if response.status_code != 201:
+            print("Update target response_status_code=" +
+                  str(response.status_code))
+            logfile.write(target + ",0,")
+            success = False
+        else:
+            logfile.write(target + ",1,")
+        if success:
+            print("test result updated. Verifying.")
+            response = requests.put(apiLink, headers={
+                'Authorization': 'Bearer ' + token},
+                json={'verification_status': 1})
+            if response.status_code != 201:
+                success = False
+            else:
+                print("Test result verified.")
+        logfile.write(str(int(success)) + '\n')
+    return success
 
 
 def main():
@@ -93,8 +111,12 @@ def main():
         help="the base URL of the endpoint. ex: http://examplerefstack.com/v1")
     parser.add_argument("--token", "-t", metavar="t", type=str,
                         action="store", required=True, help="API auth token")
+    parser.add_argument("--logfile", "-l", metavar="l", type=str,
+                        action="store", default="verification_results.csv",
+                        help="name of logfile to output data into")
     result = parser.parse_args()
     infile = result.file
+    logfile = result.logfile
     endpoint = result.endpoint
     token = result.token
     with open(infile) as f:
@@ -118,7 +140,7 @@ def main():
                             "Result link is valid. Updating result with ID " +
                             testId)
                         success = updateResult(apiLink, target, guideline,
-                                               token)
+                                               token, logfile)
                         if not success:
                             print("update of the results with the ID " +
                                   testId + " failed. please recheck your " +
