@@ -19,11 +19,11 @@ variable 'guidelines'.
 
     <a ng-click="showTests = !showTests">Tests ({{ctrl.getObjectLength(capability.tests)}})</a>
     <ul uib-collapse="!showTests">
-        <li ng-if="ctrl.guidelines.schema === '1.2'" ng-repeat="test in capability.tests">
+        <li ng-if="ctrl.schema === '1.2'" ng-repeat="test in capability.tests">
            <span ng-class="{'glyphicon glyphicon-flag text-warning': capability.flagged.indexOf(test) > -1}"></span>
            {{test}}
         </li>
-        <li ng-if="ctrl.guidelines.schema > '1.2'" ng-repeat="(testName, testDetails) in capability.tests">
+        <li ng-if="ctrl.schema > '1.2'" ng-repeat="(testName, testDetails) in capability.tests">
            <span ng-class="{'glyphicon glyphicon-flag text-warning': testDetails.flagged}" title="{{testDetails.flagged.reason}}"></span>
            {{testName}}
            <div class="test-detail" ng-if="testDetails.aliases">
@@ -35,14 +35,14 @@ variable 'guidelines'.
   </li>
 </ol>
 
-<div ng-show="ctrl.guidelines" class="criteria">
+<div ng-show="ctrl.criteria" class="criteria">
     <hr>
     <h4><a ng-click="showCriteria = !showCriteria">Criteria</a></h4>
     <div uib-collapse="showCriteria">
         <ul>
-            <li ng-repeat="(key, criterion) in ctrl.guidelines.criteria">
+            <li ng-repeat="(key, criterion) in ctrl.criteria">
                 <span class="criterion-name">{{criterion.name}}</span><br />
-                <em>{{criterion.Description}}</em><br />
+                <em>{{criterion.Description || criterion.description}}</em><br />
                 Weight: {{criterion.weight}}
             </li>
         </ul>

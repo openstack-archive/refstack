@@ -93,12 +93,12 @@
     <br />
     <div ng-if="ctrl.guidelineData">
         <strong>Guideline Status:</strong>
-        {{ctrl.guidelineData.status | capitalize}}
+        {{ctrl.guidelineStatus | capitalize}}
     </div>
 
     <strong>Corresponding OpenStack Releases:</strong>
     <ul class="list-inline">
-        <li ng-repeat="release in ctrl.guidelineData.releases">
+        <li ng-repeat="release in ctrl.releases">
             {{release | capitalize}}
         </li>
     </ul>

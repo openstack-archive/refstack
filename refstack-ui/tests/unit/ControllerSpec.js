@@ -146,12 +146,81 @@ describe('Refstack controllers', function () {
                                                   '2015.03.json']);
                 expect(ctrl.guidelines).toEqual(fakeCaps);
                 // The guideline status should be approved.
-                expect(ctrl.guidelines.status).toEqual('approved');
+                expect(ctrl.guidelineStatus).toEqual('approved');
                 var expectedTargetCaps = {
                     'cap_id_1': 'required',
                     'cap_id_2': 'advisory',
                     'cap_id_3': 'deprecated',
                     'cap_id_4': 'removed'
+                };
+                expect(ctrl.targetCapabilities).toEqual(expectedTargetCaps);
+            });
+
+        it('should be able to handle guidelines using schema 2.0',
+            function () {
+                var fakeCaps = {
+                    'metadata': {
+                        'id': '2017.08',
+                        'schema': '2.0',
+                        'scoring': {},
+                        'os_trademark_approval': {
+                            'target_approval': '2017.08',
+                            'replaces': '2017.01',
+                            'releases': ['newton', 'ocata', 'pike'],
+                            'status': 'approved'
+                        }
+                    },
+                    'platforms': {
+                        'OpenStack Powered Platform': {
+                            'description': 'foo bar',
+                            'components': [
+                                { 'name': 'os_powered_compute' },
+                                { 'name': 'os_powered_storage' }
+                            ]
+                        }
+                    },
+                    'components': {
+                        'os_powered_compute': {
+                            'capabilities': {
+                                'required': ['cap_id_1'],
+                                'advisory': ['cap_id_2'],
+                                'deprecated': ['cap_id_3'],
+                                'removed': ['cap_id_4']
+                            }
+                        },
+                        'os_powered_storage': {
+                            'capabilities': {
+                                'required': ['cap_id_5'],
+                                'advisory': ['cap_id_6'],
+                                'deprecated': ['cap_id_7'],
+                                'removed': ['cap_id_8']
+                            }
+                        }
+                    }
+                };
+
+                $httpBackend.expectGET(fakeApiUrl +
+                '/guidelines').respond(['next.json', '2015.03.json',
+                                        '2017.08.json']);
+                // Should call request with latest version.
+                $httpBackend.expectGET(fakeApiUrl +
+                '/guidelines/2017.08.json').respond(fakeCaps);
+                $httpBackend.flush();
+
+                ctrl.update();
+                // The version list should be sorted latest first.
+                expect(ctrl.guidelines).toEqual(fakeCaps);
+                // The guideline status should be approved.
+                expect(ctrl.guidelineStatus).toEqual('approved');
+                var expectedTargetCaps = {
+                    'cap_id_1': 'required',
+                    'cap_id_2': 'advisory',
+                    'cap_id_3': 'deprecated',
+                    'cap_id_4': 'removed',
+                    'cap_id_5': 'required',
+                    'cap_id_6': 'advisory',
+                    'cap_id_7': 'deprecated',
+                    'cap_id_8': 'removed'
                 };
                 expect(ctrl.targetCapabilities).toEqual(expectedTargetCaps);
             });
@@ -493,6 +562,63 @@ describe('Refstack controllers', function () {
                     'cap_id_1': 'required',
                     'cap_id_2': 'required',
                     'cap_id_3': 'advisory'
+                };
+                expect(ctrl.getTargetCapabilities()).toEqual(expected);
+            });
+
+        it('should be able create an object containing each relevant' +
+           'capability and its highest priority status for schema 2.0',
+            function () {
+                ctrl.schemaVersion = '2.0';
+                ctrl.guidelineData = {
+                    'metadata': {
+                        'id': '2017.08',
+                        'schema': '2.0',
+                        'scoring': {},
+                        'os_trademark_approval': {
+                            'target_approval': '2017.08',
+                            'replaces': '2017.01',
+                            'releases': ['newton', 'ocata', 'pike'],
+                            'status': 'approved'
+                        }
+                    },
+                    'platforms': {
+                        'OpenStack Powered Platform': {
+                            'description': 'foo bar',
+                            'components': [
+                                { 'name': 'os_powered_compute' },
+                                { 'name': 'os_powered_storage' }
+                            ]
+                        }
+                    },
+                    'components': {
+                        'os_powered_compute': {
+                            'capabilities': {
+                                'required': ['cap_id_1'],
+                                'advisory': ['cap_id_2'],
+                                'deprecated': ['cap_id_3'],
+                                'removed': ['cap_id_4']
+                            }
+                        },
+                        'os_powered_storage': {
+                            'capabilities': {
+                                'required': ['cap_id_5'],
+                                'advisory': ['cap_id_6'],
+                                'deprecated': ['cap_id_7'],
+                                'removed': ['cap_id_8']
+                            }
+                        }
+                    }
+                };
+                var expected = {
+                    'cap_id_1': 'required',
+                    'cap_id_2': 'advisory',
+                    'cap_id_3': 'deprecated',
+                    'cap_id_4': 'removed',
+                    'cap_id_5': 'required',
+                    'cap_id_6': 'advisory',
+                    'cap_id_7': 'deprecated',
+                    'cap_id_8': 'removed'
                 };
                 expect(ctrl.getTargetCapabilities()).toEqual(expected);
             });

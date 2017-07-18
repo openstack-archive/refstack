@@ -87,7 +87,22 @@
             ctrl.capsRequest =
                 $http.get(content_url).success(function (data) {
                     ctrl.guidelines = data;
+                    if ('metadata' in data && data.metadata.schema >= '2.0') {
+                        ctrl.schema = data.metadata.schema;
+                        ctrl.criteria = data.metadata.scoring.criteria;
+                        ctrl.releases =
+                            data.metadata.os_trademark_approval.releases;
+                        ctrl.guidelineStatus =
+                            data.metadata.os_trademark_approval.status;
+                    }
+                    else {
+                        ctrl.schema = data.schema;
+                        ctrl.criteria = data.criteria;
+                        ctrl.releases = data.releases;
+                        ctrl.guidelineStatus = data.status;
+                    }
                     ctrl.updateTargetCapabilities();
+
                 }).error(function (error) {
                     ctrl.showError = true;
                     ctrl.guidelines = null;
@@ -110,8 +125,24 @@
             // The 'platform' target is comprised of multiple components, so
             // we need to get the capabilities belonging to each of its
             // components.
-            if (ctrl.target === 'platform') {
-                var platform_components = ctrl.guidelines.platform.required;
+            if (ctrl.target === 'platform' || ctrl.schema >= '2.0') {
+                if (ctrl.schema >= '2.0') {
+                    var platformsMap = {
+                        'platform': 'OpenStack Powered Platform',
+                        'compute': 'OpenStack Powered Compute',
+                        'object': 'OpenStack Powered Storage'
+                    };
+
+                    var targetComponents = ctrl.guidelines.platforms[
+                        platformsMap[ctrl.target]].components.map(
+                            function(c) {
+                                return c.name;
+                            }
+                        );
+                }
+                else {
+                    var targetComponents = ctrl.guidelines.platform.required;
+                }
 
                 // This will contain status priority values, where lower
                 // values mean higher priorities.
@@ -123,9 +154,13 @@
                 };
 
                 // For each component required for the platform program.
-                angular.forEach(platform_components, function (component) {
+                angular.forEach(targetComponents, function (component) {
                     // Get each capability list belonging to each status.
-                    angular.forEach(components[component],
+                    var componentList = components[component];
+                    if (ctrl.schema >= '2.0') {
+                        componentList = componentList.capabilities;
+                    }
+                    angular.forEach(componentList,
                         function (caps, status) {
                             // For each capability.
                             angular.forEach(caps, function(cap) {

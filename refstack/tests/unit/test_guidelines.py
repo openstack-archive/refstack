@@ -91,6 +91,67 @@ class GuidelinesTestCase(base.BaseTestCase):
 
     def test_get_target_capabilities(self):
         """Test getting relevant capabilities."""
+
+        # Schema version 2.0
+        json = {
+            'metadata': {
+                'id': '2017.08',
+                'schema': '2.0',
+                'scoring': {},
+                'os_trademark_approval': {
+                    'target_approval': '2017.08',
+                    'replaces': '2017.01',
+                    'releases': ['newton', 'ocata', 'pike'],
+                    'status': 'approved'
+                }
+            },
+            'platforms': {
+                'OpenStack Powered Platform': {
+                    'description': 'foo platform',
+                    'components': [
+                        {'name': 'os_powered_compute'},
+                        {'name': 'os_powered_storage'}
+                    ]
+                },
+                'OpenStack Powered Storage': {
+                    'description': 'foo storage',
+                    'components': [
+                        {'name': 'os_powered_storage'}
+                    ]
+                },
+            },
+            'components': {
+                'os_powered_compute': {
+                    'capabilities': {
+                        'required': ['cap_id_1'],
+                        'advisory': ['cap_id_2'],
+                        'deprecated': ['cap_id_3'],
+                        'removed': []
+                    }
+                },
+                'os_powered_storage': {
+                    'capabilities': {
+                        'required': ['cap_id_5'],
+                        'advisory': ['cap_id_6'],
+                        'deprecated': [],
+                        'removed': []
+                    }
+                }
+            }
+        }
+
+        caps = self.guidelines.get_target_capabilities(json)
+        expected = sorted(['cap_id_1', 'cap_id_2', 'cap_id_3',
+                           'cap_id_5', 'cap_id_6'])
+        self.assertEqual(expected, sorted(caps))
+
+        caps = self.guidelines.get_target_capabilities(json,
+                                                       types=['required'],
+                                                       target='object')
+        expected = ['cap_id_5']
+        self.assertEqual(expected, caps)
+
+        # Schema version 1.4
         json = {
             'platform': {'required': ['compute', 'object']},
             'schema': '1.4',
@@ -123,6 +184,39 @@ class GuidelinesTestCase(base.BaseTestCase):
 
     def test_get_test_list(self):
         """Test when getting the guideline test list."""
+
+        # Schema version 2.0
+        json = {
+            'metadata': {
+                'schema': '2.0',
+            },
+            'capabilities': {
+                'cap-1': {
+                    'tests': {
+                        'test_1': {'idempotent_id': 'id-1234'},
+                        'test_2': {'idempotent_id': 'id-5678',
+                                   'aliases': ['test_2_1']},
+                        'test_3': {'idempotent_id': 'id-1111',
+                                   'flagged': {'reason': 'foo'}}
+                    }
+                },
+                'cap-2': {
+                    'tests': {
+                        'test_4': {'idempotent_id': 'id-1233'}
+                    }
+                }
+            }
+        }
+
+        tests = self.guidelines.get_test_list(json, ['cap-1'])
+        expected = ['test_1[id-1234]', 'test_2[id-5678]',
+                    'test_2_1[id-5678]', 'test_3[id-1111]']
+        self.assertEqual(expected, tests)
+
+        tests = self.guidelines.get_test_list(json, ['cap-1'],
+                                              alias=False, show_flagged=False)
+        expected = ['test_1[id-1234]', 'test_2[id-5678]']
+        self.assertEqual(expected, tests)
 
         # Schema version 1.4
         json = {

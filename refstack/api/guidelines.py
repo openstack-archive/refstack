@@ -110,15 +110,32 @@ class Guidelines:
         are given. If not target is specified, then all capabilities are given.
         """
         components = guideline_json['components']
-        targets = set()
-        if target != 'platform':
-            targets.add(target)
+
+        if ('metadata' in guideline_json and
+                guideline_json['metadata']['schema'] >= '2.0'):
+            schema = guideline_json['metadata']['schema']
+            platformsMap = {
+                'platform': 'OpenStack Powered Platform',
+                'compute': 'OpenStack Powered Compute',
+                'object': 'OpenStack Powered Storage'
+            }
+            comps = \
+                guideline_json['platforms'][platformsMap[target]]['components']
+            targets = (obj['name'] for obj in comps)
         else:
-            targets.update(guideline_json['platform']['required'])
+            schema = guideline_json['schema']
+            targets = set()
+            if target != 'platform':
+                targets.add(target)
+            else:
+                targets.update(guideline_json['platform']['required'])
 
         target_caps = set()
         for component in targets:
-            for status, capabilities in components[component].items():
+            complist = components[component]
+            if schema >= '2.0':
+                complist = complist['capabilities']
+            for status, capabilities in complist.items():
                 if types is None or status in types:
                     target_caps.update(capabilities)
 
@@ -134,7 +151,11 @@ class Guidelines:
         included in the list.
         """
         caps = guideline_json['capabilities']
-        schema = guideline_json['schema']
+        if ('metadata' in guideline_json and
+                guideline_json['metadata']['schema'] >= '2.0'):
+            schema = guideline_json['metadata']['schema']
+        else:
+            schema = guideline_json['schema']
         test_list = []
         for cap, cap_details in caps.items():
             if cap in capabilities:
