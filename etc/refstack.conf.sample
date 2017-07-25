@@ -102,6 +102,11 @@
 # The backend to use for database. (string value)
 #db_backend = sqlalchemy
 
+# The alembic version table name to use within the
+# database. To allow RefStack to upload and store
+# the full set of subunit data. set this option to
+# refstack_alembic_version.
+#version_table = alembic_table
 
 [api]
 

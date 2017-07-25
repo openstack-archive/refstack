@@ -27,6 +27,12 @@ db_opts = [
     cfg.StrOpt('db_backend',
                default='sqlalchemy',
                help='The backend to use for database.'),
+    cfg.StrOpt('version_table',
+               default='alembic_version',
+               help='The alembic version table name to use within the ' +
+                    'database. To allow RefStack to upload and store ' +
+                    'the full set of subunit data, set this option to ' +
+                    'refstack_alembic_version.'),
 ]
 
 CONF = cfg.CONF
