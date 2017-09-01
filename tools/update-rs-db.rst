@@ -7,29 +7,51 @@ successful in the usage of the script update-rs-db.py.
 
 The script can be run using the following formatting:
 "./update-rs-db.py --file /tmp/datasource.csv --endpoint
-http://example.com:8000/v1 --token <my-token>"
+http://example.com:8000/v1 --token <my-token>". In order to
+successfully update and verify results, you will need admin rights
+for the refstack server in question. Instructions on how to get
+these for your local install can be found at https://github.com/openstack/refstack/blob/master/doc/source/refstack.rst#optional-configure-foundation-organization-and-group
 
 This script updates RefStack tests as verified given a specific
 spreadsheet. The columns in this spreadsheet are, in this order:
- - Company Name
- - Product Name
- - Type (Distribution, Public, or Private)
- - Region
- - Guideline
- - Component (Compute, Platform, or Object)
- - Reported Release
- - Passed Release
- - Federated identity (yes/no)
- - Refstack Link
- - Zendesk Link
- - Marketplace Link
- - License Date
- - Update Product (yes/no)
- - Contacts
- - Notes
- - License Link
- - Active (1 or 0)
- - Public (1 or 0)
+ 
+ * Company Name
+
+ * Product Name
+
+ * Type (Distribution, Public, or Private)
+
+ * Region
+
+ * Guideline
+
+ * Component (Compute, Platform, or Object)
+
+ * Reported Release
+
+ * Passed Release
+
+ * Federated identity (yes/no)
+
+ * Refstack Link
+
+ * Zendesk Link
+
+ * Marketplace Link
+
+ * License Date
+
+ * Update Product (yes/no)
+ 
+ * Contacts
+
+ * Notes
+
+ * License Link
+
+ * Active (1 or 0)
+
+ * Public (1 or 0)
 
 The data is pulled from a csv file. The default csv name is toadd.csv,
 but using the -f flag, we can use csv of a different filename.
@@ -60,11 +82,19 @@ The status of each of these steps will be output to "verification_status.csv"
 by default. A '1' will denote that the resource was successfully updated while
 a '0' will denote that the resource was not successfully updated. The order of
 fields of this file are as follows:
-- Date modified
-- API link
-- Shared update status
-- Guideline
-- Guideline update success status
-- Target
-- Target update success status
-- Verification update success status
+
+ * Date modified
+
+ * API link
+
+ * Shared update status
+
+ * Guideline
+
+ * Guideline update success status
+
+ * Target
+
+ * Target update success statu
+
+ * Verification update success status
