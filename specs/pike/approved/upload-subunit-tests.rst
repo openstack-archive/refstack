@@ -102,84 +102,84 @@ Data model impact
 -----------------
 
 We may be able to use the tables created by subunit2sql within the RefStack
-database. These tables (for reference) are mapped out below:
+database. These tables (for reference) are mapped out below:::
 
---------------------------------------
-|               tests                |
---------------------------------------
-|   id           |  String(256)      |
-|   test_id      |  String(256)      |
-|   run_count    |  Integer          |
-|   failure      |  Integer          |
-|   run_time     |  Float            |
---------------------------------------
+ --------------------------------------
+ |               tests                |
+ --------------------------------------
+ |   id           |  String(256)      |
+ |   test_id      |  String(256)      |
+ |   run_count    |  Integer          |
+ |   failure      |  Integer          |
+ |   run_time     |  Float            |
+ --------------------------------------
 
-----------------------------------------
-|              runs                    |
-----------------------------------------
-|  id            |  BigInteger         |
-|  skips         |  Integer            |
-|  fails         |  Integer            |
-|  passes        |  Integer            |
-|  run_time      |  Float              |
-|  artifacts     |  Text               |
-|  run_at        |  DateTime           |
-----------------------------------------
+ ----------------------------------------
+ |              runs                    |
+ ----------------------------------------
+ |  id            |  BigInteger         |
+ |  skips         |  Integer            |
+ |  fails         |  Integer            |
+ |  passes        |  Integer            |
+ |  run_time      |  Float              |
+ |  artifacts     |  Text               |
+ |  run_at        |  DateTime           |
+ ----------------------------------------
 
----------------------------------------------------
-|                    test_runs                    |
----------------------------------------------------
-|  id                      |  BigInteger          |
-|  test_id                 |  BigInteger          |
-|  run_id                  |  BigInteger          |
-|  status                  |  String(256)         |
-|  start_time              |  DateTime            |
-|  start_time_microseconds |  Integer             |
-|  stop_time               |  DateTime            |
-|  stop_time_microseconds  |  Integer             |
-|  test                    |  Test                |
-|  run                     |  Run                 |
----------------------------------------------------
+ ---------------------------------------------------
+ |                    test_runs                    |
+ ---------------------------------------------------
+ |  id                      |  BigInteger          |
+ |  test_id                 |  BigInteger          |
+ |  run_id                  |  BigInteger          |
+ |  status                  |  String(256)         |
+ |  start_time              |  DateTime            |
+ |  start_time_microseconds |  Integer             |
+ |  stop_time               |  DateTime            |
+ |  stop_time_microseconds  |  Integer             |
+ |  test                    |  Test                |
+ |  run                     |  Run                 |
+ ---------------------------------------------------
 
--------------------------------------------
-|            run_metadata                 |
--------------------------------------------
-|  id            |  BigInteger            |
-|  key           |  String(255)           |
-|  value         |  String(255)           |
-|  run_id        |  BigInteger            |
-|  run           |  Run                   |
--------------------------------------------
+ -------------------------------------------
+ |            run_metadata                 |
+ -------------------------------------------
+ |  id            |  BigInteger            |
+ |  key           |  String(255)           |
+ |  value         |  String(255)           |
+ |  run_id        |  BigInteger            |
+ |  run           |  Run                   |
+ -------------------------------------------
 
--------------------------------------------
-|          test_run_metadata              |
--------------------------------------------
-|  id            |  BigInteger            |
-|  key           |  String(255)           |
-|  value         |  String(255)           |
-|  test_run_id   |  BigInteger            |
-|  test_run      |  TestRun               |
--------------------------------------------
+ -------------------------------------------
+ |          test_run_metadata              |
+ -------------------------------------------
+ |  id            |  BigInteger            |
+ |  key           |  String(255)           |
+ |  value         |  String(255)           |
+ |  test_run_id   |  BigInteger            |
+ |  test_run      |  TestRun               |
+ -------------------------------------------
 
--------------------------------------------
-|            test_metadata                |
--------------------------------------------
-|  id            |  BigInteger            |
-|  key           |  String(255)           |
-|  value         |  String(255)           |
-|  test_id       |  BigInteger            |
-|  test          |  Test                  |
--------------------------------------------
+ -------------------------------------------
+ |            test_metadata                |
+ -------------------------------------------
+ |  id            |  BigInteger            |
+ |  key           |  String(255)           |
+ |  value         |  String(255)           |
+ |  test_id       |  BigInteger            |
+ |  test          |  Test                  |
+ -------------------------------------------
 
--------------------------------------------
-|            attachments                  |
--------------------------------------------
-|  id            |  BigInteger            |
-|  test_run_id   |  BigInteger            |
-|  label         |  String(255)           |
-|  attachment    |  LargeBinary           |
-|  test_run      |  TestRun               |
--------------------------------------------
+ -------------------------------------------
+ |            attachments                  |
+ -------------------------------------------
+ |  id            |  BigInteger            |
+ |  test_run_id   |  BigInteger            |
+ |  label         |  String(255)           |
+ |  attachment    |  LargeBinary           |
+ |  test_run      |  TestRun               |
+ -------------------------------------------
 
 more details about this data model can be found in the source docs for
 subunit2sql[5]
