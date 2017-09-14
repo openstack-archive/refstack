@@ -58,7 +58,7 @@ none/
 
 **Developer impact**
 
-When finished tcup would need to have the tester as a dependancy.
+When finished tcup would need to have the tester as a dependency.
 
 **Implementation:**
 
@@ -82,7 +82,7 @@ none.
 
 **Testing**
 
-The new project will require a base set of tests so that ci works propperly.
+The new project will require a base set of tests so that ci works properly.
 
 **Documentation Impact**
 

@@ -7,7 +7,7 @@ Launchpad blueprint:
 * https://blueprints.launchpad.net/refstack/+spec/user-documentation
 
 This specification defines the changes to the "About" page of the RefStack
-website in that are neccessary in order to allow RefStack documentation to be
+website in that are necessary in order to allow RefStack documentation to be
 displayed natively on the RefStack site.
 
 Problem description
