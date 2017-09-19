@@ -96,7 +96,7 @@ different products?
 * It could also be two products, since the 2 names are not the same.
 
 Such kind of data integrity and consistency issues should be avoid whenever
-possible with appropriate database design and/or bussiness layer code.
+possible with appropriate database design and/or business layer code.
 
 ==========    ===================    =======
 product_id    Name                   Version

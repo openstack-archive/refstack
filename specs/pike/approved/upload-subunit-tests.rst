@@ -19,7 +19,7 @@ to the passed tests. This limitation dates back to the the start of the
 RefStack project. At that time, Defcore (which is now known as interop-WG)
 was very concerned about the possibility that private data may be included
 in the subunit upload file. Defcore was concerned that vendors might, for
-that reason, be hesistant to upload data into RefStack for fear of
+that reason, be hesitant to upload data into RefStack for fear of
 unintentionally revealing vendor-specific data such as reasons for test
 failures.  For this reason, Defcore agreed unanimously that RefStack should
 care only about passing tests, and not failed or skipped ones.
@@ -213,7 +213,7 @@ significant reversal in a past decision, that the community should be
 properly notified. This decision also resulted in the following action plan:
 1. write an email to distribute to the mailing list
 2. send out the official decision after the email is distributed
-3. change the offical interop docs to reflect this change
+3. change the official interop docs to reflect this change
 
 Another concern was that a database injection attack may be possible, if an
 attacker were to use maliciously crafted subunit data. This threat, also,

@@ -62,7 +62,7 @@ Alternatives
 
 It would be possible to create a single-use VM for this testing.  That would require much more download time, build effort and maintenance.
 
-An additional method is to package execute_test on its own allowing it to install on fedora and ubuntu.  It already has tempest havana stable as a dependancy.  It can be installed and the rc file can be sourced and it can be kicked off.  No container would be needed and  you can log into any cloud instance on any cloud provider that has network reach to the cloud you want to test. Start an ephemeral vm and log into it and run two commands.
+An additional method is to package execute_test on its own allowing it to install on fedora and ubuntu.  It already has tempest havana stable as a dependency.  It can be installed and the rc file can be sourced and it can be kicked off.  No container would be needed and  you can log into any cloud instance on any cloud provider that has network reach to the cloud you want to test. Start an ephemeral vm and log into it and run two commands.
 
 Yet another approach is to assume tempest havana is already installed.  Users can invokes execute_test directly without using docker or any container.  This omits the "minimal setup" TCUP approach.
 

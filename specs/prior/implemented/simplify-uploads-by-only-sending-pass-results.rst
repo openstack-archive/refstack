@@ -79,10 +79,10 @@ None
 Developer impact
 ----------------
 
-This could potentially be a maintance problem moving forward as we move the
+This could potentially be a maintenance problem moving forward as we move the
 subunit parsing utils into tempest then move the tester into its own repo.
 
-It will require that someone stays on top of things durring those changes to avoid
+It will require that someone stays on top of things during those changes to avoid
 duplication of code.
 
 

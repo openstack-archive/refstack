@@ -2,7 +2,7 @@
 #                           update-rs-db.py                           #
 #######################################################################
 
-This document contains some details that are neccessary to know to be
+This document contains some details that are necessary to know to be
 successful in the usage of the script update-rs-db.py.
 
 The script can be run using the following formatting:

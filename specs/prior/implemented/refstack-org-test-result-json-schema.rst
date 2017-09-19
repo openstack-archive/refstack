@@ -40,7 +40,7 @@ Alternatives
 Another alternative is manually writing code to validate test results.
 This schema does not preclue that alternative, but by creating and
 validating against a schema we take advantage of existing libraries
-and reduce the possiblity of introducing unintended parsing errors.
+and reduce the possibility of introducing unintended parsing errors.
 
 Data model impact
 -----------------
@@ -88,7 +88,7 @@ No invalid responses. No accepted parameters.
 Security impact
 ---------------
 
-This change is intented to improve the security of the application
+This change is intended to improve the security of the application
 by introducing data validation. No data-changing apis are
 introduced.
 
@@ -124,7 +124,7 @@ No additional developer impact.
 Implementation
 ==============
 
-This change will be implemented as a validation funtion in the API POST
+This change will be implemented as a validation function in the API POST
 pipeline. It will essentially be middleware that takes the input data,
 validates the results, and sends back a positive or a negative result.
 If the result is negative, the 400 response will be returned.
