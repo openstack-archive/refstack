@@ -15,7 +15,7 @@ echo "If you want to get access to your local RefStack not only from localhost, 
 echo "please specify public RefStack host:port in env[REFSTACK_HOST]."
 echo "You can customize RefStack API config by editing docker/refstack.conf.tmpl."
 echo "It is bash template. You can use \${SOME_ENV_VARIABLE} in it."
-echo "Default is 127.0.0.1:8000"
+echo "Default is 127.0.0.1:443"
 echo ""
 echo "  -r    Force delete '${CONTAINER}' container and run it again."
 echo "        Main usecase for it - updating config from templates"
