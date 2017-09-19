@@ -106,7 +106,7 @@
 # database. To allow RefStack to upload and store
 # the full set of subunit data. set this option to
 # refstack_alembic_version.
-#version_table = alembic_table
+#version_table = alembic_version
 
 [api]
 
