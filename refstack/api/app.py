@@ -94,7 +94,14 @@ API_OPTS = [
                help='This is the base URL that is used for retrieving '
                     'specific capability files. Capability file names will '
                     'be appended to this URL to get the contents of that file.'
-               )
+               ),
+    cfg.BoolOpt('enable_anonymous_upload',
+                default=True,
+                help='Enable or disable anonymous uploads. If set to False, '
+                     'all clients will need to authenticate and sign with a '
+                     'public/private keypair previously uploaded to their '
+                     'user account.'
+                )
 ]
 
 CONF = cfg.CONF

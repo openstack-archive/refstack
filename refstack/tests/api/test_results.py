@@ -25,6 +25,14 @@ from refstack.api import validators
 from refstack import db
 from refstack.tests import api
 
+import binascii
+
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import serialization
+
 FAKE_TESTS_RESULT = {
     'cpid': 'foo',
     'duration_seconds': 10,
@@ -407,3 +415,98 @@ class TestResultsEndpoint(api.FunctionalTest):
         db.update_test({'id': test_id, 'verification_status': 0})
         resp = self.delete(url, expect_errors=True)
         self.assertEqual(204, resp.status_code)
+
+
+class TestResultsEndpointNoAnonymous(api.FunctionalTest):
+
+    URL = '/v1/results/'
+
+    def _generate_keypair_(self):
+        return rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=1024,
+            backend=default_backend()
+        )
+
+    def _sign_body_(self, keypair, body):
+        signer = keypair.signer(padding.PKCS1v15(), hashes.SHA256())
+        signer.update(body)
+        return signer.finalize()
+
+    def _get_public_key_(self, keypair):
+        pubkey = keypair.public_key().public_bytes(
+            serialization.Encoding.OpenSSH,
+            serialization.PublicFormat.OpenSSH
+        )
+        return pubkey
+
+    def setUp(self):
+        super(TestResultsEndpointNoAnonymous, self).setUp()
+        self.config_fixture = config_fixture.Config()
+        self.CONF = self.useFixture(self.config_fixture).conf
+        self.CONF.api.enable_anonymous_upload = False
+
+        self.user_info = {
+            'openid': 'test-open-id',
+            'email': 'foo@bar.com',
+            'fullname': 'Foo Bar'
+        }
+
+        db.user_save(self.user_info)
+
+        good_key = self._generate_keypair_()
+        self.body = json.dumps(FAKE_TESTS_RESULT).encode()
+        signature = self._sign_body_(good_key, self.body)
+        pubkey = self._get_public_key_(good_key)
+        x_signature = binascii.b2a_hex(signature)
+
+        self.good_headers = {
+            'X-Signature': x_signature,
+            'X-Public-Key': pubkey
+        }
+
+        self.pubkey_info = {
+            'openid': 'test-open-id',
+            'format': 'ssh-rsa',
+            'pubkey': pubkey.split()[1],
+            'comment': 'comment'
+        }
+
+        db.store_pubkey(self.pubkey_info)
+
+        bad_key = self._generate_keypair_()
+        bad_signature = self._sign_body_(bad_key, self.body)
+        bad_pubkey = self._get_public_key_(bad_key)
+        x_bad_signature = binascii.b2a_hex(bad_signature)
+
+        self.bad_headers = {
+            'X-Signature': x_bad_signature,
+            'X-Public-Key': bad_pubkey
+        }
+
+    def test_post_with_no_token(self):
+        """Test results endpoint with post request."""
+        results = json.dumps(FAKE_TESTS_RESULT)
+        actual_response = self.post_json(self.URL, expect_errors=True,
+                                         params=results)
+        self.assertEqual(actual_response.status_code, 401)
+
+    def test_post_with_valid_token(self):
+        """Test results endpoint with post request."""
+        results = json.dumps(FAKE_TESTS_RESULT)
+        actual_response = self.post_json(self.URL,
+                                         headers=self.good_headers,
+                                         params=results)
+        self.assertIn('test_id', actual_response)
+        try:
+            uuid.UUID(actual_response.get('test_id'), version=4)
+        except ValueError:
+            self.fail("actual_response doesn't contain test_id")
+
+    def test_post_with_invalid_token(self):
+        results = json.dumps(FAKE_TESTS_RESULT)
+        actual_response = self.post_json(self.URL,
+                                         headers=self.bad_headers,
+                                         expect_errors=True,
+                                         params=results)
+        self.assertEqual(actual_response.status_code, 401)

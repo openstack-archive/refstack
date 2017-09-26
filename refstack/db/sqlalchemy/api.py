@@ -323,7 +323,7 @@ def get_pubkey(key):
     The md5 hash of the key is used for the query for quicker lookups.
     """
     session = get_session()
-    md5_hash = hashlib.md5(base64.b64decode(key.encode('ascii'))).hexdigest()
+    md5_hash = hashlib.md5(base64.b64decode(key)).hexdigest()
     pubkeys = session.query(models.PubKey).filter_by(md5_hash=md5_hash).all()
     if len(pubkeys) == 1:
         return pubkeys[0]
@@ -342,7 +342,7 @@ def store_pubkey(pubkey_info):
     pubkey.pubkey = pubkey_info['pubkey']
     pubkey.md5_hash = hashlib.md5(
         base64.b64decode(
-            pubkey_info['pubkey'].encode('ascii')
+            pubkey_info['pubkey']
         )
     ).hexdigest()
     pubkey.comment = pubkey_info['comment']

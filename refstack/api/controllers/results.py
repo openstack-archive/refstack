@@ -103,6 +103,40 @@ class ResultsController(validation.BaseRestControllerWithValidation):
 
     meta = MetadataController()
 
+    def _check_authentication(self):
+        x_public_key = pecan.request.headers.get('X-Public-Key')
+        if x_public_key:
+            public_key = x_public_key.strip().split()[1]
+            stored_public_key = db.get_pubkey(public_key)
+            if not stored_public_key:
+                pecan.abort(401, 'User with specified key not found. '
+                                 'Please log into the RefStack server to '
+                                 'upload your key.')
+        else:
+            stored_public_key = None
+
+        if not CONF.api.enable_anonymous_upload and not stored_public_key:
+            pecan.abort(401, 'Anonymous result uploads are disabled. '
+                             'Please create a user account and an api '
+                             'key at https://refstack.openstack.org/#/')
+
+        return stored_public_key
+
+    def _auto_version_associate(self, test, test_, pubkey):
+        if test.get('cpid'):
+            version = db.get_product_version_by_cpid(
+                test['cpid'], allowed_keys=['id', 'product_id'])
+            # Only auto-associate if there is a single product version
+            # with the given cpid.
+            if len(version) == 1:
+                is_foundation = api_utils.check_user_is_foundation_admin(
+                    pubkey.openid)
+                is_product_admin = api_utils.check_user_is_product_admin(
+                    version[0]['product_id'], pubkey.openid)
+                if is_foundation or is_product_admin:
+                    test_['product_version_id'] = version[0]['id']
+        return test_
+
     @pecan.expose('json')
     @api_utils.check_permissions(level=const.ROLE_USER)
     def get_one(self, test_id):
@@ -125,7 +159,8 @@ class ResultsController(validation.BaseRestControllerWithValidation):
         if user_role not in (const.ROLE_FOUNDATION, const.ROLE_OWNER):
             # Don't expose product information if product is not public.
             if (test_info.get('product_version') and
-               not test_info['product_version']['product_info']['public']):
+                    not test_info['product_version']
+                    ['product_info']['public']):
 
                 test_info['product_version'] = None
 
@@ -137,30 +172,16 @@ class ResultsController(validation.BaseRestControllerWithValidation):
 
     def store_item(self, test):
         """Handler for storing item. Should return new item id."""
+        # If we need a key, or the key isn't available, this will throw
+        # an exception with a 401
+        pubkey = self._check_authentication()
         test_ = test.copy()
-        if pecan.request.headers.get('X-Public-Key'):
-            key = pecan.request.headers.get('X-Public-Key').strip().split()[1]
+        if pubkey:
             if 'meta' not in test_:
                 test_['meta'] = {}
-            pubkey = db.get_pubkey(key)
-            if not pubkey:
-                pecan.abort(400, 'User with specified key not found. '
-                                 'Please log into the RefStack server to '
-                                 'upload your key.')
-
             test_['meta'][const.USER] = pubkey.openid
-            if test.get('cpid'):
-                version = db.get_product_version_by_cpid(
-                    test['cpid'], allowed_keys=['id', 'product_id'])
-                # Only auto-associate if there is a single product version
-                # with the given cpid.
-                if len(version) == 1:
-                    is_foundation = api_utils.check_user_is_foundation_admin(
-                        pubkey.openid)
-                    is_product_admin = api_utils.check_user_is_product_admin(
-                        version[0]['product_id'], pubkey.openid)
-                    if is_foundation or is_product_admin:
-                        test_['product_version_id'] = version[0]['id']
+            test_ = self._auto_version_associate(test, test_, pubkey)
+
         test_id = db.store_results(test_)
         return {'test_id': test_id,
                 'url': parse.urljoin(CONF.ui_url,
@@ -224,7 +245,8 @@ class ResultsController(validation.BaseRestControllerWithValidation):
 
                     # Don't expose product info if the product is not public.
                     if (result.get('product_version') and not
-                       result['product_version']['product_info']['public']):
+                            result['product_version']['product_info']
+                            ['public']):
 
                         result['product_version'] = None
                     # Only show all metadata if the user is the owner or a

@@ -154,6 +154,11 @@
 # contents of that file. (string value)
 #github_raw_base_url = https://raw.githubusercontent.com/openstack/interop/master/
 
+# Enable or disable anonymous uploads. If set to False, all clients
+# will need to authenticate and sign with a public/private keypair
+# previously uploaded to their user account.
+#enable_anonymous_upload = true
+
 # Number of results for one page (integer value)
 #results_per_page = 20
 
