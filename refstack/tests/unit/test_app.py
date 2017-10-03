@@ -94,7 +94,7 @@ class JSONErrorHookTestCase(base.BaseTestCase):
         exc = mock.Mock(spec=webob.exc.HTTPRedirection)
         hook = app.JSONErrorHook()
         result = hook.on_error(mock.Mock(), exc)
-        self.assertEqual(result, None)
+        self.assertIsNone(result)
 
     @mock.patch.object(webob, 'Response')
     def test_on_error_with_other_exceptions(self, response):
