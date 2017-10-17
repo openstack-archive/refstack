@@ -13,22 +13,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 """Implementation of Alembic commands."""
-import os
-
 import alembic
-from alembic import config as alembic_config
 import alembic.migration as alembic_migration
 from oslo_config import cfg
-
 from refstack.db.sqlalchemy import api as db_api
+from refstack.db.migrations.alembic import utils
 
 CONF = cfg.CONF
-
-
-def _alembic_config():
-    path = os.path.join(os.path.dirname(__file__), os.pardir, 'alembic.ini')
-    config = alembic_config.Config(path)
-    return config
 
 
 def version():
@@ -39,7 +30,10 @@ def version():
     """
     engine = db_api.get_engine()
     with engine.connect() as conn:
-        context = alembic_migration.MigrationContext.configure(conn)
+        conf_table = getattr(CONF, 'version_table')
+        utils.recheck_alembic_table(conn)
+        context = alembic_migration.MigrationContext.configure(
+            conn, opts={'version_table': conf_table})
         return context.get_current_revision()
 
 
@@ -49,7 +43,7 @@ def upgrade(revision):
     :param version: Desired database version
     :type version: string
     """
-    return alembic.command.upgrade(_alembic_config(), revision or 'head')
+    return alembic.command.upgrade(utils.alembic_config(), revision or 'head')
 
 
 def downgrade(revision):
@@ -58,7 +52,8 @@ def downgrade(revision):
     :param version: Desired database version
     :type version: string
     """
-    return alembic.command.downgrade(_alembic_config(), revision or 'base')
+    return alembic.command.downgrade(utils.alembic_config(),
+                                     revision or 'base')
 
 
 def stamp(revision):
@@ -70,7 +65,7 @@ def stamp(revision):
     database with most recent revision
     :type revision: string
     """
-    return alembic.command.stamp(_alembic_config(), revision or 'head')
+    return alembic.command.stamp(utils.alembic_config(), revision or 'head')
 
 
 def revision(message=None, autogenerate=False):
@@ -82,4 +77,5 @@ def revision(message=None, autogenerate=False):
     state
     :type autogenerate: bool
     """
-    return alembic.command.revision(_alembic_config(), message, autogenerate)
+    return alembic.command.revision(utils.alembic_config(),
+                                    message, autogenerate)

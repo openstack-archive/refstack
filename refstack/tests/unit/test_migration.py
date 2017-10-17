@@ -20,7 +20,7 @@ import mock
 from oslotest import base
 
 from refstack.db import migration
-from refstack.db.migrations.alembic import migration as alembic_migration
+from refstack.db.migrations.alembic import utils
 
 
 class AlembicConfigTestCase(base.BaseTestCase):
@@ -30,7 +30,7 @@ class AlembicConfigTestCase(base.BaseTestCase):
     def test_alembic_config(self, os_join, alembic_config):
         os_join.return_value = 'fake_path'
         alembic_config.return_value = 'fake_config'
-        result = alembic_migration._alembic_config()
+        result = utils.alembic_config()
         self.assertEqual(result, 'fake_config')
         alembic_config.assert_called_once_with('fake_path')
 
@@ -41,7 +41,7 @@ class MigrationTestCase(base.BaseTestCase):
     def setUp(self):
         super(MigrationTestCase, self).setUp()
         self.config_patcher = mock.patch(
-            'refstack.db.migrations.alembic.migration._alembic_config')
+            'refstack.db.migrations.alembic.utils.alembic_config')
         self.config = self.config_patcher.start()
         self.config.return_value = 'fake_config'
         self.addCleanup(self.config_patcher.stop)
@@ -57,7 +57,7 @@ class MigrationTestCase(base.BaseTestCase):
             engine.connect = mock.MagicMock()
             get_engine.return_value = engine
             migration.version()
-            context.get_current_revision.assert_called_once_with()
+            context.get_current_revision.assert_called_with()
             engine.connect.assert_called_once_with()
 
     @mock.patch('alembic.command.upgrade')

@@ -19,9 +19,12 @@
 from __future__ import with_statement
 
 from alembic import context
+from oslo_config import cfg
 
 from refstack.db.sqlalchemy import api as db_api
 from refstack.db.sqlalchemy import models as db_models
+
+CONF = cfg.CONF
 
 
 def run_migrations_online():
@@ -33,9 +36,9 @@ def run_migrations_online():
     engine = db_api.get_engine()
     connection = engine.connect()
     target_metadata = db_models.RefStackBase.metadata
-    context.configure(
-        connection=connection,
-        target_metadata=target_metadata)
+    context.configure(connection=connection,
+                      target_metadata=target_metadata,
+                      version_table=getattr(CONF, 'version_table'))
 
     try:
         with context.begin_transaction():
