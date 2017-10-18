@@ -1,0 +1,38 @@
+- project:
+    name: openstack/refstack
+    check:
+      jobs:
+        - refstack-tox-py27-func-mysql
+        - refstack-tox-py35-func-mysql
+    gate:
+      jobs:
+        - refstack-tox-py27-func-mysql
+        - refstack-tox-py35-func-mysql
+
+- job:
+    name: refstack-tox-py27-func-mysql
+    parent: openstack-tox
+    description: |
+      Run unit tests for an OpenStack Python project under cPython version 2.7.
+
+      Uses tox with the ``py27-func-mysql`` environment.
+    irrelevant-files:
+      - ^.*\.rst$
+      - ^doc/.*$
+      - ^releasenotes/.*$
+    vars:
+      tox_envlist: py27-func-mysql
+
+- job:
+    name: refstack-tox-py35-func-mysql
+    parent: openstack-tox
+    description: |
+      Run unit tests for an OpenStack Python project under cPython version 3.5.
+
+      Uses tox with the ``py35-func-mysql`` environment.
+    irrelevant-files:
+      - ^.*\.rst$
+      - ^doc/.*$
+      - ^releasenotes/.*$
+    vars:
+      tox_envlist: py35-func-mysql
