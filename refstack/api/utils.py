@@ -320,9 +320,14 @@ def verify_openid_request(request):
         CONF.osid.openstack_openid_endpoint, data=verify_params,
         verify=not CONF.api.app_dev_mode
     )
-    verify_data_tokens = verify_response.content.split()
-    verify_dict = dict((token.split(":")[0], token.split(":")[1])
-                       for token in verify_data_tokens)
+
+    vrc = verify_response.content.decode('utf-8') if isinstance(
+        verify_response.content, bytes) else verify_response.content
+
+    verify_data_tokens = vrc.split()
+    verify_dict = dict((token.split(':')[0], token.split(':')[1])
+                       for token in verify_data_tokens
+                       if len(token.split(':')) > 1)
 
     if (verify_response.status_code / 100 != 2
             or verify_dict['is_valid'] != 'true'):
