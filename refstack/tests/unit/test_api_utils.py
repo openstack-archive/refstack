@@ -320,7 +320,7 @@ class APIUtilsTestCase(base.BaseTestCase):
 
     def test_get_token(self):
         token = api_utils.get_token(42)
-        self.assertRegexpMatches(token, "[a-z]{42}")
+        self.assertRegex(token, "[a-z]{42}")
 
     @mock.patch.object(api_utils, 'get_user_session')
     def test_delete_params_from_user_session(self, mock_get_user_session):
