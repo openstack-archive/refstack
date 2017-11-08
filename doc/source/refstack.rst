@@ -285,7 +285,7 @@ The RefStack documentation can be build using following commands:
 
 ``cd ~/refstack; source .venv/bin/activate``
 
-``sudo apt-get install -y python3-dev python-tox``
+``sudo apt-get install python3-dev python-tox``
 
 ``tox -e docs``
 
