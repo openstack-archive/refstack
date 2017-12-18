@@ -13,7 +13,6 @@
     "karma": "^0.12.23",
     "karma-chrome-launcher": "^0.1.5",
     "karma-cli": "0.0.4",
-    "karma-firefox-launcher": "^0.1.3",
     "karma-jasmine": "^0.2.2",
     "protractor": "~1.0.0"
   },
