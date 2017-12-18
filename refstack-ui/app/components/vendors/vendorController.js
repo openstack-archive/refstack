@@ -70,10 +70,10 @@
                     ctrl.vendor = data;
                     var isAdmin = $rootScope.auth.currentUser.is_admin;
                     ctrl.vendor.canDelete = ctrl.vendor.canEdit =
-                        ctrl.vendor.type != 0
+                        ctrl.vendor.type !== 0
                         && (ctrl.vendor.can_manage || isAdmin);
                     ctrl.vendor.canRegister =
-                        ctrl.vendor.type == 1;
+                        ctrl.vendor.type === 1;
                     ctrl.vendor.canApprove = isAdmin;
                     ctrl.vendorProperties = angular.fromJson(data.properties);
                 }).error(function(error) {
@@ -89,7 +89,7 @@
          */
         function registerVendor() {
             var url = [refstackApiUrl, '/vendors/', ctrl.vendorId,
-                       '/action'].join('');
+                '/action'].join('');
             $http.post(url, {register: null}).success(function() {
                 ctrl.getVendor();
             }).error(function(error) {
@@ -102,7 +102,7 @@
          */
         function approveVendor() {
             var url = [refstackApiUrl, '/vendors/', ctrl.vendorId,
-                       '/action'].join('');
+                '/action'].join('');
             $http.post(url, {approve: null}).success(function() {
                 ctrl.getVendor();
             }).error(function(error) {
@@ -116,7 +116,7 @@
         function declineVendor() {
             confirmModal('Please input decline reason', function(reason) {
                 var url = [refstackApiUrl, '/vendors/', ctrl.vendorId,
-                           '/action'].join('');
+                    '/action'].join('');
                 var content = {deny: null, registration_decline_reason: reason};
                 $http.post(url, content).success(
                     function() {
@@ -198,7 +198,7 @@
          */
         function removeUserFromVendor(openid) {
             var url = [refstackApiUrl, '/vendors/', ctrl.vendorId,
-                       '/users/', btoa(openid)].join('');
+                '/users/', btoa(openid)].join('');
             $http.delete(url).success(function () {
                 ctrl.getVendorUsers();
             }).error(function (error) {
@@ -212,7 +212,7 @@
          */
         function addUserToVendor(openid) {
             var url = [refstackApiUrl, '/vendors/', ctrl.vendorId,
-                       '/users/', btoa(openid)].join('');
+                '/users/', btoa(openid)].join('');
             $http.put(url).success(function() {
                 ctrl.userToAdd = '';
                 ctrl.getVendorUsers();
@@ -298,8 +298,8 @@
             var url = [refstackApiUrl, '/vendors/', ctrl.vendor.id].join('');
             var properties = propertiesToJson();
             var content = {'description': ctrl.vendor.description,
-                           'properties': properties};
-            if (ctrl.vendorName != ctrl.vendor.name) {
+                'properties': properties};
+            if (ctrl.vendorName !== ctrl.vendor.name) {
                 content.name = ctrl.vendor.name;
             }
             $http.put(url, content).success(function() {

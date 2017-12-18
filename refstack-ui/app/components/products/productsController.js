@@ -20,15 +20,14 @@
         .controller('ProductsController', ProductsController);
 
     ProductsController.$inject = [
-        '$rootScope', '$scope', '$http', '$state',
-        'refstackApiUrl','raiseAlert'
+        '$rootScope', '$scope', '$http', '$state', 'refstackApiUrl'
     ];
 
     /**
      * RefStack Products Controller
      */
     function ProductsController($rootScope, $scope, $http, $state,
-                                refstackApiUrl, raiseAlert) {
+                                refstackApiUrl) {
         var ctrl = this;
 
         ctrl.update = update;
@@ -82,7 +81,7 @@
             ctrl.showError = false;
             // Construct the API URL based on user-specified filters.
             var contentUrl = refstackApiUrl + '/products';
-            if (typeof ctrl.rawData == 'undefined'
+            if (typeof ctrl.rawData === 'undefined'
                     || ctrl.rawData === null) {
                 ctrl.productsRequest =
                     $http.get(contentUrl).success(function (data) {
@@ -106,7 +105,8 @@
         function updateData() {
             ctrl.data = {};
             ctrl.data.products = ctrl.rawData.products.filter(function(s) {
-                return ctrl._filterProduct(s); });
+                return ctrl._filterProduct(s);
+            });
             ctrl.data.products.sort(function(a, b) {
                 return a.name.localeCompare(b.name);
             });
@@ -165,7 +165,7 @@
                     ctrl.vendors.sort(function(a, b) {
                         return a.name.localeCompare(b.name);
                     });
-                    if (ctrl.vendors.length == 0) {
+                    if (ctrl.vendors.length === 0) {
                         ctrl.vendors.push({name: 'Create New...', id: ''});
                     }
                     ctrl.organizationId = ctrl.vendors[0].id;
@@ -189,9 +189,9 @@
                 name: ctrl.name,
                 description: ctrl.description,
                 organization_id: ctrl.organizationId,
-                product_type: parseInt(ctrl.productType)
+                product_type: parseInt(ctrl.productType, 10)
             };
-            $http.post(url, data).success(function (data) {
+            $http.post(url, data).success(function () {
                 ctrl.rawData = null;
                 ctrl.showSuccess = true;
                 ctrl.name = '';

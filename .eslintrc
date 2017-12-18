@@ -57,6 +57,8 @@
     "no-extra-boolean-cast": 0,
     "operator-linebreak": 0,
     "require-jsdoc": 2,
+    "quote-props": 0,
+    "valid-jsdoc": 0,
 
     // Stylistic
     "indent": [2, 4, {SwitchCase: 1}],

@@ -20,9 +20,7 @@
         .controller('VendorsController', VendorsController);
 
     VendorsController.$inject = [
-        '$rootScope', '$scope', '$http', '$state',
-        'refstackApiUrl','raiseAlert'
-    ];
+        '$rootScope', '$scope', '$http', '$state', 'refstackApiUrl'];
 
     /**
      * RefStack Vendors Controller
@@ -30,7 +28,7 @@
      * where a user can browse a listing of his/her vendors or public vendors.
      */
     function VendorsController($rootScope, $scope, $http, $state,
-                               refstackApiUrl, raiseAlert) {
+                               refstackApiUrl) {
         var ctrl = this;
 
         ctrl.update = update;
@@ -81,7 +79,7 @@
             ctrl.data = null;
             // Construct the API URL based on user-specified filters.
             var contentUrl = refstackApiUrl + '/vendors';
-            if (typeof ctrl.rawData == 'undefined'
+            if (typeof ctrl.rawData === 'undefined'
                     || ctrl.rawData === null) {
                 ctrl.vendorsRequest =
                     $http.get(contentUrl).success(function (data) {
@@ -123,7 +121,7 @@
          */
         function _filterVendor(vendor) {
             if (!ctrl.isUserVendors) {
-                return (vendor.type == 0 || vendor.type == 3);
+                return vendor.type === 0 || vendor.type === 3;
             }
 
             if (!$rootScope.auth || !$rootScope.auth.currentUser) {
@@ -131,7 +129,7 @@
             }
 
             if ($rootScope.auth.currentUser.is_admin) {
-                return vendor.type != 1 || ctrl.withPrivate;
+                return vendor.type !== 1 || ctrl.withPrivate;
             }
 
             return vendor.can_manage;
@@ -148,7 +146,7 @@
                 name: ctrl.name,
                 description: ctrl.description
             };
-            $http.post(url, data).success(function (data) {
+            $http.post(url, data).success(function () {
                 ctrl.showSuccess = true;
                 ctrl.name = '';
                 ctrl.description = '';

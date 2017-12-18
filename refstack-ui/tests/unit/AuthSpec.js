@@ -20,8 +20,8 @@ describe('Auth', function () {
     it('should show signin url for signed user', function () {
         $httpBackend.expectGET(fakeApiUrl +
             '/profile').respond({'openid': 'foo@bar.com',
-            'email': 'foo@bar.com',
-            'fullname': 'foo' });
+                'email': 'foo@bar.com',
+                'fullname': 'foo' });
         $httpBackend.flush();
         $rootScope.auth.doSignIn();
         expect($window.location.href).toBe(fakeApiUrl + '/auth/signin');

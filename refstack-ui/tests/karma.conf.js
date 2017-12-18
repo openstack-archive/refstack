@@ -19,7 +19,6 @@ module.exports = function (config) {
             'app/components/**/*.js',
             'app/shared/*.js',
             'app/shared/**/*.js',
-            'app/assets/js/*.js',
 
             // Test Specs.
             'tests/unit/*.js'

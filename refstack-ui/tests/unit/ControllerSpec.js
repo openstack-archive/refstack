@@ -135,15 +135,15 @@ describe('Refstack controllers', function () {
 
                 $httpBackend.expectGET(fakeApiUrl +
                 '/guidelines').respond(['next.json', '2015.03.json',
-                                        '2015.04.json']);
+                    '2015.04.json']);
                 // Should call request with latest version.
                 $httpBackend.expectGET(fakeApiUrl +
                 '/guidelines/2015.04.json').respond(fakeCaps);
                 $httpBackend.flush();
                 // The version list should be sorted latest first.
                 expect(ctrl.versionList).toEqual(['next.json',
-                                                  '2015.04.json',
-                                                  '2015.03.json']);
+                    '2015.04.json',
+                    '2015.03.json']);
                 expect(ctrl.guidelines).toEqual(fakeCaps);
                 // The guideline status should be approved.
                 expect(ctrl.guidelineStatus).toEqual('approved');
@@ -201,7 +201,7 @@ describe('Refstack controllers', function () {
 
                 $httpBackend.expectGET(fakeApiUrl +
                 '/guidelines').respond(['next.json', '2015.03.json',
-                                        '2017.08.json']);
+                    '2017.08.json']);
                 // Should call request with latest version.
                 $httpBackend.expectGET(fakeApiUrl +
                 '/guidelines/2017.08.json').respond(fakeCaps);
@@ -280,18 +280,17 @@ describe('Refstack controllers', function () {
     });
 
     describe('TestListModalController', function () {
-        var modalInstance, ctrl, $window;
+        var modalInstance, ctrl;
 
-        beforeEach(inject(function ($controller, _$window_) {
+        beforeEach(inject(function ($controller) {
             modalInstance = {
                 dismiss: jasmine.createSpy('modalInstance.dismiss')
             };
-            $window = _$window_;
             ctrl = $controller('TestListModalController',
                 {$uibModalInstance: modalInstance,
-                 target: 'platform',
-                 version: '2016.01',
-                 status: {required: true, advisory: false}}
+                    target: 'platform',
+                    version: '2016.01',
+                    status: {required: true, advisory: false}}
             );
         }));
 
@@ -418,15 +417,14 @@ describe('Refstack controllers', function () {
                 $httpBackend.flush();
                 // Expect the list to have the latest guideline first.
                 expect(ctrl.versionList).toEqual(['2015.04.json',
-                                                  '2015.03.json']);
+                    '2015.03.json']);
             });
 
         it('should have a function to get products manageable by a user',
             function () {
-                var prodResp = {'products': [{'id': 'abc',
-                                              'can_manage': true},
-                                             {'id': 'foo',
-                                              'can_manage': false}]};
+                var prodResp = {'products': [
+                    {'id': 'abc', 'can_manage': true},
+                    {'id': 'foo', 'can_manage': false}]};
                 ctrl.products = null;
                 $httpBackend.expectGET(fakeApiUrl + '/products')
                     .respond(200, prodResp);
@@ -449,8 +447,8 @@ describe('Refstack controllers', function () {
         it('should have a function to associate a product version to a test',
             function () {
                 var result = {'id': 'bar',
-                              'selectedVersion': {'id': 'foo'},
-                              'selectedProduct': {'id': 'prod'}};
+                    'selectedVersion': {'id': 'foo'},
+                    'selectedProduct': {'id': 'prod'}};
                 ctrl.products = null;
                 $httpBackend.expectPUT(fakeApiUrl + '/results/bar')
                     .respond(201);
@@ -463,7 +461,7 @@ describe('Refstack controllers', function () {
         it('should have a function to get product versions',
             function () {
                 var result = {'id': 'bar',
-                              'selectedProduct': {'id': 'prod'}};
+                    'selectedProduct': {'id': 'prod'}};
                 var verResp = [{'id': 'ver1', 'version': '1.0'},
                                {'id': 'ver2', 'version': null}];
                 ctrl.products = null;
@@ -530,7 +528,7 @@ describe('Refstack controllers', function () {
                 expect(ctrl.resultsData).toEqual(fakeResultResponse);
                 // The version list should be sorted latest first.
                 expect(ctrl.versionList).toEqual(['2015.04.json',
-                                                   '2015.03.json']);
+                    '2015.03.json']);
                 expect(ctrl.guidelineData).toEqual(fakeCapabilityResponse);
                 // The guideline status should be approved.
                 expect(ctrl.guidelineData.status).toEqual('approved');
@@ -643,11 +641,11 @@ describe('Refstack controllers', function () {
                         'flagFailCount': 0, 'flagPassCount': 1
                     },
                     'advisory': {'caps': [], 'count': 0, 'passedCount': 0,
-                                 'flagFailCount': 0, 'flagPassCount': 0},
+                        'flagFailCount': 0, 'flagPassCount': 0},
                     'deprecated': {'caps': [], 'count': 0, 'passedCount': 0,
-                                   'flagFailCount': 0, 'flagPassCount': 0},
+                        'flagFailCount': 0, 'flagPassCount': 0},
                     'removed': {'caps': [], 'count': 0, 'passedCount': 0,
-                                'flagFailCount': 0, 'flagPassCount': 0}
+                        'flagFailCount': 0, 'flagPassCount': 0}
                 };
                 expect(ctrl.caps).toEqual(expectedCapsObject);
                 expect(ctrl.requiredPassPercent).toEqual(50);
@@ -658,9 +656,9 @@ describe('Refstack controllers', function () {
             'schema version 1.3 and above',
             function () {
                 ctrl.resultsData = {'results': ['test_id_1',
-                                                'old_test_id_3',
-                                                'test_id_4']
-                                   };
+                    'old_test_id_3',
+                    'test_id_4']
+                };
                 ctrl.guidelineData = {
                     'platform': {'required': ['compute']},
                     'schema': '1.4',
@@ -704,8 +702,8 @@ describe('Refstack controllers', function () {
                         'caps': [{
                             'id': 'cap_id_1',
                             'passedTests': ['test_id_1',
-                                            'test_id_3',
-                                            'test_id_4'],
+                                'test_id_3',
+                                'test_id_4'],
                             'notPassedTests': ['test_id_2'],
                             'passedFlagged': ['test_id_1'],
                             'notPassedFlagged': []
@@ -714,11 +712,11 @@ describe('Refstack controllers', function () {
                         'flagFailCount': 0, 'flagPassCount': 1
                     },
                     'advisory': {'caps': [], 'count': 0, 'passedCount': 0,
-                                 'flagFailCount': 0, 'flagPassCount': 0},
+                        'flagFailCount': 0, 'flagPassCount': 0},
                     'deprecated': {'caps': [], 'count': 0, 'passedCount': 0,
-                                   'flagFailCount': 0, 'flagPassCount': 0},
+                        'flagFailCount': 0, 'flagPassCount': 0},
                     'removed': {'caps': [], 'count': 0, 'passedCount': 0,
-                                'flagFailCount': 0, 'flagPassCount': 0}
+                        'flagFailCount': 0, 'flagPassCount': 0}
                 };
                 expect(ctrl.caps).toEqual(expectedCapsObject);
                 expect(ctrl.requiredPassPercent).toEqual(75);
@@ -741,7 +739,7 @@ describe('Refstack controllers', function () {
         it('should have a method to determine if a test is flagged',
             function () {
                 var capObj = {'flagged': [ 'test1'],
-                              'tests': ['test1', 'test2']};
+                    'tests': ['test1', 'test2']};
 
                 ctrl.schemaVersion = '1.2';
                 expect(ctrl.isTestFlagged('test1', capObj)).toEqual(true);
@@ -773,7 +771,7 @@ describe('Refstack controllers', function () {
         it('should have a method to get the reason a flagged test is flagged',
             function () {
                 var capObj = {'flagged': [ 'test1'],
-                              'tests': ['test1', 'test2']};
+                    'tests': ['test1', 'test2']};
 
                 ctrl.schemaVersion = '1.2';
                 expect(ctrl.getFlaggedReason('test1', capObj)).toEqual(
@@ -803,17 +801,17 @@ describe('Refstack controllers', function () {
            'be shown',
             function () {
                 var caps = [{'id': 'cap_id_1',
-                             'passedTests': ['test_id_1'],
-                             'notPassedTests': [],
-                             'passedFlagged': ['test_id_1'],
-                             'notPassedFlagged': []
-                            },
-                            {'id': 'cap_id_2',
-                             'passedTests': [],
-                             'notPassedTests': ['test_id_4'],
-                             'passedFlagged': [],
-                             'notPassedFlagged': []
-                            }];
+                    'passedTests': ['test_id_1'],
+                    'notPassedTests': [],
+                    'passedFlagged': ['test_id_1'],
+                    'notPassedFlagged': []
+                },
+                {'id': 'cap_id_2',
+                    'passedTests': [],
+                    'notPassedTests': ['test_id_4'],
+                    'passedFlagged': [],
+                    'notPassedFlagged': []
+                }];
 
                 // Check that all capabilities are shown by default.
                 expect(ctrl.isCapabilityShown(caps[0])).toEqual(true);
@@ -838,11 +836,11 @@ describe('Refstack controllers', function () {
         it('should have a method to determine whether a test should be shown',
             function () {
                 var cap = {'id': 'cap_id_1',
-                           'passedTests': ['test_id_1'],
-                           'notPassedTests': [],
-                           'passedFlagged': ['test_id_1'],
-                           'notPassedFlagged': []
-                          };
+                    'passedTests': ['test_id_1'],
+                    'notPassedTests': [],
+                    'passedFlagged': ['test_id_1'],
+                    'notPassedFlagged': []
+                };
 
                 expect(ctrl.isTestShown('test_id_1', cap)).toEqual(true);
                 ctrl.testStatus = 'passed';
@@ -857,11 +855,11 @@ describe('Refstack controllers', function () {
            'capability belong under the current test filter',
             function () {
                 var cap = {'id': 'cap_id_1',
-                           'passedTests': ['t1', 't2', 't3'],
-                           'notPassedTests': ['t4', 't5', 't6', 't7'],
-                           'passedFlagged': ['t1'],
-                           'notPassedFlagged': ['t3', 't4']
-                          };
+                    'passedTests': ['t1', 't2', 't3'],
+                    'notPassedTests': ['t4', 't5', 't6', 't7'],
+                    'passedFlagged': ['t1'],
+                    'notPassedFlagged': ['t3', 't4']
+                };
 
                 // Should return the count of all tests.
                 expect(ctrl.getCapabilityTestCount(cap)).toEqual(7);
@@ -883,8 +881,8 @@ describe('Refstack controllers', function () {
            'belong under the current test filter',
             function () {
                 ctrl.caps = {'required': {'caps': [], 'count': 10,
-                              'passedCount': 6, 'flagFailCount': 3,
-                              'flagPassCount': 2}};
+                    'passedCount': 6, 'flagFailCount': 3,
+                    'flagPassCount': 2}};
 
                 // Should return the count of all tests (count).
                 expect(ctrl.getStatusTestCount('required')).toEqual(10);
@@ -984,7 +982,6 @@ describe('Refstack controllers', function () {
                 'target': 'object'
             }
         };
-        var fakeProdResp = {'products': [{'id': 1234}]};
         var fakeVersionResp = [{'id': 'ver1', 'version': '1.0'},
                                {'id': 'ver2', 'version': null}];
 
@@ -997,7 +994,7 @@ describe('Refstack controllers', function () {
             };
             ctrl = $controller('EditTestModalController',
                 {$uibModalInstance: modalInstance, $state: state,
-                 resultsData: fakeResultsData}
+                    resultsData: fakeResultsData}
             );
             $httpBackend.when('GET', fakeApiUrl +
                 '/guidelines').respond(['2015.03.json', '2015.04.json']);
@@ -1121,7 +1118,7 @@ describe('Refstack controllers', function () {
         var rootScope, scope, stateParams, ctrl;
         var confirmModal = jasmine.createSpy('confirmModal');
         var fakeResp = {'id': 'fake-id', 'type': 1,
-                         'can_manage': true, 'properties' : {}};
+            'can_manage': true, 'properties' : {}};
         var fakeUsersResp = [{'openid': 'foo'}];
         var fakeProdResp = {'products': [{'id': 123}]};
         var fakeWindow = {
@@ -1134,13 +1131,13 @@ describe('Refstack controllers', function () {
             scope = $rootScope.$new();
             rootScope = $rootScope.$new();
             rootScope.auth = {'currentUser' : {'is_admin': false,
-                                               'openid': 'foo'}
-                             };
+                'openid': 'foo'}
+            };
             stateParams = {vendorID: 1234};
             ctrl = $controller('VendorController',
                 {$rootScope: rootScope, $scope: scope,
-                 $stateParams: stateParams, $window: fakeWindow,
-                 confirmModal: confirmModal}
+                    $stateParams: stateParams, $window: fakeWindow,
+                    confirmModal: confirmModal}
             );
 
             $httpBackend.when('GET', fakeApiUrl +
@@ -1237,7 +1234,7 @@ describe('Refstack controllers', function () {
     describe('VendorEditModalController', function() {
         var rootScope, ctrl, modalInstance, state;
         var fakeVendor = {'name': 'Foo', 'description': 'Bar', 'id': '1234',
-                          'properties': {'key1': 'value1', 'key2': 'value2'}};
+            'properties': {'key1': 'value1', 'key2': 'value2'}};
 
         beforeEach(inject(function ($controller, $rootScope) {
             modalInstance = {
@@ -1248,12 +1245,12 @@ describe('Refstack controllers', function () {
             };
             rootScope = $rootScope.$new();
             rootScope.auth = {'currentUser' : {'is_admin': true,
-                                               'openid': 'foo'}
-                             };
+                'openid': 'foo'}
+            };
             ctrl = $controller('VendorEditModalController',
                 {$rootScope: rootScope,
-                 $uibModalInstance: modalInstance, $state: state,
-                 vendor: fakeVendor}
+                    $uibModalInstance: modalInstance, $state: state,
+                    vendor: fakeVendor}
             );
 
         }));
@@ -1296,17 +1293,17 @@ describe('Refstack controllers', function () {
     describe('VendorsController', function () {
         var rootScope, scope, ctrl;
         var fakeResp = {'vendors': [{'can_manage': true,
-                                     'type': 3,
-                                     'name': 'Foo'},
-                                    {'can_manage': true,
-                                     'type': 3,
-                                     'name': 'Bar'}]};
+            'type': 3,
+            'name': 'Foo'},
+        {'can_manage': true,
+            'type': 3,
+            'name': 'Bar'}]};
         beforeEach(inject(function ($controller, $rootScope) {
             scope = $rootScope.$new();
             rootScope = $rootScope.$new();
             rootScope.auth = {'currentUser' : {'is_admin': false,
-                                               'openid': 'foo'}
-                             };
+                'openid': 'foo'}
+            };
             ctrl = $controller('VendorsController',
                 {$rootScope: rootScope, $scope: scope}
             );
@@ -1328,11 +1325,11 @@ describe('Refstack controllers', function () {
                 ctrl.rawData = fakeResp;
                 ctrl.updateData();
                 var expectedResponse = {'vendors': [{'can_manage': true,
-                                                     'type': 3,
-                                                     'name' : 'Bar'},
-                                                    {'can_manage': true,
-                                                     'type': 3,
-                                                     'name': 'Foo'}]};
+                    'type': 3,
+                    'name' : 'Bar'},
+                {'can_manage': true,
+                    'type': 3,
+                    'name': 'Foo'}]};
                 expect(ctrl.data).toEqual(expectedResponse);
             });
 
@@ -1363,21 +1360,21 @@ describe('Refstack controllers', function () {
     describe('ProductsController', function() {
         var rootScope, scope, ctrl;
         var vendResp = {'vendors': [{'can_manage': true,
-                                     'type': 3,
-                                     'name': 'Foo',
-                                     'id': '123'}]};
+            'type': 3,
+            'name': 'Foo',
+            'id': '123'}]};
         var prodResp = {'products': [{'id': 'abc',
-                                      'product_type': 1,
-                                      'public': 1,
-                                      'name': 'Foo Product',
-                                      'organization_id': '123'}]};
+            'product_type': 1,
+            'public': 1,
+            'name': 'Foo Product',
+            'organization_id': '123'}]};
 
         beforeEach(inject(function ($controller, $rootScope) {
             scope = $rootScope.$new();
             rootScope = $rootScope.$new();
             rootScope.auth = {'currentUser' : {'is_admin': false,
-                                               'openid': 'foo'}
-                             };
+                'openid': 'foo'}
+            };
             ctrl = $controller('ProductsController',
                 {$rootScope: rootScope, $scope: scope}
             );
@@ -1391,24 +1388,24 @@ describe('Refstack controllers', function () {
             function () {
                 $httpBackend.flush();
                 var newVendResp = {'vendors': [{'name': 'Foo',
-                                                'id': '123',
-                                                'can_manage': true},
-                                               {'name': 'Bar',
-                                                'id': '345',
-                                                'can_manage': false}]};
+                    'id': '123',
+                    'can_manage': true},
+                {'name': 'Bar',
+                    'id': '345',
+                    'can_manage': false}]};
                 $httpBackend.expectGET(fakeApiUrl + '/vendors')
                     .respond(200, newVendResp);
                 ctrl.updateVendors();
                 $httpBackend.flush();
                 expect(ctrl.allVendors).toEqual({'123': {'name': 'Foo',
-                                                         'id': '123',
-                                                         'can_manage': true},
-                                                 '345': {'name': 'Bar',
-                                                         'id': '345',
-                                                         'can_manage': false}});
+                    'id': '123',
+                    'can_manage': true},
+                    '345': {'name': 'Bar',
+                        'id': '345',
+                        'can_manage': false}});
                 expect(ctrl.vendors).toEqual([{'name': 'Foo',
-                                               'id': '123',
-                                               'can_manage': true}]);
+                    'id': '123',
+                    'can_manage': true}]);
             });
 
         it('should have a function to get products',
@@ -1424,14 +1421,14 @@ describe('Refstack controllers', function () {
             function () {
                 $httpBackend.flush();
                 ctrl.allVendors = {'123': {'name': 'Foo',
-                                           'id': '123',
-                                           'can_manage': true}};
+                    'id': '123',
+                    'can_manage': true}};
                 ctrl.updateData();
                 var expectedData = {'products': [{'id': 'abc',
-                                                  'product_type': 1,
-                                                  'public': 1,
-                                                  'name': 'Foo Product',
-                                                  'organization_id': '123'}]};
+                    'product_type': 1,
+                    'public': 1,
+                    'name': 'Foo Product',
+                    'organization_id': '123'}]};
                 expect(ctrl.data).toEqual(expectedData);
             });
 
@@ -1449,31 +1446,31 @@ describe('Refstack controllers', function () {
     describe('ProductController', function() {
         var rootScope, scope, stateParams, ctrl;
         var fakeProdResp = {'product_type': 1,
-                            'product_ref_id': null,
-                            'name': 'Good Stuff',
-                            'created_at': '2016-01-01 01:02:03',
-                            'updated_at': '2016-06-15 01:02:04',
-                            'properties': null,
-                            'organization_id': 'fake-org-id',
-                            'public': true,
-                            'can_manage': true,
-                            'created_by_user': 'fake-open-id',
-                            'type': 0,
-                            'id': '1234',
-                            'description': 'some description'};
+            'product_ref_id': null,
+            'name': 'Good Stuff',
+            'created_at': '2016-01-01 01:02:03',
+            'updated_at': '2016-06-15 01:02:04',
+            'properties': null,
+            'organization_id': 'fake-org-id',
+            'public': true,
+            'can_manage': true,
+            'created_by_user': 'fake-open-id',
+            'type': 0,
+            'id': '1234',
+            'description': 'some description'};
         var fakeVersionResp = [{'id': 'asdf',
-                               'cpid': null,
-                               'version': '1.0',
-                               'product_id': '1234'}];
+            'cpid': null,
+            'version': '1.0',
+            'product_id': '1234'}];
         var fakeTestsResp = {'pagination': {'current_page': 1,
-                                            'total_pages': 1},
-                             'results':[{'id': 'foo-test'}]};
+            'total_pages': 1},
+            'results':[{'id': 'foo-test'}]};
         var fakeVendorResp = {'id': 'fake-org-id',
-                              'type': 3,
-                              'can_manage': true,
-                              'properties' : {},
-                              'name': 'Foo Vendor',
-                              'description': 'foo bar'};
+            'type': 3,
+            'can_manage': true,
+            'properties' : {},
+            'name': 'Foo Vendor',
+            'description': 'foo bar'};
         var fakeWindow = {
             location: {
                 href: ''
@@ -1485,11 +1482,11 @@ describe('Refstack controllers', function () {
             rootScope = $rootScope.$new();
             stateParams = {id: 1234};
             rootScope.auth = {'currentUser' : {'is_admin': false,
-                                               'openid': 'foo'}
-                             };
+                'openid': 'foo'}
+            };
             ctrl = $controller('ProductController',
                 {$rootScope: rootScope, $scope: scope,
-                 $stateParams: stateParams, $window: fakeWindow}
+                    $stateParams: stateParams, $window: fakeWindow}
             );
             $httpBackend.when('GET', fakeApiUrl +
                 '/products/1234').respond(fakeProdResp);
@@ -1609,7 +1606,7 @@ describe('Refstack controllers', function () {
 
         var ctrl, modalInstance, state, parent;
         var fakeVersion = {'id': 'asdf', 'cpid': null,
-                           'version': '1.0','product_id': '1234'};
+            'version': '1.0','product_id': '1234'};
 
         beforeEach(inject(function ($controller) {
             modalInstance = {
@@ -1620,7 +1617,7 @@ describe('Refstack controllers', function () {
             };
             ctrl = $controller('ProductVersionModalController',
                 {$uibModalInstance: modalInstance, $state: state,
-                 version: fakeVersion, parent: parent}
+                    version: fakeVersion, parent: parent}
             );
         }));
 
@@ -1647,9 +1644,9 @@ describe('Refstack controllers', function () {
     describe('ProductEditModalController', function() {
         var ctrl, modalInstance, state;
         var fakeProduct = {'name': 'Foo', 'description': 'Bar', 'id': '1234',
-                           'properties': {'key1': 'value1'}};
+            'properties': {'key1': 'value1'}};
         var fakeVersion = {'version': null, 'product_id': '1234',
-                           'cpid': null, 'id': 'asdf'};
+            'cpid': null, 'id': 'asdf'};
 
         beforeEach(inject(function ($controller) {
             modalInstance = {
@@ -1660,8 +1657,8 @@ describe('Refstack controllers', function () {
             };
             ctrl = $controller('ProductEditModalController',
                 {$uibModalInstance: modalInstance, $state: state,
-                 product: fakeProduct,
-                 version: fakeVersion}
+                    product: fakeProduct,
+                    version: fakeVersion}
             );
         }));
 

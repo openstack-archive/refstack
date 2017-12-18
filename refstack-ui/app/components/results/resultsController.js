@@ -183,18 +183,16 @@
                     }).error(function (error) {
                         raiseAlert('danger', error.title, error.detail);
                     });
-            }
-            else {
+            } else {
                 ctrl.unassociateRequest = $http.delete(metaUrl)
                     .success(function () {
                         ctrl.data.results[index][editFlag] = false;
                     }).error(function (error) {
-                        if (error.code == 404) {
+                        if (error.code === 404) {
                             // Key doesn't exist, so count it as a success,
                             // and don't raise an alert.
                             ctrl.data.results[index][editFlag] = false;
-                        }
-                        else {
+                        } else {
                             raiseAlert('danger', error.title, error.detail);
                         }
                     });
@@ -273,13 +271,13 @@
          * a test result.
          */
         function associateProductVersion(result) {
-            var verId = (result.selectedVersion ?
-                         result.selectedVersion.id : null);
+            var verId = result.selectedVersion ?
+                         result.selectedVersion.id : null;
             var testId = result.id;
             var url = refstackApiUrl + '/results/' + testId;
             ctrl.associateRequest = $http.put(url, {'product_version_id':
                                                     verId})
-                .success(function (data) {
+                .success(function () {
                     result.product_version = result.selectedVersion;
                     if (result.selectedVersion) {
                         result.product_version.product_info =

@@ -94,8 +94,7 @@
                             data.metadata.os_trademark_approval.releases;
                         ctrl.guidelineStatus =
                             data.metadata.os_trademark_approval.status;
-                    }
-                    else {
+                    } else {
                         ctrl.schema = data.schema;
                         ctrl.criteria = data.criteria;
                         ctrl.releases = data.releases;
@@ -121,6 +120,7 @@
             ctrl.targetCapabilities = {};
             var components = ctrl.guidelines.components;
             var targetCaps = ctrl.targetCapabilities;
+            var targetComponents = null;
 
             // The 'platform' target is comprised of multiple components, so
             // we need to get the capabilities belonging to each of its
@@ -133,15 +133,14 @@
                         'object': 'OpenStack Powered Storage'
                     };
 
-                    var targetComponents = ctrl.guidelines.platforms[
+                    targetComponents = ctrl.guidelines.platforms[
                         platformsMap[ctrl.target]].components.map(
                             function(c) {
                                 return c.name;
                             }
                         );
-                }
-                else {
-                    var targetComponents = ctrl.guidelines.platform.required;
+                } else {
+                    targetComponents = ctrl.guidelines.platform.required;
                 }
 
                 // This will contain status priority values, where lower
@@ -173,15 +172,13 @@
                                         statusMap[targetCaps[cap]]) {
                                         targetCaps[cap] = status;
                                     }
-                                }
-                                else {
+                                } else {
                                     targetCaps[cap] = status;
                                 }
                             });
                         });
                 });
-            }
-            else {
+            } else {
                 angular.forEach(components[ctrl.target],
                     function (caps, status) {
                         angular.forEach(caps, function(cap) {
@@ -200,14 +197,14 @@
          */
         function filterStatus(capability) {
             var caps = ctrl.targetCapabilities;
-            return (ctrl.status.required &&
-                caps[capability.id] === 'required') ||
-                (ctrl.status.advisory &&
-                caps[capability.id] === 'advisory') ||
-                (ctrl.status.deprecated &&
-                caps[capability.id] === 'deprecated') ||
-                (ctrl.status.removed &&
-                caps[capability.id] === 'removed');
+            return ctrl.status.required &&
+                caps[capability.id] === 'required' ||
+                ctrl.status.advisory &&
+                caps[capability.id] === 'advisory' ||
+                ctrl.status.deprecated &&
+                caps[capability.id] === 'deprecated' ||
+                ctrl.status.removed &&
+                caps[capability.id] === 'removed';
         }
 
         /**
@@ -282,8 +279,7 @@
         // Check if the API URL is absolute or relative.
         if (refstackApiUrl.indexOf('http') > -1) {
             ctrl.url = refstackApiUrl;
-        }
-        else {
+        } else {
             ctrl.url = location.protocol + '//' + location.host +
                 refstackApiUrl;
         }
@@ -333,8 +329,7 @@
                         ctrl.testListString = response.data;
                         if (!ctrl.testListString) {
                             ctrl.testListCount = 0;
-                        }
-                        else {
+                        } else {
                             ctrl.testListCount =
                                 ctrl.testListString.split('\n').length;
                         }
@@ -345,8 +340,7 @@
                             response.data.message) {
                             ctrl.error = 'Error retrieving test list: ' +
                                 response.data.message;
-                        }
-                        else {
+                        } else {
                             ctrl.error = 'Unknown error retrieving test list.';
                         }
                     });

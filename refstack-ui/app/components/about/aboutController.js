@@ -74,8 +74,7 @@
             var hash = $location.hash();
             if (hash && hash in ctrl.options) {
                 ctrl.selectOption(hash);
-            }
-            else {
+            } else {
                 ctrl.selectOption('about');
             }
         }

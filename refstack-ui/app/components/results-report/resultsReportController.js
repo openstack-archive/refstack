@@ -234,8 +234,7 @@
                             data.metadata.os_trademark_approval.status;
                         ctrl.releases =
                             data.metadata.os_trademark_approval.releases;
-                    }
-                    else {
+                    } else {
                         ctrl.schemaVersion = data.schema;
                         ctrl.guidelineStatus = data.status;
                         ctrl.releases = data.releases;
@@ -257,6 +256,7 @@
         function getTargetCapabilities() {
             var components = ctrl.guidelineData.components;
             var targetCaps = {};
+            var targetComponents = null;
 
             // The 'platform' target is comprised of multiple components, so
             // we need to get the capabilities belonging to each of its
@@ -269,15 +269,14 @@
                         'object': 'OpenStack Powered Storage'
                     };
 
-                    var targetComponents = ctrl.guidelineData.platforms[
+                    targetComponents = ctrl.guidelineData.platforms[
                         platformsMap[ctrl.target]].components.map(
                             function(c) {
                                 return c.name;
                             }
                         );
-                }
-                else {
-                    var targetComponents = ctrl.guidelineData.platform.required;
+                } else {
+                    targetComponents = ctrl.guidelineData.platform.required;
                 }
 
                 // This will contain status priority values, where lower
@@ -309,15 +308,13 @@
                                         statusMap[targetCaps[cap]]) {
                                         targetCaps[cap] = status;
                                     }
-                                }
-                                else {
+                                } else {
                                     targetCaps[cap] = status;
                                 }
                             });
                         });
                 });
-            }
-            else {
+            } else {
                 angular.forEach(components[ctrl.target],
                     function (caps, status) {
                         angular.forEach(caps, function(cap) {
@@ -353,8 +350,7 @@
                         if (capDetails.flagged.indexOf(testId) > -1) {
                             cap.passedFlagged.push(testId);
                         }
-                    }
-                    else {
+                    } else {
                         cap.notPassedTests.push(testId);
                         if (capDetails.flagged.indexOf(testId) > -1) {
                             cap.notPassedFlagged.push(testId);
@@ -393,8 +389,7 @@
                     // If the test ID is in the results' test list.
                     if (ctrl.resultsData.results.indexOf(testId) > -1) {
                         passed = true;
-                    }
-                    else if ('aliases' in details) {
+                    } else if ('aliases' in details) {
                         var len = details.aliases.length;
                         for (var i = 0; i < len; i++) {
                             var alias = details.aliases[i];
@@ -412,8 +407,7 @@
                         if ('flagged' in details) {
                             cap.passedFlagged.push(testId);
                         }
-                    }
-                    else {
+                    } else {
                         cap.notPassedTests.push(testId);
                         if ('flagged' in details) {
                             cap.notPassedFlagged.push(testId);
@@ -435,18 +429,19 @@
             // objects with details regarding each capability.
             ctrl.caps = {
                 'required': {'caps': [], 'count': 0, 'passedCount': 0,
-                        'flagFailCount': 0, 'flagPassCount': 0},
+                    'flagFailCount': 0, 'flagPassCount': 0},
                 'advisory': {'caps': [], 'count': 0, 'passedCount': 0,
-                        'flagFailCount': 0, 'flagPassCount': 0},
+                    'flagFailCount': 0, 'flagPassCount': 0},
                 'deprecated': {'caps': [], 'count': 0, 'passedCount': 0,
-                          'flagFailCount': 0, 'flagPassCount': 0},
+                    'flagFailCount': 0, 'flagPassCount': 0},
                 'removed': {'caps': [], 'count': 0, 'passedCount': 0,
-                       'flagFailCount': 0, 'flagPassCount': 0}
+                    'flagFailCount': 0, 'flagPassCount': 0}
             };
+            var capMethod = null;
 
             switch (ctrl.schemaVersion) {
                 case '1.2':
-                    var capMethod = 'buildCapabilityV1_2';
+                    capMethod = 'buildCapabilityV1_2';
                     break;
                 case '1.3':
                 case '1.4':
@@ -478,8 +473,8 @@
                 ctrl.caps[status].caps.push(cap);
             });
 
-            ctrl.requiredPassPercent = (ctrl.caps.required.passedCount *
-                100 / ctrl.caps.required.count);
+            ctrl.requiredPassPercent = ctrl.caps.required.passedCount *
+                100 / ctrl.caps.required.count;
 
             ctrl.totalRequiredFailCount = ctrl.caps.required.count -
                 ctrl.caps.required.passedCount;
@@ -492,8 +487,8 @@
                 (ctrl.totalRequiredFailCount -
                  ctrl.caps.required.flagFailCount);
 
-            ctrl.nonFlagRequiredPassPercent = (ctrl.nonFlagPassCount *
-                100 / ctrl.totalNonFlagCount);
+            ctrl.nonFlagRequiredPassPercent = ctrl.nonFlagPassCount *
+                100 / ctrl.totalNonFlagCount;
         }
 
         /**
@@ -506,10 +501,10 @@
             if (!capObj) {
                 return false;
             }
-            return (((ctrl.schemaVersion === '1.2') &&
-                (capObj.flagged.indexOf(test) > -1)) ||
-                    ((ctrl.schemaVersion >= '1.3') &&
-                (capObj.tests[test].flagged)));
+            return ctrl.schemaVersion === '1.2' &&
+                capObj.flagged.indexOf(test) > -1 ||
+                    ctrl.schemaVersion >= '1.3' &&
+                capObj.tests[test].flagged;
         }
 
         /**
@@ -520,19 +515,17 @@
          * @returns {String} reason
          */
         function getFlaggedReason(test, capObj) {
-            if ((ctrl.schemaVersion === '1.2') &&
-                (ctrl.isTestFlagged(test, capObj))) {
+            if (ctrl.schemaVersion === '1.2' &&
+                ctrl.isTestFlagged(test, capObj)) {
 
                 // Return a generic message since schema 1.2 does not
                 // provide flag reasons.
                 return 'Interop Working Group has flagged this test.';
-            }
-            else if ((ctrl.schemaVersion >= '1.3') &&
-                (ctrl.isTestFlagged(test, capObj))) {
+            } else if (ctrl.schemaVersion >= '1.3' &&
+                ctrl.isTestFlagged(test, capObj)) {
 
                 return capObj.tests[test].flagged.reason;
-            }
-            else {
+            } else {
                 return '';
             }
         }
@@ -545,14 +538,14 @@
          * @returns {Boolean} true if capability should be shown
          */
         function isCapabilityShown(capability) {
-            return ((ctrl.testStatus === 'total') ||
-               (ctrl.testStatus === 'passed' &&
-                capability.passedTests.length > 0) ||
-               (ctrl.testStatus === 'not passed' &&
-                capability.notPassedTests.length > 0) ||
-               (ctrl.testStatus === 'flagged' &&
-                (capability.passedFlagged.length +
-                 capability.notPassedFlagged.length > 0)));
+            return ctrl.testStatus === 'total' ||
+               ctrl.testStatus === 'passed' &&
+                capability.passedTests.length > 0 ||
+               ctrl.testStatus === 'not passed' &&
+                capability.notPassedTests.length > 0 ||
+               ctrl.testStatus === 'flagged' &&
+                capability.passedFlagged.length +
+                 capability.notPassedFlagged.length > 0;
         }
 
         /**
@@ -563,14 +556,14 @@
          * @return {Boolean} true if test should be shown
          */
         function isTestShown(test, capability) {
-            return ((ctrl.testStatus === 'total') ||
-                (ctrl.testStatus === 'passed' &&
-                 capability.passedTests.indexOf(test) > -1) ||
-                (ctrl.testStatus === 'not passed' &&
-                 capability.notPassedTests.indexOf(test) > -1) ||
-                (ctrl.testStatus === 'flagged' &&
+            return ctrl.testStatus === 'total' ||
+                ctrl.testStatus === 'passed' &&
+                 capability.passedTests.indexOf(test) > -1 ||
+                ctrl.testStatus === 'not passed' &&
+                 capability.notPassedTests.indexOf(test) > -1 ||
+                ctrl.testStatus === 'flagged' &&
                  (capability.passedFlagged.indexOf(test) > -1 ||
-                  capability.notPassedFlagged.indexOf(test) > -1)));
+                  capability.notPassedFlagged.indexOf(test) > -1);
         }
 
         /**
@@ -583,18 +576,14 @@
             if (ctrl.testStatus === 'total') {
                 return capability.passedTests.length +
                    capability.notPassedTests.length;
-            }
-            else if (ctrl.testStatus === 'passed') {
+            } else if (ctrl.testStatus === 'passed') {
                 return capability.passedTests.length;
-            }
-            else if (ctrl.testStatus === 'not passed') {
+            } else if (ctrl.testStatus === 'not passed') {
                 return capability.notPassedTests.length;
-            }
-            else if (ctrl.testStatus === 'flagged') {
+            } else if (ctrl.testStatus === 'flagged') {
                 return capability.passedFlagged.length +
                    capability.notPassedFlagged.length;
-            }
-            else {
+            } else {
                 return 0;
             }
         }
@@ -608,22 +597,17 @@
         function getStatusTestCount(status) {
             if (!ctrl.caps) {
                 return -1;
-            }
-            else if (ctrl.testStatus === 'total') {
+            } else if (ctrl.testStatus === 'total') {
                 return ctrl.caps[status].count;
-            }
-            else if (ctrl.testStatus === 'passed') {
+            } else if (ctrl.testStatus === 'passed') {
                 return ctrl.caps[status].passedCount;
-            }
-            else if (ctrl.testStatus === 'not passed') {
+            } else if (ctrl.testStatus === 'not passed') {
                 return ctrl.caps[status].count -
                   ctrl.caps[status].passedCount;
-            }
-            else if (ctrl.testStatus === 'flagged') {
+            } else if (ctrl.testStatus === 'flagged') {
                 return ctrl.caps[status].flagFailCount +
                   ctrl.caps[status].flagPassCount;
-            }
-            else {
+            } else {
                 return -1;
             }
         }
@@ -791,8 +775,8 @@
          * a test result.
          */
         function associateProductVersion() {
-            var verId = (ctrl.selectedVersion ?
-                         ctrl.selectedVersion.id : null);
+            var verId = ctrl.selectedVersion ?
+                         ctrl.selectedVersion.id : null;
             var testId = resultsData.id;
             var url = refstackApiUrl + '/results/' + testId;
             ctrl.associateRequest = $http.put(url, {'product_version_id':
@@ -822,11 +806,10 @@
                 .success(function (data) {
                     ctrl.productVersions = data;
                     if (ctrl.prodVersionCopy &&
-                        ctrl.prodVersionCopy.product_info.id ==
+                        ctrl.prodVersionCopy.product_info.id ===
                         ctrl.selectedProduct.id) {
                         ctrl.selectedVersion = ctrl.prodVersionCopy;
-                    }
-                    else {
+                    } else {
                         angular.forEach(data, function(ver) {
                             if (!ver.version) {
                                 ctrl.selectedVersion = ver;
@@ -850,13 +833,13 @@
             var metaFields = ['target', 'guideline', 'shared'];
             var meta = ctrl.metaCopy;
             angular.forEach(metaFields, function(field) {
-                var oldMetaValue = (field in ctrl.resultsData.meta) ?
+                var oldMetaValue = field in ctrl.resultsData.meta ?
                     ctrl.resultsData.meta[field] : '';
-                if (field in meta && oldMetaValue != meta[field]) {
+                if (field in meta && oldMetaValue !== meta[field]) {
                     var metaUrl = metaBaseUrl + field;
                     if (meta[field]) {
                         ctrl.assocRequest = $http.post(metaUrl, meta[field])
-                            .success(function(data) {
+                            .success(function() {
                                 ctrl.resultsData.meta[field] = meta[field];
                             })
                             .error(function (error) {
@@ -866,10 +849,9 @@
                                     'Error associating metadata with ' +
                                     'test run: ' + angular.toJson(error);
                             });
-                    }
-                    else {
+                    } else {
                         ctrl.unassocRequest = $http.delete(metaUrl)
-                            .success(function (data) {
+                            .success(function () {
                                 delete ctrl.resultsData.meta[field];
                                 delete meta[field];
                             })

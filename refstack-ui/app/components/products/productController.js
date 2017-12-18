@@ -232,8 +232,7 @@
                     }).error(function (error) {
                         raiseAlert('danger', error.title, error.detail);
                     });
-            }
-            else {
+            } else {
                 ctrl.unassociateRequest = $http.delete(metaUrl)
                     .success(function () {
                         ctrl.testsData[index][editFlag] = false;
@@ -446,8 +445,8 @@
             var url = [refstackApiUrl, '/products/', ctrl.product.id].join('');
             var properties = propertiesToJson();
             var content = {'description': ctrl.product.description,
-                           'properties': properties};
-            if (ctrl.productName != ctrl.product.name) {
+                'properties': properties};
+            if (ctrl.productName !== ctrl.product.name) {
                 content.name = ctrl.product.name;
             }
 
@@ -468,8 +467,7 @@
                         ctrl.showError = true;
                         ctrl.error = error.detail;
                     });
-                }
-                else {
+                } else {
                     ctrl.showSuccess = true;
                     $state.reload();
                 }

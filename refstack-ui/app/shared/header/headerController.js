@@ -44,7 +44,7 @@
             if (path === viewLocation) {
                 // Make sure "/" only matches when viewLocation is "/".
                 if (!($location.path().substr(0).length > 1 &&
-                    viewLocation.length === 1 )) {
+                    viewLocation.length === 1)) {
                     return true;
                 }
             }
