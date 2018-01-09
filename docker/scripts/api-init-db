@@ -1,5 +1,7 @@
 #!/bin/bash
 [[ ${DEBUG_MODE} ]] && set -x
 mysql --no-defaults -S ${SQL_DIR}/mysql.socket -e 'CREATE DATABASE refstack;'
+mysql --no-defaults -S ${SQL_DIR}/mysql.socket -e 'set @@global.show_compatibility_56=ON;'
+
 cd /home/dev/refstack
 .venv/bin/python bin/refstack-manage upgrade --revision head

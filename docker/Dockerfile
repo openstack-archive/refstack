@@ -1,4 +1,6 @@
-FROM ubuntu:14.04
+FROM ubuntu:16.04
+
+RUN apt update && apt install -y sudo
 
 RUN \
     groupadd dev && \
@@ -8,12 +10,11 @@ RUN \
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN \
-    apt-get update && \
-    apt-get -y install \
+    apt -y install \
     sudo git vim wget \
     nginx \
     python-dev python3-dev python-pip \
-    libmysqlclient-dev mysql-client-5.6 mysql-server-5.6 libffi-dev\
+    libmysqlclient-dev mysql-client mysql-server libffi-dev\
     npm && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/lib/mysql/* && \
