@@ -1,5 +1,4 @@
 - project:
-    name: openstack/refstack
     check:
       jobs:
         - refstack-tox-py27-func-mysql
