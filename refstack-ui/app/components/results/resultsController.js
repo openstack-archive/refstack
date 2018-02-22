@@ -42,12 +42,19 @@
         ctrl.associateProductVersion = associateProductVersion;
         ctrl.getProductVersions = getProductVersions;
         ctrl.prepVersionEdit = prepVersionEdit;
+        if (ctrl.target === 'dns' || ctrl.target === 'orchestration') {
+            ctrl.gl_type = ctrl.target;
+        } else {
+            ctrl.gl_type = 'powered';
+        }
 
         /** Mappings of Interop WG components to marketing program names. */
         ctrl.targetMappings = {
             'platform': 'Openstack Powered Platform',
             'compute': 'OpenStack Powered Compute',
-            'object': 'OpenStack Powered Object Storage'
+            'object': 'OpenStack Powered Object Storage',
+            'dns': 'OpenStack with DNS',
+            'orchestration': 'OpenStack with Orchestration'
         };
 
         /** Initial page to be on. */
@@ -212,7 +219,10 @@
             var content_url = refstackApiUrl + '/guidelines';
             ctrl.versionsRequest =
                 $http.get(content_url).success(function (data) {
-                    ctrl.versionList = data.sort().reverse();
+                    // NEED TO sort after grabbing the GL_TYPE DATA
+                    let gl_files = data[ctrl.gl_type];
+                    ctrl.versionList = gl_files.map((gl_obj) => gl_obj.name);
+                    ctrl.version = ctrl.versionList[1];
                 }).error(function (error) {
                     raiseAlert('danger', error.title,
                                'Unable to retrieve version list');

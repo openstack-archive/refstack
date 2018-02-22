@@ -58,7 +58,9 @@
         ctrl.targetMappings = {
             'platform': 'Openstack Powered Platform',
             'compute': 'OpenStack Powered Compute',
-            'object': 'OpenStack Powered Object Storage'
+            'object': 'OpenStack Powered Object Storage',
+            'dns': 'OpenStack with DNS',
+            'orchestration': 'OpenStack with Orchestration'
         };
 
         // Pagination controls.

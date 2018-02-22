@@ -29,7 +29,8 @@
     "phantomjs": false,
     "jquery": false,
     "prototypejs": false,
-    "shelljs": false
+    "shelljs": false,
+    "es6": true
   },
 
   "extends": "openstack",

@@ -88,6 +88,12 @@ API_OPTS = [
                     'Interop Working Group capability files. This URL is used '
                     'to get a listing of all capability files.'
                ),
+    cfg.StrOpt('additional_capability_urls',
+               default='https://api.github.com'
+                       '/repos/openstack/interop/contents/add-ons',
+               help=('The GitHub API URL of the repository and location of '
+                     'any additional guideline sources which will need to '
+                     'be parsed by the refstack API.')),
     cfg.StrOpt('github_raw_base_url',
                default='https://raw.githubusercontent.com'
                        '/openstack/interop/master/',

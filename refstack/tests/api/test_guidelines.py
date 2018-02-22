@@ -28,24 +28,51 @@ class TestGuidelinesEndpoint(api.FunctionalTest):
         @httmock.all_requests
         def github_api_mock(url, request):
             headers = {'content-type': 'application/json'}
-            content = [{'name': '2015.03.json', 'type': 'file'},
-                       {'name': '2015.next.json', 'type': 'file'},
-                       {'name': '2015.03', 'type': 'dir'}]
+            content = [{'name': '2015.03.json',
+                        'path': '2015.03.json',
+                        'type': 'file'},
+                       {'name': '2015.next.json',
+                        'path': '2015.next.json',
+                        'type': 'file'},
+                       {'name': '2015.03',
+                        'path': '2015.03',
+                        'file': '2015.03',
+                        'type': 'dir'},
+                       {'name': 'test.2018.02.json',
+                        'path': 'add-ons/test.2018.02.json',
+                        'type': 'file'},
+                       {'name': 'test.next.json',
+                        'path': 'add-ons/test.next.json',
+                        'type': 'file'}]
             content = json.dumps(content)
             return httmock.response(200, content, headers, None, 5, request)
 
         with httmock.HTTMock(github_api_mock):
             actual_response = self.get_json(self.URL)
 
-        expected_response = ['2015.03.json']
-        self.assertEqual(expected_response, actual_response)
+        expected_powered = [
+            {'name': u'2015.03.json',
+             'file': u'2015.03.json'},
+            {'name': u'2015.next.json',
+             'file': u'2015.next.json'}
+        ]
+        expected_test_addons = [
+            {u'name': u'2018.02.json',
+             u'file': u'test.2018.02.json'},
+            {u'name': u'next.json',
+             u'file': u'test.next.json'}
+        ]
+        self.assertIn(u'powered', actual_response.keys())
+        self.assertIn(u'test', actual_response.keys())
+        self.assertEqual(expected_test_addons, actual_response['test'])
+        self.assertEqual(expected_powered, actual_response['powered'])
 
     def test_get_guideline_file(self):
         @httmock.all_requests
         def github_mock(url, request):
             content = {'foo': 'bar'}
             return httmock.response(200, content, None, None, 5, request)
-        url = self.URL + "2015.03"
+        url = self.URL + "2015.03.json"
         with httmock.HTTMock(github_mock):
             actual_response = self.get_json(url)
 

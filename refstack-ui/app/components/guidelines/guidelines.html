@@ -8,7 +8,7 @@
         <select ng-model="ctrl.version"
                 ng-change="ctrl.update()"
                 class="form-control"
-                ng-options="versionFile.slice(0,-5) for versionFile in ctrl.versionList">
+                ng-options="versionObj.name.slice(0,-5) for versionObj in ctrl.versionList">
         </select>
     </div>
     <div class="col-md-4">
@@ -18,6 +18,8 @@
             <option value="platform">OpenStack Powered Platform</option>
             <option value="compute">OpenStack Powered Compute</option>
             <option value="object">OpenStack Powered Object Storage</option>
+            <option value="dns">OpenStack with DNS</option>
+            <option value="orchestration">OpenStack with Orchestration</option>
         </select>
     </div>
 </div>

@@ -33,14 +33,46 @@ class GuidelinesTestCase(base.BaseTestCase):
         @httmock.all_requests
         def github_api_mock(url, request):
             headers = {'content-type': 'application/json'}
-            content = [{'name': '2015.03.json', 'type': 'file'},
-                       {'name': '2015.next.json', 'type': 'file'},
-                       {'name': '2015.03', 'type': 'dir'}]
+            content = [{'name': '2015.03.json',
+                        'path': '2015.03.json',
+                        'type': 'file'},
+                       {'name': '2015.next.json',
+                        'path': '2015.next.json',
+                        'type': 'file'},
+                       {'name': '2015.03',
+                        'path': '2015.03',
+                        'type': 'dir'},
+                       {'name': 'test.2018.02.json',
+                        'path': 'add-ons/test.2018.02.json',
+                        'type': 'file'},
+                       {'name': 'test.next.json',
+                        'path': 'add-ons/test.next.json',
+                        'type': 'file'}]
             content = json.dumps(content)
             return httmock.response(200, content, headers, None, 5, request)
         with httmock.HTTMock(github_api_mock):
             result = self.guidelines.get_guideline_list()
-        self.assertEqual(['2015.03.json'], result)
+            print(result)
+        expected_keys = ['powered', u'test']
+        expected_powered = [
+            {'name': u'2015.03.json',
+             'file': u'2015.03.json'},
+            {'name': u'2015.next.json',
+             'file': u'2015.next.json'}
+        ]
+        expected_test_addons = [
+            {'name': u'2018.02.json',
+             'file': u'test.2018.02.json'},
+            {'name': u'next.json',
+             'file': u'test.next.json'}
+        ]
+
+        self.assertIn('powered', expected_keys)
+        self.assertIn(u'test', expected_keys)
+        self.assertEqual(expected_powered,
+                         result['powered'])
+        self.assertEqual(expected_test_addons,
+                         result[u'test'])
 
     def test_get_guidelines_list_error_code(self):
         """Test when the HTTP status code isn't a 200 OK."""
@@ -51,24 +83,25 @@ class GuidelinesTestCase(base.BaseTestCase):
 
         with httmock.HTTMock(github_api_mock):
             result = self.guidelines.get_guideline_list()
-        self.assertIsNone(result)
+        self.assertEqual(result, {'powered': []})
 
     @mock.patch('requests.get')
     def test_get_guidelines_exception(self, mock_requests_get):
         """Test when the GET request raises an exception."""
         mock_requests_get.side_effect = requests.exceptions.RequestException()
         result = self.guidelines.get_guideline_list()
-        self.assertIsNone(result)
+        self.assertEqual(result, {'powered': []})
 
     def test_get_capability_file(self):
-        """Test when getting a specific guideline file"""
+        """Test when getting a specific guideline file."""
         @httmock.all_requests
         def github_mock(url, request):
             content = {'foo': 'bar'}
             return httmock.response(200, content, None, None, 5, request)
 
         with httmock.HTTMock(github_mock):
-            result = self.guidelines.get_guideline_contents('2010.03.json')
+            gl_file_name = 'dns.2018.02.json'
+            result = self.guidelines.get_guideline_contents(gl_file_name)
         self.assertEqual({'foo': 'bar'}, result)
 
     def test_get_capability_file_error_code(self):

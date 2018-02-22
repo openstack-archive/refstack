@@ -15,8 +15,10 @@
 
 """Class for retrieving Interop WG guideline information."""
 
+import itertools
 from oslo_config import cfg
 from oslo_log import log
+from operator import itemgetter
 import re
 import requests
 import requests_cache
@@ -35,7 +37,8 @@ class Guidelines:
 
     def __init__(self,
                  repo_url=None,
-                 raw_url=None):
+                 raw_url=None,
+                 additional_capability_urls=None):
         """Initialize class with needed URLs.
 
         The URL for the guidelines repository is specified with 'repo_url'.
@@ -43,11 +46,19 @@ class Guidelines:
         These values will default to the values specified in the RefStack
         config file.
         """
+        self.guideline_sources = list()
+        if additional_capability_urls:
+            self.additional_urls = additional_capability_urls.split(',')
+        else:
+            self.additional_urls = \
+                CONF.api.additional_capability_urls.split(',')
+        [self.guideline_sources.append(url) for url in self.additional_urls]
         if repo_url:
             self.repo_url = repo_url
         else:
             self.repo_url = CONF.api.github_api_capabilities_url
-
+        if self.repo_url and self.repo_url not in self.guideline_sources:
+            self.guideline_sources.append(self.repo_url)
         if raw_url:
             self.raw_url = raw_url
         else:
@@ -59,43 +70,76 @@ class Guidelines:
         The repository url specificed in class instantiation is checked
         for a list of JSON guideline files. A list of these is returned.
         """
-        try:
-            response = requests.get(self.repo_url)
-            LOG.debug("Response Status: %s / Used Requests Cache: %s" %
-                      (response.status_code,
-                       getattr(response, 'from_cache', False)))
-            if response.status_code == 200:
-                regex = re.compile('^([0-9]{4}\.[0-9]{2}|next)\.json$')
-                capability_files = []
-                for rfile in response.json():
-                    if rfile["type"] == "file" and regex.search(rfile["name"]):
-                        capability_files.append(rfile["name"])
-                return capability_files
-            else:
-                LOG.warning('Guidelines repo URL (%s) returned non-success '
-                            'HTTP code: %s' % (self.repo_url,
-                                               response.status_code))
-                return None
+        capability_files = {}
+        capability_list = []
+        powered_files = []
+        addon_files = []
+        for src_url in self.guideline_sources:
+            try:
+                resp = requests.get(src_url)
 
-        except requests.exceptions.RequestException as e:
-            LOG.warning('An error occurred trying to get repository contents '
-                        'through %s: %s' % (self.repo_url, e))
-            return None
+                LOG.debug("Response Status: %s / Used Requests Cache: %s" %
+                          (resp.status_code,
+                           getattr(resp, 'from_cache', False)))
+                if resp.status_code == 200:
+                    regex = re.compile('([0-9]{4}\.[0-9]{2}|next)\.json')
+                    for rfile in resp.json():
+                        if rfile["type"] == "file" and \
+                                regex.search(rfile["name"]):
+                            if 'add-ons' in rfile['path'] and \
+                                    rfile[
+                                        'name'] not in map(itemgetter('name'),
+                                                           addon_files):
+                                file_dict = {'name': rfile['name']}
+                                addon_files.append(file_dict)
+                            elif 'add-ons' not in rfile['path'] and \
+                                rfile['name'] not in map(itemgetter('name'),
+                                                         powered_files):
+                                file_dict = {'name': rfile['name'],
+                                             'file': rfile['path']}
+                                powered_files.append(file_dict)
+                else:
+                    LOG.warning('Guidelines repo URL (%s) returned '
+                                'non-success HTTP code: %s' %
+                                (src_url, resp.status_code))
 
-    def get_guideline_contents(self, guideline_file):
-        """Get JSON data from raw guidelines URL."""
+            except requests.exceptions.RequestException as e:
+                LOG.warning('An error occurred trying to get repository '
+                            'contents through %s: %s' % (src_url, e))
+        for k, v in itertools.groupby(addon_files,
+                                      key=lambda x: x['name'].split('.')[0]):
+            values = [{'name': x['name'].split('.', 1)[1], 'file': x['name']}
+                      for x in list(v)]
+            capability_list.append((k, list(values)))
+        capability_list.append(('powered', powered_files))
+        capability_files = dict((x, y) for x, y in capability_list)
+        return capability_files
+
+    def get_guideline_contents(self, gl_file):
+        """Get contents for a given guideline path."""
+        if '.json' not in gl_file:
+            gl_file = '.'.join((gl_file, 'json'))
+        regex = re.compile("[a-z]*\.([0-9]{4}\.[0-9]{2}|next)\.json")
+        if regex.search(gl_file):
+            guideline_path = 'add-ons/' + gl_file
+        else:
+            guideline_path = gl_file
+
         file_url = ''.join((self.raw_url.rstrip('/'),
-                            '/', guideline_file, ".json"))
+                            '/', guideline_path))
+        LOG.debug("file_url: %s" % (file_url))
         try:
             response = requests.get(file_url)
             LOG.debug("Response Status: %s / Used Requests Cache: %s" %
                       (response.status_code,
                        getattr(response, 'from_cache', False)))
+            LOG.debug("Response body: %s" % str(response.text))
             if response.status_code == 200:
                 return response.json()
             else:
                 LOG.warning('Raw guideline URL (%s) returned non-success HTTP '
                             'code: %s' % (self.raw_url, response.status_code))
+
                 return None
         except requests.exceptions.RequestException as e:
             LOG.warning('An error occurred trying to get raw capability file '
@@ -110,18 +154,24 @@ class Guidelines:
         are given. If not target is specified, then all capabilities are given.
         """
         components = guideline_json['components']
-
         if ('metadata' in guideline_json and
                 guideline_json['metadata']['schema'] >= '2.0'):
             schema = guideline_json['metadata']['schema']
             platformsMap = {
                 'platform': 'OpenStack Powered Platform',
                 'compute': 'OpenStack Powered Compute',
-                'object': 'OpenStack Powered Storage'
+                'object': 'OpenStack Powered Storage',
+                'dns': 'OpenStack with DNS',
+                'orchestration': 'OpenStack with Orchestration'
+
             }
-            comps = \
-                guideline_json['platforms'][platformsMap[target]]['components']
-            targets = (obj['name'] for obj in comps)
+            if target == 'dns' or target == 'orchestration':
+                targets = ['os_powered_' + target]
+            else:
+                comps = \
+                    guideline_json['platforms'][platformsMap[target]
+                                                ]['components']
+                targets = (obj['name'] for obj in comps)
         else:
             schema = guideline_json['schema']
             targets = set()
@@ -129,7 +179,6 @@ class Guidelines:
                 targets.add(target)
             else:
                 targets.update(guideline_json['platform']['required'])
-
         target_caps = set()
         for component in targets:
             complist = components[component]
@@ -138,7 +187,6 @@ class Guidelines:
             for status, capabilities in complist.items():
                 if types is None or status in types:
                     target_caps.update(capabilities)
-
         return list(target_caps)
 
     def get_test_list(self, guideline_json, capabilities=[],
@@ -164,7 +212,7 @@ class Guidelines:
                         if show_flagged:
                             test_list.append(test)
                         elif not show_flagged and \
-                            test not in cap_details['flagged']:
+                                test not in cap_details['flagged']:
                             test_list.append(test)
                 else:
                     for test, test_details in cap_details['tests'].items():

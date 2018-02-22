@@ -54,6 +54,7 @@
         ctrl.getStatusTestCount = getStatusTestCount;
         ctrl.openFullTestListModal = openFullTestListModal;
         ctrl.openEditTestModal = openEditTestModal;
+        getVersionList();
 
         /** The testID extracted from the URL route. */
         ctrl.testId = $stateParams.testID;
@@ -65,7 +66,9 @@
         ctrl.targetMappings = {
             'platform': 'Openstack Powered Platform',
             'compute': 'OpenStack Powered Compute',
-            'object': 'OpenStack Powered Object Storage'
+            'object': 'OpenStack Powered Object Storage',
+            'dns': 'OpenStack with DNS',
+            'orchestration': 'OpenStack with orchestration'
         };
 
         /** The schema version of the currently selected guideline data. */
@@ -87,14 +90,30 @@
          * Sample API return array: ["2015.03.json", "2015.04.json"]
          */
         function getVersionList() {
+            if (ctrl.target === 'dns' || ctrl.target === 'orchestration') {
+                ctrl.gl_type = ctrl.target;
+
+            } else {
+                ctrl.gl_type = 'powered';
+            }
             var content_url = refstackApiUrl + '/guidelines';
             ctrl.versionsRequest =
                 $http.get(content_url).success(function (data) {
-                    ctrl.versionList = data.sort().reverse();
+                    let gl_files = data[ctrl.gl_type];
+                    let gl_names = gl_files.map((gl_obj) => gl_obj.name);
+                    ctrl.versionList = gl_names.sort().reverse();
+                    let file_names = gl_files.map((gl_obj) => gl_obj.file);
+                    ctrl.fileList = file_names.sort().reverse();
+
                     if (!ctrl.version) {
                         // Default to the first approved guideline which is
                         // expected to be at index 1.
                         ctrl.version = ctrl.versionList[1];
+                        ctrl.versionFile = ctrl.fileList[1];
+                    } else {
+                        let versionIndex =
+                            ctrl.versionList.indexOf(ctrl.version);
+                        ctrl.versionFile = ctrl.fileList[versionIndex];
                     }
                     ctrl.updateGuidelines();
                 }).error(function (error) {
@@ -223,10 +242,12 @@
         function updateGuidelines() {
             ctrl.guidelineData = null;
             ctrl.showError = false;
-            var content_url = refstackApiUrl + '/guidelines/' +
-                ctrl.version;
+
+            ctrl.content_url = refstackApiUrl + '/guidelines/' +
+                ctrl.versionFile;
+            let getparams = {'gl_file': ctrl.versionFile};
             ctrl.capsRequest =
-                $http.get(content_url).success(function (data) {
+                $http.get(ctrl.content_url, getparams).success(function (data) {
                     ctrl.guidelineData = data;
                     if ('metadata' in data && data.metadata.schema >= '2.0') {
                         ctrl.schemaVersion = data.metadata.schema;
@@ -257,18 +278,31 @@
             var components = ctrl.guidelineData.components;
             var targetCaps = {};
             var targetComponents = null;
+            var old_type = ctrl.gl_type;
+            if (ctrl.target === 'dns' || ctrl.target === 'orchestration') {
+                ctrl.gl_type = ctrl.target;
+            } else {
+                ctrl.gl_type = 'powered';
+            }
+            // If it has not been updated since the last program type change,
+            // will need to update the list
+            if (old_type !== ctrl.gl_type) {
+                ctrl.getVersionList();
+                return false;
+            }
 
             // The 'platform' target is comprised of multiple components, so
             // we need to get the capabilities belonging to each of its
             // components.
             if (ctrl.target === 'platform' || ctrl.schemaVersion >= '2.0') {
-                if (ctrl.schemaVersion >= '2.0') {
+                if ('add-ons' in ctrl.guidelineData) {
+                    targetComponents = ['os_powered_' + ctrl.target];
+                } else if (ctrl.schemaVersion >= '2.0') {
                     var platformsMap = {
                         'platform': 'OpenStack Powered Platform',
                         'compute': 'OpenStack Powered Compute',
-                        'object': 'OpenStack Powered Storage'
+                        'object': 'OpenStack Powered Storage',
                     };
-
                     targetComponents = ctrl.guidelineData.platforms[
                         platformsMap[ctrl.target]].components.map(
                             function(c) {
@@ -628,8 +662,12 @@
                 resolve: {
                     tests: function () {
                         return ctrl.resultsData.results;
+                    },
+                    gl_type: function () {
+                        return ctrl.gl_type;
                     }
                 }
+
             });
         }
 
@@ -649,6 +687,9 @@
                 resolve: {
                     resultsData: function () {
                         return ctrl.resultsData;
+                    },
+                    gl_type: function () {
+                        return ctrl.gl_type;
                     }
                 }
             });
@@ -661,17 +702,19 @@
         .module('refstackApp')
         .controller('FullTestListModalController', FullTestListModalController);
 
-    FullTestListModalController.$inject = ['$uibModalInstance', 'tests'];
+    FullTestListModalController.$inject =
+        ['$uibModalInstance', 'tests', 'gl_type'];
 
     /**
      * Full Test List Modal Controller
      * This controller is for the modal that appears if a user wants to see the
      * full list of passed tests on a report page.
      */
-    function FullTestListModalController($uibModalInstance, tests) {
+    function FullTestListModalController($uibModalInstance, tests, gl_type) {
         var ctrl = this;
 
         ctrl.tests = tests;
+        ctrl.gl_type = gl_type;
 
         /**
          * This function will close/dismiss the modal.
@@ -695,7 +738,7 @@
 
     EditTestModalController.$inject = [
         '$uibModalInstance', '$http', '$state', 'raiseAlert',
-        'refstackApiUrl', 'resultsData'
+        'refstackApiUrl', 'resultsData', 'gl_type'
     ];
 
     /**
@@ -704,7 +747,7 @@
      * test run metadata.
      */
     function EditTestModalController($uibModalInstance, $http, $state,
-        raiseAlert, refstackApiUrl, resultsData) {
+        raiseAlert, refstackApiUrl, resultsData, gl_type) {
 
         var ctrl = this;
 
@@ -717,6 +760,7 @@
         ctrl.resultsData = resultsData;
         ctrl.metaCopy = angular.copy(resultsData.meta);
         ctrl.prodVersionCopy = angular.copy(resultsData.product_version);
+        ctrl.gl_type = gl_type;
 
         ctrl.getVersionList();
         ctrl.getUserProducts();
@@ -734,7 +778,10 @@
             var content_url = refstackApiUrl + '/guidelines';
             ctrl.versionsRequest =
                 $http.get(content_url).success(function (data) {
-                    ctrl.versionList = data.sort().reverse();
+                    let gl_files = data[ctrl.gl_type];
+                    let gl_names = gl_files.map((gl_obj) => gl_obj.name);
+                    ctrl.versionList = gl_names.sort().reverse();
+                    ctrl.version = ctrl.versionList[1];
                 }).error(function (error) {
                     raiseAlert('danger', error.title,
                                'Unable to retrieve version list');

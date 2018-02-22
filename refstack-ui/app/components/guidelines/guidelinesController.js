@@ -19,14 +19,15 @@
         .module('refstackApp')
         .controller('GuidelinesController', GuidelinesController);
 
-    GuidelinesController.$inject = ['$http', '$uibModal', 'refstackApiUrl'];
+    GuidelinesController.$inject =
+        ['$filter', '$http', '$uibModal', 'refstackApiUrl'];
 
     /**
      * RefStack Guidelines Controller
      * This controller is for the '/guidelines' page where a user can browse
      * through tests belonging to Interop WG defined capabilities.
      */
-    function GuidelinesController($http, $uibModal, refstackApiUrl) {
+    function GuidelinesController($filter ,$http, $uibModal, refstackApiUrl) {
         var ctrl = this;
 
         ctrl.getVersionList = getVersionList;
@@ -35,6 +36,8 @@
         ctrl.filterStatus = filterStatus;
         ctrl.getObjectLength = getObjectLength;
         ctrl.openTestListModal = openTestListModal;
+        ctrl.updateVersionList = updateVersionList;
+        ctrl.gl_type = 'powered';
 
         /** The target OpenStack marketing program to show capabilities for. */
         ctrl.target = 'platform';
@@ -54,22 +57,33 @@
                                'guidelineDetails.html';
 
         /**
-         * Retrieve an array of available guideline files from the Refstack
-         * API server, sort this array reverse-alphabetically, and store it in
-         * a scoped variable. The scope's selected version is initialized to
-         * the latest (i.e. first) version here as well. After a successful API
-         * call, the function to update the capabilities is called.
-         * Sample API return array: ["2015.03.json", "2015.04.json"]
-         */
+        * Update the array of dictionary objects which stores data
+        * pertaining to each guideline, sorting them in descending
+        * order by guideline name. After these are sorted, the
+        * function to update the capabilities is called.
+        */
+        function updateVersionList() {
+            let gl_files = ctrl.guidelineData[ctrl.gl_type];
+            ctrl.versionList = $filter('orderBy')(gl_files, 'name', true);
+            // Default to the first approved guideline which is expected
+            // to be at index 1.
+            ctrl.version = ctrl.versionList[1];
+            update();
+        }
+
+        /**
+         * Retrieve a dictionary object comprised of available guideline types
+         * and and an array of dictionary objects containing file info about
+         * each guideline file pertaining to that particular guideline type.
+         * After a successful API call, the function to sort and update the
+         * version list is called.
+        */
         function getVersionList() {
             var content_url = refstackApiUrl + '/guidelines';
             ctrl.versionsRequest =
                 $http.get(content_url).success(function (data) {
-                    ctrl.versionList = data.sort().reverse();
-                    // Default to the first approved guideline which is expected
-                    // to be at index 1.
-                    ctrl.version = ctrl.versionList[1];
-                    ctrl.update();
+                    ctrl.guidelineData = data;
+                    updateVersionList();
                 }).error(function (error) {
                     ctrl.showError = true;
                     ctrl.error = 'Error retrieving version list: ' +
@@ -83,9 +97,12 @@
          * version.
          */
         function update() {
-            var content_url = refstackApiUrl + '/guidelines/' + ctrl.version;
+            ctrl.content_url = refstackApiUrl + '/guidelines/'
+                + ctrl.version.file;
+            let get_params = {'gl_file': ctrl.version.file};
             ctrl.capsRequest =
-                $http.get(content_url).success(function (data) {
+                $http.get(ctrl.content_url, get_params).success(
+                function (data) {
                     ctrl.guidelines = data;
                     if ('metadata' in data && data.metadata.schema >= '2.0') {
                         ctrl.schema = data.metadata.schema;
@@ -122,11 +139,26 @@
             var targetCaps = ctrl.targetCapabilities;
             var targetComponents = null;
 
+            var old_type = ctrl.gl_type;
+            if (ctrl.target === 'dns' || ctrl.target === 'orchestration') {
+                ctrl.gl_type = ctrl.target;
+            } else {
+                ctrl.gl_type = 'powered';
+            }
+            // If it has not been updated since the last program type change,
+            // will need to update the list
+            if (old_type !== ctrl.gl_type) {
+                updateVersionList();
+                return;
+            }
+
             // The 'platform' target is comprised of multiple components, so
             // we need to get the capabilities belonging to each of its
             // components.
             if (ctrl.target === 'platform' || ctrl.schema >= '2.0') {
-                if (ctrl.schema >= '2.0') {
+                if ('add-ons' in ctrl.guidelines) {
+                    targetComponents = ['os_powered_' + ctrl.target];
+                } else if (ctrl.schema >= '2.0') {
                     var platformsMap = {
                         'platform': 'OpenStack Powered Platform',
                         'compute': 'OpenStack Powered Compute',
@@ -232,7 +264,10 @@
                 size: 'lg',
                 resolve: {
                     version: function () {
-                        return ctrl.version.slice(0, -5);
+                        return ctrl.version.name.slice(0, -5);
+                    },
+                    version_file: function() {
+                        return ctrl.version.file;
                     },
                     target: function () {
                         return ctrl.target;
@@ -243,7 +278,6 @@
                 }
             });
         }
-
         ctrl.getVersionList();
     }
 
@@ -253,7 +287,8 @@
 
     TestListModalController.$inject = [
         '$uibModalInstance', '$http', 'version',
-        'target', 'status', 'refstackApiUrl'
+        'version_file', 'target', 'status',
+        'refstackApiUrl'
     ];
 
     /**
@@ -263,11 +298,12 @@
      * statuses.
      */
     function TestListModalController($uibModalInstance, $http, version,
-        target, status, refstackApiUrl) {
+        version_file, target, status, refstackApiUrl) {
 
         var ctrl = this;
 
         ctrl.version = version;
+        ctrl.version_file = version_file;
         ctrl.target = target;
         ctrl.status = status;
         ctrl.close = close;
@@ -316,7 +352,7 @@
                 return;
             }
             ctrl.testListUrl = [
-                ctrl.url, '/guidelines/', ctrl.version, '/tests?',
+                ctrl.url, '/guidelines/', ctrl.version_file, '/tests?',
                 'target=', ctrl.target, '&',
                 'type=', statuses.join(','), '&',
                 'alias=', ctrl.aliases.toString(), '&',

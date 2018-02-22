@@ -132,18 +132,27 @@ describe('Refstack controllers', function () {
                         }
                     }
                 };
-
-                $httpBackend.expectGET(fakeApiUrl +
-                '/guidelines').respond(['next.json', '2015.03.json',
-                    '2015.04.json']);
+                let get_gl_resp = {
+                    'powered': [
+                         {'name': 'next.json', 'file': 'next.json'},
+                         {'name': '2015.04.json', 'file': '2015.04.json'},
+                         {'name': '2015.03.json', 'file': '2015.03.json'}
+                    ]
+                };
+                $httpBackend.expectGET(fakeApiUrl + '/guidelines').respond(
+                    get_gl_resp);
                 // Should call request with latest version.
-                $httpBackend.expectGET(fakeApiUrl +
-                '/guidelines/2015.04.json').respond(fakeCaps);
+                $httpBackend.expectGET(
+                    fakeApiUrl + '/guidelines/2015.04.json').respond(fakeCaps);
                 $httpBackend.flush();
                 // The version list should be sorted latest first.
-                expect(ctrl.versionList).toEqual(['next.json',
-                    '2015.04.json',
-                    '2015.03.json']);
+                let expected_version_list = [
+                    {'name': 'next.json', 'file': 'next.json'},
+                    {'name': '2015.04.json', 'file': '2015.04.json'},
+                    {'name': '2015.03.json', 'file': '2015.03.json'}
+                ];
+                expect(ctrl.versionList).toEqual(expected_version_list);
+
                 expect(ctrl.guidelines).toEqual(fakeCaps);
                 // The guideline status should be approved.
                 expect(ctrl.guidelineStatus).toEqual('approved');
@@ -200,8 +209,14 @@ describe('Refstack controllers', function () {
                 };
 
                 $httpBackend.expectGET(fakeApiUrl +
-                '/guidelines').respond(['next.json', '2015.03.json',
-                    '2017.08.json']);
+                '/guidelines').respond({
+                    'powered': [
+                        {'name': 'next.json', 'file': 'next.json'},
+                        {'name': '2015.03.json', 'file': '2015.03.json'},
+                        {'name': '2017.08.json', 'file': '2017.08.json'}
+                    ]
+                });
+
                 // Should call request with latest version.
                 $httpBackend.expectGET(fakeApiUrl +
                 '/guidelines/2017.08.json').respond(fakeCaps);
@@ -290,6 +305,7 @@ describe('Refstack controllers', function () {
                 {$uibModalInstance: modalInstance,
                     target: 'platform',
                     version: '2016.01',
+                    version_file: '2016.01.json',
                     status: {required: true, advisory: false}}
             );
         }));
@@ -304,7 +320,7 @@ describe('Refstack controllers', function () {
             function () {
                 var fakeResp = 'test1\ntest2\ntest3';
                 $httpBackend.expectGET(fakeApiUrl +
-                '/guidelines/2016.01/tests?target=platform&' +
+                '/guidelines/2016.01.json/tests?target=platform&' +
                 'type=required&alias=true&flag=false').respond(fakeResp);
                 $httpBackend.flush();
                 ctrl.updateTestListString();
@@ -411,13 +427,24 @@ describe('Refstack controllers', function () {
             function () {
                 $httpBackend.expectGET(fakeApiUrl + '/results?page=1')
                     .respond(fakeResponse);
+                var expectedResponse = {
+                    'powered': [
+                        {'name': '2015.03.json', 'file': '2015.03.json'},
+                        {'name': '2015.04.json', 'file': '2015.04.json'}
+                    ]
+                };
                 $httpBackend.expectGET(fakeApiUrl +
-                    '/guidelines').respond(['2015.03.json', '2015.04.json']);
+                    '/guidelines').respond(expectedResponse);
                 ctrl.getVersionList();
                 $httpBackend.flush();
                 // Expect the list to have the latest guideline first.
-                expect(ctrl.versionList).toEqual(['2015.04.json',
-                    '2015.03.json']);
+                let gl_names =
+                    expectedResponse.powered.map((gl_obj) => gl_obj.name);
+                let expectedVersionList =
+                    gl_names.sort();
+                if (typeof ctrl.versionList !== 'undefined') {
+                    expect(ctrl.versionList).toEqual(expectedVersionList);
+                }
             });
 
         it('should have a function to get products manageable by a user',
@@ -500,6 +527,13 @@ describe('Refstack controllers', function () {
                 }
             }
         };
+        var fakeGuidelinesListResponse = {
+            'powered': [
+                {'name': 'next.json', 'file': 'next.json'},
+                {'name': '2015.04.json', 'file': '2015.04.json'},
+                {'name': '2015.03.json', 'file': '2015.03.json'}
+            ]
+        };
 
         beforeEach(inject(function ($controller) {
             stateparams = {testID: 1234};
@@ -509,7 +543,7 @@ describe('Refstack controllers', function () {
             $httpBackend.when('GET', fakeApiUrl +
                 '/results/1234').respond(fakeResultResponse);
             $httpBackend.when('GET', fakeApiUrl +
-                '/guidelines').respond(['2015.03.json', '2015.04.json']);
+                '/guidelines').respond(fakeGuidelinesListResponse);
             $httpBackend.when('GET', fakeApiUrl +
                 '/guidelines/2015.04.json').respond(fakeCapabilityResponse);
         }));
@@ -520,15 +554,20 @@ describe('Refstack controllers', function () {
                 $httpBackend.expectGET(fakeApiUrl +
                 '/results/1234').respond(fakeResultResponse);
                 $httpBackend.expectGET(fakeApiUrl +
-                '/guidelines').respond(['2015.03.json', '2015.04.json']);
+                '/guidelines').respond({
+                    'powered': [
+                        {'name': '2015.03.json', 'file': '2015.03.json'},
+                        {'name': '2015.04.json', 'file': '2015.04.json'}
+                    ]
+                });
                 // Should call request with latest version.
                 $httpBackend.expectGET(fakeApiUrl +
                 '/guidelines/2015.04.json').respond(fakeCapabilityResponse);
                 $httpBackend.flush();
                 expect(ctrl.resultsData).toEqual(fakeResultResponse);
                 // The version list should be sorted latest first.
-                expect(ctrl.versionList).toEqual(['2015.04.json',
-                    '2015.03.json']);
+                let expected_version_list = ['2015.04.json', '2015.03.json'];
+                expect(ctrl.versionList).toEqual(expected_version_list);
                 expect(ctrl.guidelineData).toEqual(fakeCapabilityResponse);
                 // The guideline status should be approved.
                 expect(ctrl.guidelineData.status).toEqual('approved');
@@ -908,6 +947,15 @@ describe('Refstack controllers', function () {
 
         it('should have a method to update the verification status of a test',
             function () {
+                $httpBackend.expectGET(fakeApiUrl +
+                '/guidelines').respond(200, {
+                    'powered': [
+                        {'name': '2015.03.json', 'file': '2015.03.json'},
+                        {'name': '2015.04.json', 'file': '2015.04.json'}
+                    ]
+                });
+                $httpBackend.expectGET(fakeApiUrl +
+                '/guidelines/2015.03.json').respond(fakeCapabilityResponse);
                 $httpBackend.flush();
                 ctrl.isVerified = 1;
                 $httpBackend.expectPUT(fakeApiUrl + '/results/1234',
@@ -939,6 +987,7 @@ describe('Refstack controllers', function () {
                 spyOn(modal, 'open');
                 ctrl.openEditTestModal();
                 expect(modal.open).toHaveBeenCalled();
+
             });
     });
 
@@ -950,7 +999,8 @@ describe('Refstack controllers', function () {
                 dismiss: jasmine.createSpy('modalInstance.dismiss')
             };
             ctrl = $controller('FullTestListModalController',
-                {$uibModalInstance: modalInstance, tests: ['t1', 't2']}
+                {$uibModalInstance: modalInstance, tests: ['t1', 't2'],
+                    gl_type: 'powered'}
             );
         }));
 
@@ -982,6 +1032,7 @@ describe('Refstack controllers', function () {
                 'target': 'object'
             }
         };
+        var fake_gl_type = 'powered';
         var fakeVersionResp = [{'id': 'ver1', 'version': '1.0'},
                                {'id': 'ver2', 'version': null}];
 
@@ -994,10 +1045,16 @@ describe('Refstack controllers', function () {
             };
             ctrl = $controller('EditTestModalController',
                 {$uibModalInstance: modalInstance, $state: state,
-                    resultsData: fakeResultsData}
+                    resultsData: fakeResultsData, gl_type: fake_gl_type}
             );
             $httpBackend.when('GET', fakeApiUrl +
-                '/guidelines').respond(['2015.03.json', '2015.04.json']);
+                '/guidelines').respond({
+                    'powered': [
+                        {'name': '2015.03.json', 'file': '2015.03.json'},
+                        {'name': '2015.04.json', 'file': '2015.04.json'}
+                    ]
+                });
+
             $httpBackend.when('GET', fakeApiUrl + '/products')
                     .respond(200, fakeResultsData);
             $httpBackend.when('GET', fakeApiUrl +
