@@ -32,31 +32,31 @@ from refstack.db.sqlalchemy import models
 class DBAPITestCase(base.BaseTestCase):
     """Test case for database API."""
 
-    @mock.patch.object(api, 'store_results')
-    def test_store_results(self, mock_store_results):
-        db.store_results('fake_results')
-        mock_store_results.assert_called_once_with('fake_results')
+    @mock.patch.object(api, 'store_test_results')
+    def test_store_test_results(self, mock_store_test_results):
+        db.store_test_results('fake_results')
+        mock_store_test_results.assert_called_once_with('fake_results')
 
-    @mock.patch.object(api, 'get_test')
-    def test_get_test(self, mock_get_test):
-        db.get_test(12345)
-        mock_get_test.assert_called_once_with(12345, allowed_keys=None)
+    @mock.patch.object(api, 'get_test_result')
+    def test_get_test_result(self, mock_get_test_result):
+        db.get_test_result(12345)
+        mock_get_test_result.assert_called_once_with(12345, allowed_keys=None)
 
     @mock.patch.object(api, 'get_test_results')
     def test_get_test_results(self, mock_get_test_results):
         db.get_test_results(12345)
         mock_get_test_results.assert_called_once_with(12345)
 
-    @mock.patch.object(api, 'get_test_records')
-    def test_get_test_records(self, mock_db):
+    @mock.patch.object(api, 'get_test_result_records')
+    def test_get_test_result_records(self, mock_db):
         filters = mock.Mock()
-        db.get_test_records(1, 2, filters)
+        db.get_test_result_records(1, 2, filters)
         mock_db.assert_called_once_with(1, 2, filters)
 
-    @mock.patch.object(api, 'get_test_records_count')
-    def test_get_test_records_count(self, mock_db):
+    @mock.patch.object(api, 'get_test_result_records_count')
+    def test_get_test_result_records_count(self, mock_db):
         filters = mock.Mock()
-        db.get_test_records_count(filters)
+        db.get_test_result_records_count(filters)
         mock_db.assert_called_once_with(filters)
 
     @mock.patch.object(api, 'user_get')
@@ -161,8 +161,8 @@ class DBBackendTestCase(base.BaseTestCase):
     @mock.patch('refstack.db.sqlalchemy.models.Test')
     @mock.patch('refstack.db.sqlalchemy.models.TestMeta')
     @mock.patch('uuid.uuid4')
-    def test_store_results(self, mock_uuid, mock_test_meta, mock_test,
-                           mock_test_result, mock_get_session):
+    def test_store_test_results(self, mock_uuid, mock_test_meta, mock_test,
+                                mock_test_result, mock_get_session):
         fake_tests_result = {
             'cpid': 'foo',
             'duration_seconds': 10,
@@ -184,7 +184,7 @@ class DBBackendTestCase(base.BaseTestCase):
         test_result = mock_test_result.return_value
         test_result.save = mock.Mock()
 
-        test_id = api.store_results(fake_tests_result)
+        test_id = api.store_test_results(fake_tests_result)
 
         mock_test.assert_called_once_with()
         mock_get_session.assert_called_once_with()
@@ -201,7 +201,7 @@ class DBBackendTestCase(base.BaseTestCase):
     @mock.patch.object(api, 'get_session')
     @mock.patch('refstack.db.sqlalchemy.models.Test')
     @mock.patch.object(api, '_to_dict', side_effect=lambda x, *args: x)
-    def test_get_test(self, mock_to_dict, mock_test, mock_get_session):
+    def test_get_test_result(self, mock_to_dict, mock_test, mock_get_session):
         session = mock_get_session.return_value
         session.query = mock.Mock()
         query = session.query.return_value
@@ -210,7 +210,7 @@ class DBBackendTestCase(base.BaseTestCase):
         mock_result = 'fake_test_info'
         filter_by.first = mock.Mock(return_value=mock_result)
         test_id = 'fake_id'
-        actual_result = api.get_test(test_id)
+        actual_result = api.get_test_result(test_id)
 
         mock_get_session.assert_called_once_with()
         session.query.assert_called_once_with(mock_test)
@@ -222,11 +222,11 @@ class DBBackendTestCase(base.BaseTestCase):
         session.query = mock.Mock()
         query = session.query.return_value
         query.filter_by.return_value.first.return_value = None
-        self.assertRaises(api.NotFound, api.get_test, 'fake_id')
+        self.assertRaises(api.NotFound, api.get_test_result, 'fake_id')
 
     @mock.patch('refstack.db.sqlalchemy.api.models')
     @mock.patch.object(api, 'get_session')
-    def test_delete_test(self, mock_get_session, mock_models):
+    def test_delete_test_result(self, mock_get_session, mock_models):
         session = mock_get_session.return_value
         test_query = mock.Mock()
         test_meta_query = mock.Mock()
@@ -236,7 +236,7 @@ class DBBackendTestCase(base.BaseTestCase):
             mock_models.TestMeta: test_meta_query,
             mock_models.TestResults: test_results_query
         }.get)
-        db.delete_test('fake_id')
+        db.delete_test_result('fake_id')
         session.begin.assert_called_once_with()
         test_query.filter_by.return_value.first\
             .assert_called_once_with()
@@ -252,18 +252,18 @@ class DBBackendTestCase(base.BaseTestCase):
         session.query.return_value\
             .filter_by.return_value\
             .first.return_value = None
-        self.assertRaises(api.NotFound, db.delete_test, 'fake_id')
+        self.assertRaises(api.NotFound, db.delete_test_result, 'fake_id')
 
     @mock.patch.object(api, 'get_session')
     @mock.patch.object(api, '_to_dict', side_effect=lambda x: x)
-    def test_update_test(self, mock_to_dict, mock_get_session):
+    def test_update_test_result(self, mock_to_dict, mock_get_session):
         session = mock_get_session.return_value
         mock_test = mock.Mock()
         session.query.return_value.filter_by.return_value\
             .first.return_value = mock_test
 
         test_info = {'product_version_id': '123'}
-        api.update_test(test_info)
+        api.update_test_result(test_info)
 
         mock_get_session.assert_called_once_with()
         mock_test.save.assert_called_once_with(session=session)
@@ -271,29 +271,31 @@ class DBBackendTestCase(base.BaseTestCase):
 
     @mock.patch('refstack.db.sqlalchemy.api.models')
     @mock.patch.object(api, 'get_session')
-    def test_get_test_meta_key(self, mock_get_session, mock_models):
+    def test_get_test_result_meta_key(self, mock_get_session, mock_models):
         session = mock_get_session.return_value
         session.query.return_value\
             .filter_by.return_value\
             .filter_by.return_value\
             .first.return_value = mock.Mock(value=42)
-        self.assertEqual(42, db.get_test_meta_key('fake_id', 'fake_key'))
+        self.assertEqual(
+            42, db.get_test_result_meta_key('fake_id', 'fake_key'))
         session.query.return_value\
             .filter_by.return_value\
             .filter_by.return_value\
             .first.return_value = None
-        self.assertEqual(24, db.get_test_meta_key('fake_id', 'fake_key', 24))
+        self.assertEqual(24, db.get_test_result_meta_key(
+            'fake_id', 'fake_key', 24))
 
     @mock.patch('refstack.db.sqlalchemy.api.models')
     @mock.patch.object(api, 'get_session')
-    def test_save_test_meta_item(self, mock_get_session, mock_models):
+    def test_save_test_result_meta_item(self, mock_get_session, mock_models):
         session = mock_get_session.return_value
         mock_meta_item = mock.Mock()
         session.query.return_value\
             .filter_by.return_value\
             .filter_by.return_value\
             .first.return_value = mock_meta_item
-        db.save_test_meta_item('fake_id', 'fake_key', 42)
+        db.save_test_result_meta_item('fake_id', 'fake_key', 42)
         self.assertEqual('fake_id', mock_meta_item.test_id)
         self.assertEqual('fake_key', mock_meta_item.meta_key)
         self.assertEqual(42, mock_meta_item.value)
@@ -306,21 +308,21 @@ class DBBackendTestCase(base.BaseTestCase):
             .first.return_value = None
         mock_meta_item = mock.Mock()
         mock_models.TestMeta.return_value = mock_meta_item
-        db.save_test_meta_item('fake_id', 'fake_key', 42)
+        db.save_test_result_meta_item('fake_id', 'fake_key', 42)
         self.assertEqual('fake_id', mock_meta_item.test_id)
         self.assertEqual('fake_key', mock_meta_item.meta_key)
         self.assertEqual(42, mock_meta_item.value)
 
     @mock.patch('refstack.db.sqlalchemy.api.models')
     @mock.patch.object(api, 'get_session')
-    def test_delete_test_meta_item(self, mock_get_session, mock_models):
+    def test_delete_test_result_meta_item(self, mock_get_session, mock_models):
         session = mock_get_session.return_value
         mock_meta_item = mock.Mock()
         session.query.return_value\
             .filter_by.return_value\
             .filter_by.return_value\
             .first.return_value = mock_meta_item
-        db.delete_test_meta_item('fake_id', 'fake_key')
+        db.delete_test_result_meta_item('fake_id', 'fake_key')
         session.begin.assert_called_once_with()
         session.delete.assert_called_once_with(mock_meta_item)
 
@@ -329,7 +331,8 @@ class DBBackendTestCase(base.BaseTestCase):
             .filter_by.return_value\
             .first.return_value = None
         self.assertRaises(db.NotFound,
-                          db.delete_test_meta_item, 'fake_id', 'fake_key')
+                          db.delete_test_result_meta_item,
+                          'fake_id', 'fake_key')
 
     @mock.patch.object(api, 'get_session')
     @mock.patch('refstack.db.sqlalchemy.models.TestResults')
@@ -446,9 +449,9 @@ class DBBackendTestCase(base.BaseTestCase):
     @mock.patch.object(api, '_apply_filters_for_query')
     @mock.patch.object(api, 'get_session')
     @mock.patch('refstack.db.sqlalchemy.models.Test')
-    def test_get_test_records(self, mock_model,
-                              mock_get_session,
-                              mock_apply):
+    def test_get_test_result_records(self, mock_model,
+                                     mock_get_session,
+                                     mock_apply):
 
         per_page = 9000
         filters = {
@@ -464,7 +467,7 @@ class DBBackendTestCase(base.BaseTestCase):
         query_with_offset = ordered_query.offset.return_value
         query_with_offset.limit.return_value.all.return_value = 'fake_uploads'
 
-        result = api.get_test_records(2, per_page, filters)
+        result = api.get_test_result_records(2, per_page, filters)
 
         mock_get_session.assert_called_once_with()
         session.query.assert_called_once_with(mock_model)
@@ -479,9 +482,9 @@ class DBBackendTestCase(base.BaseTestCase):
     @mock.patch.object(api, '_apply_filters_for_query')
     @mock.patch.object(api, 'get_session')
     @mock.patch('refstack.db.sqlalchemy.models.Test')
-    def test_get_test_records_count(self, mock_model,
-                                    mock_get_session,
-                                    mock_apply):
+    def test_get_test_result_records_count(self, mock_model,
+                                           mock_get_session,
+                                           mock_apply):
 
         filters = mock.Mock()
         session = mock_get_session.return_value
@@ -489,7 +492,7 @@ class DBBackendTestCase(base.BaseTestCase):
         apply_result = mock_apply.return_value
         apply_result.count.return_value = 999
 
-        result = api.get_test_records_count(filters)
+        result = api.get_test_result_records_count(filters)
         self.assertEqual(result, 999)
 
         session.query.assert_called_once_with(mock_model.id)

@@ -52,7 +52,7 @@ class MetadataController(rest.RestController):
     @pecan.expose('json')
     def get(self, test_id):
         """Get test run metadata."""
-        test_info = db.get_test(test_id)
+        test_info = db.get_test_result(test_id)
         role = api_utils.get_user_role(test_id)
         if role in (const.ROLE_FOUNDATION, const.ROLE_OWNER):
             return test_info['meta']
@@ -66,9 +66,9 @@ class MetadataController(rest.RestController):
         """Get value for key from test run metadata."""
         role = api_utils.get_user_role(test_id)
         if role in (const.ROLE_FOUNDATION, const.ROLE_OWNER):
-            return db.get_test_meta_key(test_id, key)
+            return db.get_test_result_meta_key(test_id, key)
         elif role in (const.ROLE_USER) and key in self.rw_access_keys:
-            return db.get_test_meta_key(test_id, key)
+            return db.get_test_result_meta_key(test_id, key)
         pecan.abort(403)
 
     @_check_key
@@ -76,11 +76,11 @@ class MetadataController(rest.RestController):
     @pecan.expose('json')
     def post(self, test_id, key):
         """Save value for key in test run metadata."""
-        test = db.get_test(test_id)
+        test = db.get_test_result(test_id)
         if test['verification_status'] == const.TEST_VERIFIED:
             pecan.abort(403, 'Can not add/alter a new metadata key for a '
                              'verified test run.')
-        db.save_test_meta_item(test_id, key, pecan.request.body)
+        db.save_test_result_meta_item(test_id, key, pecan.request.body)
         pecan.response.status = 201
 
     @_check_key
@@ -88,11 +88,11 @@ class MetadataController(rest.RestController):
     @pecan.expose('json')
     def delete(self, test_id, key):
         """Delete key from test run metadata."""
-        test = db.get_test(test_id)
+        test = db.get_test_result(test_id)
         if test['verification_status'] == const.TEST_VERIFIED:
             pecan.abort(403, 'Can not delete a metadata key for a '
                              'verified test run.')
-        db.delete_test_meta_item(test_id, key)
+        db.delete_test_result_meta_item(test_id, key)
         pecan.response.status = 204
 
 
@@ -143,14 +143,14 @@ class ResultsController(validation.BaseRestControllerWithValidation):
         """Handler for getting item."""
         user_role = api_utils.get_user_role(test_id)
         if user_role in (const.ROLE_FOUNDATION, const.ROLE_OWNER):
-            test_info = db.get_test(
+            test_info = db.get_test_result(
                 test_id, allowed_keys=['id', 'cpid', 'created_at',
                                        'duration_seconds', 'meta',
                                        'product_version',
                                        'verification_status']
             )
         else:
-            test_info = db.get_test(test_id)
+            test_info = db.get_test_result(test_id)
         test_list = db.get_test_results(test_id)
         test_name_list = [test_dict['name'] for test_dict in test_list]
         test_info.update({'results': test_name_list,
@@ -182,7 +182,7 @@ class ResultsController(validation.BaseRestControllerWithValidation):
             test_['meta'][const.USER] = pubkey.openid
             test_ = self._auto_version_associate(test, test_, pubkey)
 
-        test_id = db.store_results(test_)
+        test_id = db.store_test_results(test_)
         return {'test_id': test_id,
                 'url': parse.urljoin(CONF.ui_url,
                                      CONF.api.test_results_url) % test_id}
@@ -191,11 +191,11 @@ class ResultsController(validation.BaseRestControllerWithValidation):
     @api_utils.check_permissions(level=const.ROLE_OWNER)
     def delete(self, test_id):
         """Delete test run."""
-        test = db.get_test(test_id)
+        test = db.get_test_result(test_id)
         if test['verification_status'] == const.TEST_VERIFIED:
             pecan.abort(403, 'Can not delete a verified test run.')
 
-        db.delete_test(test_id)
+        db.delete_test_result(test_id)
         pecan.response.status = 204
 
     @pecan.expose('json')
@@ -231,13 +231,14 @@ class ResultsController(validation.BaseRestControllerWithValidation):
             elif not product['public']:
                 pecan.abort(403, 'Forbidden.')
 
-        records_count = db.get_test_records_count(filters)
+        records_count = db.get_test_result_records_count(filters)
         page_number, total_pages_number = \
             api_utils.get_page_number(records_count)
 
         try:
             per_page = CONF.api.results_per_page
-            results = db.get_test_records(page_number, per_page, filters)
+            results = db.get_test_result_records(
+                page_number, per_page, filters)
             is_foundation = api_utils.check_user_is_foundation_admin()
             for result in results:
 
@@ -279,7 +280,7 @@ class ResultsController(validation.BaseRestControllerWithValidation):
         is_foundation_admin = api_utils.check_user_is_foundation_admin()
 
         if 'product_version_id' in kw:
-            test = db.get_test(test_id)
+            test = db.get_test_result(test_id)
             if test['verification_status'] == const.TEST_VERIFIED:
                 pecan.abort(403, 'Can not update product_version_id for a '
                                  'verified test run.')
@@ -314,9 +315,10 @@ class ResultsController(validation.BaseRestControllerWithValidation):
 
             # Check pre-conditions are met to mark a test verified.
             if (kw['verification_status'] == 1 and
-                not (db.get_test_meta_key(test_id, 'target') and
-                     db.get_test_meta_key(test_id, 'guideline') and
-                     db.get_test_meta_key(test_id, const.SHARED_TEST_RUN))):
+                not (db.get_test_result_meta_key(test_id, 'target') and
+                     db.get_test_result_meta_key(test_id, 'guideline') and
+                     db.get_test_result_meta_key(test_id,
+                                                 const.SHARED_TEST_RUN))):
 
                 pecan.abort(403, 'In order to mark a test verified, the '
                                  'test must be shared and have been '
@@ -325,6 +327,6 @@ class ResultsController(validation.BaseRestControllerWithValidation):
 
             test_info['verification_status'] = kw['verification_status']
 
-        test = db.update_test(test_info)
+        test = db.update_test_result(test_info)
         pecan.response.status = 201
         return test

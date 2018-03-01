@@ -253,10 +253,10 @@ def get_user_role(test_id):
 
 def check_user(test_id):
     """Check that user has access to shared test run."""
-    test_owner = db.get_test_meta_key(test_id, const.USER)
+    test_owner = db.get_test_result_meta_key(test_id, const.USER)
     if not test_owner:
         return True
-    elif db.get_test_meta_key(test_id, const.SHARED_TEST_RUN):
+    elif db.get_test_result_meta_key(test_id, const.SHARED_TEST_RUN):
         return True
     else:
         return check_owner(test_id)
@@ -267,14 +267,14 @@ def check_owner(test_id):
     if not is_authenticated():
         return False
 
-    test = db.get_test(test_id)
+    test = db.get_test_result(test_id)
     # If the test is owned by a product.
     if test.get('product_version_id'):
         version = db.get_product_version(test['product_version_id'])
         return check_user_is_product_admin(version['product_id'])
     # Otherwise, check the user ownership.
     else:
-        user = db.get_test_meta_key(test_id, const.USER)
+        user = db.get_test_result_meta_key(test_id, const.USER)
         return user and user == get_user_id()
 
 

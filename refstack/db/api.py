@@ -46,36 +46,36 @@ NotFound = IMPL.NotFound
 Duplication = IMPL.Duplication
 
 
-def store_results(results):
+def store_test_results(results):
     """Storing results into database.
 
     :param results: Dict describes test results.
     """
-    return IMPL.store_results(results)
+    return IMPL.store_test_results(results)
 
 
-def get_test(test_id, allowed_keys=None):
+def get_test_result(test_id, allowed_keys=None):
     """Get test run information from the database.
 
     :param test_id: The ID of the test.
     """
-    return IMPL.get_test(test_id, allowed_keys=allowed_keys)
+    return IMPL.get_test_result(test_id, allowed_keys=allowed_keys)
 
 
-def delete_test(test_id):
+def delete_test_result(test_id):
     """Delete test run information from the database.
 
     :param test_id: The ID of the test.
     """
-    return IMPL.delete_test(test_id)
+    return IMPL.delete_test_result(test_id)
 
 
-def update_test(test_info):
+def update_test_result(test_info):
     """Update test from the given test_info dictionary.
 
     :param test_info: The test
     """
-    return IMPL.update_test(test_info)
+    return IMPL.update_test_result(test_info)
 
 
 def get_test_results(test_id):
@@ -86,7 +86,7 @@ def get_test_results(test_id):
     return IMPL.get_test_results(test_id)
 
 
-def get_test_meta_key(test_id, key, default=None):
+def get_test_result_meta_key(test_id, key, default=None):
     """Get metadata value related to specified test run.
 
     :param test_id: The ID of the test.
@@ -94,20 +94,20 @@ def get_test_meta_key(test_id, key, default=None):
     :param default: Default value
 
     """
-    return IMPL.get_test_meta_key(test_id, key, default)
+    return IMPL.get_test_result_meta_key(test_id, key, default)
 
 
-def save_test_meta_item(test_id, key, value):
+def save_test_result_meta_item(test_id, key, value):
     """Store or update item value related to specified test run.
 
     :param test_id: The ID of the test.
     :param key: Metadata key
 
     """
-    return IMPL.save_test_meta_item(test_id, key, value)
+    return IMPL.save_test_result_meta_item(test_id, key, value)
 
 
-def delete_test_meta_item(test_id, key):
+def delete_test_result_meta_item(test_id, key):
     """Delete metadata item related to specified test run.
 
     :param test_id: The ID of the test.
@@ -116,25 +116,25 @@ def delete_test_meta_item(test_id, key):
 
     :raise NotFound if default value is not set and no value found
     """
-    return IMPL.delete_test_meta_item(test_id, key)
+    return IMPL.delete_test_result_meta_item(test_id, key)
 
 
-def get_test_records(page_number, per_page, filters):
+def get_test_result_records(page_number, per_page, filters):
     """Get page with applied filters for uploaded test records.
 
     :param page_number: The number of page.
     :param per_page: The number of results for one page.
     :param filters: (Dict) Filters that will be applied for records.
     """
-    return IMPL.get_test_records(page_number, per_page, filters)
+    return IMPL.get_test_result_records(page_number, per_page, filters)
 
 
-def get_test_records_count(filters):
+def get_test_result_records_count(filters):
     """Get total pages number with applied filters for uploaded test records.
 
     :param filters: (Dict) Filters that will be applied for records.
     """
-    return IMPL.get_test_records_count(filters)
+    return IMPL.get_test_result_records_count(filters)
 
 
 def user_get(user_openid):

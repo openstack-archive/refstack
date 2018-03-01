@@ -109,7 +109,7 @@ def _to_dict(sqlalchemy_object, allowed_keys=None):
     return sqlalchemy_object
 
 
-def store_results(results):
+def store_test_results(results):
     """Store test results."""
     test = models.Test()
     test_id = str(uuid.uuid4())
@@ -133,7 +133,7 @@ def store_results(results):
     return test_id
 
 
-def get_test(test_id, allowed_keys=None):
+def get_test_result(test_id, allowed_keys=None):
     """Get test info."""
     session = get_session()
     test_info = session.query(models.Test). \
@@ -144,7 +144,7 @@ def get_test(test_id, allowed_keys=None):
     return _to_dict(test_info, allowed_keys)
 
 
-def delete_test(test_id):
+def delete_test_result(test_id):
     """Delete test information from the database."""
     session = get_session()
     with session.begin():
@@ -159,7 +159,7 @@ def delete_test(test_id):
             raise NotFound('Test result %s not found' % test_id)
 
 
-def update_test(test_info):
+def update_test_result(test_info):
     """Update test from the given test_info dictionary."""
     session = get_session()
     _id = test_info.get('id')
@@ -177,7 +177,7 @@ def update_test(test_info):
         return _to_dict(test)
 
 
-def get_test_meta_key(test_id, key, default=None):
+def get_test_result_meta_key(test_id, key, default=None):
     """Get metadata value related to specified test run."""
     session = get_session()
     meta_item = session.query(models.TestMeta). \
@@ -188,7 +188,7 @@ def get_test_meta_key(test_id, key, default=None):
     return value
 
 
-def save_test_meta_item(test_id, key, value):
+def save_test_result_meta_item(test_id, key, value):
     """Store or update item value related to specified test run."""
     session = get_session()
     meta_item = (session.query(models.TestMeta)
@@ -201,7 +201,7 @@ def save_test_meta_item(test_id, key, value):
         meta_item.save(session)
 
 
-def delete_test_meta_item(test_id, key):
+def delete_test_result_meta_item(test_id, key):
     """Delete metadata item related to specified test run."""
     session = get_session()
     meta_item = session.query(models.TestMeta). \
@@ -274,7 +274,7 @@ def _apply_filters_for_query(query, filters):
     return query
 
 
-def get_test_records(page, per_page, filters):
+def get_test_result_records(page, per_page, filters):
     """Get page with list of test records."""
     session = get_session()
     query = session.query(models.Test)
@@ -285,7 +285,7 @@ def get_test_records(page, per_page, filters):
     return _to_dict(results)
 
 
-def get_test_records_count(filters):
+def get_test_result_records_count(filters):
     """Get total test records count."""
     session = get_session()
     query = session.query(models.Test.id)
