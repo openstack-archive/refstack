@@ -142,21 +142,21 @@ class TestResultsEndpoint(api.FunctionalTest):
         self.assertEqual(403, put_response.status_code)
 
         # Share the test run.
-        db.save_test_meta_item(test_id, api_const.SHARED_TEST_RUN, True)
+        db.save_test_result_meta_item(test_id, api_const.SHARED_TEST_RUN, True)
         put_response = self.put_json(url, expect_errors=True,
                                      params=json.dumps(body))
         self.assertEqual(403, put_response.status_code)
 
         # Now associate guideline and target program. Now we should be
         # able to mark a test verified.
-        db.save_test_meta_item(test_id, 'target', 'platform')
-        db.save_test_meta_item(test_id, 'guideline', '2016.01.json')
+        db.save_test_result_meta_item(test_id, 'target', 'platform')
+        db.save_test_result_meta_item(test_id, 'guideline', '2016.01.json')
         put_response = self.put_json(url, params=json.dumps(body))
         self.assertEqual(api_const.TEST_VERIFIED,
                          put_response['verification_status'])
 
         # Unshare the test, and check that we can mark it not verified.
-        db.delete_test_meta_item(test_id, api_const.SHARED_TEST_RUN)
+        db.delete_test_result_meta_item(test_id, api_const.SHARED_TEST_RUN)
         body = {'verification_status': api_const.TEST_NOT_VERIFIED}
         put_response = self.put_json(url, params=json.dumps(body))
         self.assertEqual(api_const.TEST_NOT_VERIFIED,
@@ -368,8 +368,8 @@ class TestResultsEndpoint(api.FunctionalTest):
         post_response = self.post_json('/v1/results', params=results)
         test_id = post_response['test_id']
         test_info = {'id': test_id, 'product_version_id': version_id}
-        db.update_test(test_info)
-        db.save_test_meta_item(test_id, api_const.USER, 'test-open-id')
+        db.update_test_result(test_info)
+        db.save_test_result_meta_item(test_id, api_const.USER, 'test-open-id')
 
         url = self.URL + '?page=1&product_id=' + product_id
 
@@ -392,7 +392,7 @@ class TestResultsEndpoint(api.FunctionalTest):
         self.assertFalse(response['results'])
 
         # Share the test run.
-        db.save_test_meta_item(test_id, api_const.SHARED_TEST_RUN, 1)
+        db.save_test_result_meta_item(test_id, api_const.SHARED_TEST_RUN, 1)
         response = self.get_json(url)
         self.assertEqual(1, len(response['results']))
         self.assertEqual(test_id, response['results'][0]['id'])
@@ -407,12 +407,12 @@ class TestResultsEndpoint(api.FunctionalTest):
         mock_check_owner.return_value = True
 
         # Test can't delete verified test run.
-        db.update_test({'id': test_id, 'verification_status': 1})
+        db.update_test_result({'id': test_id, 'verification_status': 1})
         resp = self.delete(url, expect_errors=True)
         self.assertEqual(403, resp.status_code)
 
         # Test can delete verified test run.
-        db.update_test({'id': test_id, 'verification_status': 0})
+        db.update_test_result({'id': test_id, 'verification_status': 0})
         resp = self.delete(url, expect_errors=True)
         self.assertEqual(204, resp.status_code)
 
