@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
 
-RUN apt update && apt install -y sudo
+RUN apt update -y && apt install -y sudo
 
 RUN \
     groupadd dev && \
