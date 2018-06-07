@@ -41,8 +41,7 @@ build_refstack_env () {
     #Install some dev tools
     .venv/bin/pip install pymysql httpie
     cd /home/dev/refstack
-    npm install
-#    bower install --config.interactive=false
+    yarn
 
     build_tmpl /refstack/docker/templates/config.json.tmpl /home/dev/refstack/refstack-ui/app/config.json
     build_tmpl /refstack/docker/templates/refstack.conf.tmpl /home/dev/refstack.conf

@@ -1,11 +1,10 @@
 {
-  "version": "0.0.1",
+  "version": "0.5.0",
   "private": true,
   "name": "refstack-ui",
   "description": "A user interface for RefStack",
   "license": "Apache2",
   "devDependencies": {
-    "bower": "1.7.5",
     "eslint": "^3.0.0",
     "eslint-config-openstack": "4.0.1",
     "eslint-plugin-angular": "1.4.0",
@@ -13,14 +12,31 @@
     "karma": "^1.7.1",
     "karma-chrome-launcher": "^2.2.0",
     "karma-cli": "1.0.1",
-    "karma-jasmine": "^1.1.0"
+    "karma-jasmine": "^1.1.0",
+    "angular-mocks": "^1.3.15"
   },
   "scripts": {
-    "postinstall": "bower install --config.interactive=false",
-    "prestart": "npm install",
-    "pretest": "npm install",
+    "prestart": "yarn",
+    "pretest": "yarn",
     "test": "if [ -z $CHROME_BIN ];then export CHROME_BIN=/usr/bin/chromium-browser;fi && karma start ./refstack-ui/tests/karma.conf.js --single-run",
     "test-auto-watch": "if [ -z $CHROME_BIN ];then export CHROME_BIN=/usr/bin/chromium-browser;fi && karma start ./refstack-ui/tests/karma.conf.js --auto-watch",
-    "lint": "eslint -c ./.eslintrc --no-color ./refstack-ui"
+    "lint": "eslint -c ./.eslintrc --no-color ./refstack-ui",
+    "postinstall": "node -e \"try { require('fs').symlinkSync(require('path').resolve('node_modules/@bower_components'), 'refstack-ui/app/assets/lib', 'junction') } catch (e) { }\""
+  },
+  "dependencies": {
+    "bower-away": "^1.1.2",
+    "@bower_components/angular": "angular/bower-angular#1.3.15",
+    "@bower_components/angular-animate": "angular/bower-angular-animate#~1.3",
+    "@bower_components/angular-bootstrap": "angular-ui/bootstrap-bower#0.14.3",
+    "@bower_components/angular-busy": "cgross/angular-busy#4.1.3",
+    "@bower_components/angular-confirm-modal": "Schlogen/angular-confirm#1.2.3",
+    "@bower_components/angular-mocks": "angular/bower-angular-mocks#1.3.15",
+    "@bower_components/angular-resource": "angular/bower-angular-resource#1.3.15",
+    "@bower_components/angular-ui-router": "angular-ui/angular-ui-router-bower#0.2.13",
+    "@bower_components/bootstrap": "twbs/bootstrap#3.3.2",
+    "@bower_components/jquery": "jquery/jquery-dist#>= 1.9.1"
+  },
+  "engines": {
+    "yarn": ">= 1.0.0"
   }
 }
