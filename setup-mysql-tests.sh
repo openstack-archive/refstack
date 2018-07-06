@@ -9,12 +9,22 @@ wait_for_line () {
     cat "$2" >/dev/null &
 }
 
+# insert sbin into path if it exists and isnt already there
+echo $PATH | grep -q "/usr/sbin"
+
+if [ $? -ne 0 ] && [ -d "/usr/sbin" ]; then
+  echo "SBIN NOT IN PATH"
+  export PATH="$PATH:/usr/sbin"
+  echo "$PATH"
+fi
+
 # If test DB url is provided, run tests with it
 if [[ "$REFSTACK_TEST_MYSQL_URL" ]]
 then
     $*
     exit $?
 fi
+
 # Else setup mysql base for tests.
 # Start MySQL process for tests
 MYSQL_DATA=`mktemp -d /tmp/refstack-mysql-XXXXX`
