@@ -1,7 +1,7 @@
 RefStack Quickstart
 ===================
 
-You can use docker for `one-click setup <run_in_docker.rst>`__ or follow
+You can use docker for `one-click setup <run_in_docker.html>`__ or follow
 step-by-step instructions below. These instructions have been tested on
 Ubuntu 14 and 16 LTS.
 
