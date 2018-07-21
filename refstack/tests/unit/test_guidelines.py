@@ -52,7 +52,6 @@ class GuidelinesTestCase(base.BaseTestCase):
             return httmock.response(200, content, headers, None, 5, request)
         with httmock.HTTMock(github_api_mock):
             result = self.guidelines.get_guideline_list()
-            print(result)
         expected_keys = ['powered', u'test']
         expected_powered = [
             {'name': u'2015.03.json',
