@@ -1,7 +1,7 @@
 - project:
     templates:
       - nodejs4-jobs
-      - publish-openstack-sphinx-docs
+      - publish-openstack-docs-pti
       - openstack-python-jobs
       - openstack-python35-jobs
     check:
