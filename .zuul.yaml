@@ -1,8 +1,24 @@
 - project:
+    templates:
+      - nodejs4-jobs
+      - publish-openstack-sphinx-docs
+      - openstack-python-jobs
+      - openstack-python35-jobs
     check:
       jobs:
         - refstack-tox-py27-func-mysql
         - refstack-tox-py35-func-mysql
+        - nodejs-npm-run-lint:
+            vars:
+              node_version: 6
+            voting: false
+        - nodejs-npm-run-test:
+            vars:
+              node_version: 6
+            voting: false
+        - openstack-tox-cover:
+            voting: false
+
     gate:
       jobs:
         - refstack-tox-py27-func-mysql
