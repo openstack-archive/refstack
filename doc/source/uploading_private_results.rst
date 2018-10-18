@@ -100,7 +100,7 @@ uploading test result. To use with insecure:
 
 - The ``path_to_testresult_json_file`` here is the json file of your test result.
 
-- By default, it's in ``.tempest/.testrespository/<test-run-number>.json`` where refstack-client runs from.
+- By default, it's in ``.tempest/.stestr/<test-run-number>.json`` where refstack-client runs from.
 
 - Here '' is a serial number that matches its corresponding subunit file name.
 
