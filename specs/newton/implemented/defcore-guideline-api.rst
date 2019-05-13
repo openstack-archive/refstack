@@ -20,8 +20,8 @@ REST APIs so that users can dynamically retrieve the test lists with the latest
 updates in the Guideline files as needed.
 
 [1] https://github.com/openstack/defcore/tree/master/2016.01
-[2] https://review.openstack.org/#/c/290689/
-[3] https://review.openstack.org/#/c/215263/
+[2] https://review.opendev.org/#/c/290689/
+[3] https://review.opendev.org/#/c/215263/
 
 Proposed change
 ===============

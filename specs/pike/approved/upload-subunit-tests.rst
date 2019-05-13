@@ -310,6 +310,6 @@ References
     2017-07-18-19.00.log.html
 [4] https://git.openstack.org/cgit/openstack-infra/subunit2sql
 [5] https://docs.openstack.org/subunit2sql/latest/data_model.html
-[6] https://review.openstack.org/#/c/265394/
+[6] https://review.opendev.org/#/c/265394/
 [7] https://docs.openstack.org/oslo.config/latest/configuration/
     mutable.html
