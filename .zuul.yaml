@@ -1,6 +1,6 @@
 - project:
     templates:
-      - nodejs4-jobs
+      - nodejs6-jobs
       - publish-openstack-docs-pti
       - openstack-cover-jobs
       - openstack-python-jobs
@@ -9,19 +9,11 @@
     check:
       jobs:
         - refstack-tox-py27-func-mysql
-        - refstack-tox-py35-func-mysql
-        - nodejs-npm-run-lint:
-            vars:
-              node_version: 6
-            voting: false
-        - nodejs-npm-run-test:
-            vars:
-              node_version: 6
-            voting: false
+        - refstack-tox-py36-func-mysql
     gate:
       jobs:
         - refstack-tox-py27-func-mysql
-        - refstack-tox-py35-func-mysql
+        - refstack-tox-py36-func-mysql
 
 - job:
     name: refstack-tox-py27-func-mysql
@@ -38,15 +30,15 @@
       tox_envlist: py27-func-mysql
 
 - job:
-    name: refstack-tox-py35-func-mysql
+    name: refstack-tox-py36-func-mysql
     parent: openstack-tox
     description: |
-      Run unit tests for an OpenStack Python project under cPython version 3.5.
+      Run unit tests for an OpenStack Python project under cPython version 3.6.
 
-      Uses tox with the ``py35-func-mysql`` environment.
+      Uses tox with the ``py36-func-mysql`` environment.
     irrelevant-files:
       - ^.*\.rst$
       - ^doc/.*$
       - ^releasenotes/.*$
     vars:
-      tox_envlist: py35-func-mysql
+      tox_envlist: py36-func-mysql
