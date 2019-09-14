@@ -50,14 +50,14 @@ after their software has been incorporated into the distro or cloud.
 
    * API and UI install docs: http://github.com/openstack/refstack/blob/master/doc/source/refstack.rst
    * repository: http://git.openstack.org/cgit/openstack/refstack
-   * reviews: https://review.openstack.org/#q,status:open+refstack,n,z
+   * reviews: https://review.opendev.org/#/q/status:open+project:openstack/refstack
 
 * **refstack-client**
    refstack-client contains the tools you will need to run the
    Interop Working Group tests.
 
    * repository: http://git.openstack.org/cgit/openstack/refstack-client
-   * reviews: https://review.openstack.org/#q,status:open+refstack-client,n,z
+   * reviews: https://review.opendev.org/#/q/status:open+project:openstack/refstack-client
 
 Get involved!
 #############

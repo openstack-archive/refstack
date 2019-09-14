@@ -49,7 +49,7 @@ Proposed change
   may revisit reintroducing this feature.
 
   There is currently a blueprint under review
-  (https://review.openstack.org/#/c/94473/) to build a tool that will
+  (https://review.opendev.org/#/c/94473/) to build a tool that will
   generate proper tempest.conf using as few input arguments as possible.
 
 * Remove code to trigger test from web ui functionality.
@@ -177,4 +177,4 @@ References
 
 * Tempest blueprint for tempest.conf creation
 
-  https://review.openstack.org/#/c/94473/
+  https://review.opendev.org/#/c/94473/

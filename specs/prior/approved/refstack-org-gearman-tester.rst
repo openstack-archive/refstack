@@ -44,7 +44,7 @@ Note: with this design, gearman worker will have network access to the Refstack 
 
 This spec covers the following deliverables;
 
- *  gearman client side code. (https://review.openstack.org/#/c/84270/)
+ *  gearman client side code. (https://review.opendev.org/#/c/84270/)
  *  gearman worker code (wip) 
        * Parts of this are already stubbed out in the code. specifically the "run_gearman" method. 
  *  Test status reporting API call
@@ -155,7 +155,7 @@ Other contributors:
 Work Items
 ----------
 
-* gearman client side code. (https://review.openstack.org/#/c/84270/)
+* gearman client side code. (https://review.opendev.org/#/c/84270/)
    * starts/stops/handle the gearman job queue
 * gearman worker code (wip)
 * report failure api call

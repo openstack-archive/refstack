@@ -169,7 +169,7 @@ The following REST APIs will be modified.
 
   * Although the verification_status column is listed here for completeness of
     the API body schema, this field can only be updated by interop admin as
-    described in spec https://review.openstack.org/#/c/343954/ .
+    described in spec https://review.opendev.org/#/c/343954/ .
   * Update request including the "verification_status" field will return
     "Forbidden(403)" if the requester is not an interop admin.
 
