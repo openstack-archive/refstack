@@ -37,7 +37,7 @@ First check for existing keys with command:
 If you see you already have existing public and private keys that you
 want to use, you can skip this step; otherwise:
 
--  ``ssh-keygen -t rsa -b 4096 -C "youropenstackid"``
+-  ``ssh-keygen -m PEM -t rsa -b 4096 -C "youropenstackid"``
 
 The 'youropenstackid' string is the username you chose when you
 registered for your OpenStack ID account. Enter the file name in which
